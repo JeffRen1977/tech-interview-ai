@@ -39,10 +39,28 @@ const CodingPractice = () => {
     }, []);
 
     const handleSelectProblem = (problem) => {
+        // Only clear feedback if selecting a different problem
+        if (selectedProblem?.id !== problem.id) {
+            setFeedback(null);
+            setError(null);
+        }
         setSelectedProblem(problem);
-        setUserCode(problem.initialCode || `# 在此输入您的代码`);
-        setFeedback(null);
-        setError(null);
+        
+        // Provide language-specific initial code
+        const getInitialCode = (lang) => {
+            switch (lang) {
+                case 'python':
+                    return problem.initialCode || `# 在此输入您的Python代码\n\ndef solution():\n    pass\n\n# 测试代码\nif __name__ == "__main__":\n    result = solution()\n    print(result)`;
+                case 'cpp':
+                    return `#include <iostream>\n#include <vector>\n#include <string>\nusing namespace std;\n\n// 在此输入您的C++代码\nclass Solution {\npublic:\n    // 在这里实现您的解决方案\n};\n\nint main() {\n    Solution solution;\n    // 在这里添加测试代码\n    return 0;\n}`;
+                case 'java':
+                    return `import java.util.*;\n\n// 在此输入您的Java代码\npublic class Solution {\n    // 在这里实现您的解决方案\n    \n    public static void main(String[] args) {\n        Solution solution = new Solution();\n        // 在这里添加测试代码\n    }\n}`;
+                default:
+                    return problem.initialCode || `# 在此输入您的代码`;
+            }
+        };
+        
+        setUserCode(getInitialCode(language));
     };
     
     // 执行代码（模拟编译和运行测试用例）
@@ -66,34 +84,70 @@ const CodingPractice = () => {
     // 提交代码以获取AI分析
     const handleSubmitCode = async () => {
         if (!selectedProblem) return;
-        console.log("DEBUG: '提交' button clicked.");
+        
+        console.log("=== SUBMISSION START ===");
+        console.log("Selected problem:", selectedProblem);
+        console.log("User code:", userCode);
+        console.log("Language:", language);
+        
         setIsLoading(prev => ({ ...prev, submission: true, execution: false }));
         setFeedback(null);
         try {
-            const result = await apiRequest('/code/submit', 'POST', {
+            const requestBody = {
                 question: selectedProblem,
                 userCode: userCode,
                 language: language,
-            });
-            console.log("DEBUG: Received submission analysis from backend:", result);
-            setFeedback({ type: 'submission', ...result });
+            };
+            
+            console.log("Sending request to backend...");
+            const result = await apiRequest('/code/submit', 'POST', requestBody);
+            console.log("Backend response:", result);
+            
+            if (!result) {
+                throw new Error("Backend returned empty response");
+            }
+            
+            const feedbackData = { type: 'submission', ...result };
+            console.log("Setting feedback data:", feedbackData);
+            setFeedback(feedbackData);
+            console.log("Feedback state should now be updated");
+            
         } catch (error) {
-             console.error("DEBUG: Submission API call failed:", error);
+             console.error("Submission API call failed:", error);
              setFeedback({ type: 'submission', error: `AI分析失败: ${error.message}` });
         } finally {
             setIsLoading(prev => ({ ...prev, submission: false }));
+            console.log("=== SUBMISSION END ===");
         }
     };
-    // **新增** DEBUG: 监听 feedback 状态的变化
-    useEffect(() => {
-        console.log("DEBUG: Feedback state updated:", feedback);
-    }, [feedback]);
+
+    // Handle language change
+    const handleLanguageChange = (newLanguage) => {
+        setLanguage(newLanguage);
+        
+        // Update code template for the new language
+        if (selectedProblem) {
+            const getInitialCode = (lang) => {
+                switch (lang) {
+                    case 'python':
+                        return selectedProblem.initialCode || `# 在此输入您的Python代码\n\ndef solution():\n    pass\n\n# 测试代码\nif __name__ == "__main__":\n    result = solution()\n    print(result)`;
+                    case 'cpp':
+                        return `#include <iostream>\n#include <vector>\n#include <string>\nusing namespace std;\n\n// 在此输入您的C++代码\nclass Solution {\npublic:\n    // 在这里实现您的解决方案\n};\n\nint main() {\n    Solution solution;\n    // 在这里添加测试代码\n    return 0;\n}`;
+                    case 'java':
+                        return `import java.util.*;\n\n// 在此输入您的Java代码\npublic class Solution {\n    // 在这里实现您的解决方案\n    \n    public static void main(String[] args) {\n        Solution solution = new Solution();\n        // 在这里添加测试代码\n    }\n}`;
+                    default:
+                        return selectedProblem.initialCode || `# 在此输入您的代码`;
+                }
+            };
+            
+            setUserCode(getInitialCode(newLanguage));
+        }
+    };
 
     return (
         <div className="flex h-full gap-8">
             <LeftSidebar problems={problems} isLoading={isLoading.list} error={error} selectedProblem={selectedProblem} onSelectProblem={handleSelectProblem} />
             <MainContentPanel 
-                key={selectedProblem ? selectedProblem.id : 'empty'} 
                 problem={selectedProblem} 
                 userCode={userCode}
                 setUserCode={setUserCode}
@@ -102,7 +156,7 @@ const CodingPractice = () => {
                 onExecute={handleExecute}
                 onSubmit={handleSubmitCode}
                 language={language}
-                setLanguage={setLanguage}
+                setLanguage={handleLanguageChange}
             />
         </div>
     );
@@ -152,40 +206,50 @@ const MainContentPanel = ({ problem, userCode, setUserCode, feedback, isLoading,
     
     return (
         <main className="flex-1">
-            <ResizablePanelGroup direction="vertical" className="h-[85vh] border border-gray-700 rounded-lg">
-                <ResizablePanel defaultSize={45}>
-                    <div className="p-6 h-full overflow-y-auto">
-                        <h2 className="text-2xl font-bold mb-4">{problem.title}</h2>
-                        <div className="prose prose-invert max-w-none text-gray-300 whitespace-pre-wrap">
-                            <p>{problem.description}</p>
-                            <h3 className="font-semibold mt-4 mb-2">例子:</h3>
-                            <pre className="bg-gray-900 p-4 rounded-md mt-2">{problem.example?.replace(/\\n/g, '\n')}</pre>
+            <div className="h-full flex flex-col border border-gray-700 rounded-lg">
+                {/* Problem description */}
+                <div className="p-6 bg-gray-800 border-b border-gray-700">
+                    <h2 className="text-2xl font-bold mb-4">{problem.title}</h2>
+                    <div className="prose prose-invert max-w-none text-gray-300 whitespace-pre-wrap">
+                        <p>{problem.description}</p>
+                        <h3 className="font-semibold mt-4 mb-2">例子:</h3>
+                        <pre className="bg-gray-900 p-4 rounded-md mt-2">{problem.example?.replace(/\\n/g, '\n')}</pre>
+                    </div>
+                </div>
+                
+                {/* Code editor and feedback area */}
+                <div className="flex-1 flex flex-col">
+                    {/* Toolbar */}
+                    <div className="bg-gray-700 p-2 flex justify-between items-center flex-shrink-0">
+                        <Select value={language} onChange={(e) => setLanguage(e.target.value)} className="w-32">
+                            <option value="python">Python</option>
+                            <option value="cpp">C++</option>
+                            <option value="java">Java</option>
+                        </Select>
+                        <div>
+                            <Button onClick={onExecute} disabled={isLoading.execution || isLoading.submission} className="bg-gray-600 hover:bg-gray-500 mr-2">
+                               {isLoading.execution ? <i className="fas fa-spinner fa-spin"/> : <Play size={16} />}<span className="ml-2">执行</span>
+                            </Button>
+                            <Button onClick={onSubmit} disabled={isLoading.execution || isLoading.submission} className="bg-green-600 hover:bg-green-500">
+                                {isLoading.submission ? <i className="fas fa-spinner fa-spin"/> : <Send size={16} />}<span className="ml-2">提交</span>
+                            </Button>
                         </div>
                     </div>
-                </ResizablePanel>
-                <ResizableHandle />
-                <ResizablePanel defaultSize={55}>
-                    <div className="flex flex-col h-full">
-                       <div className="bg-gray-700 p-2 flex justify-between items-center flex-shrink-0">
-                            <Select value={language} onChange={(e) => setLanguage(e.target.value)} className="w-32">
-                                <option value="python">Python</option>
-                            </Select>
-                            <div>
-                                <Button onClick={onExecute} disabled={isLoading.execution || isLoading.submission} className="bg-gray-600 hover:bg-gray-500 mr-2">
-                                   {isLoading.execution ? <i className="fas fa-spinner fa-spin"/> : <Play size={16} />}<span className="ml-2">执行</span>
-                                </Button>
-                                <Button onClick={onSubmit} disabled={isLoading.execution || isLoading.submission} className="bg-green-600 hover:bg-green-500">
-                                    {isLoading.submission ? <i className="fas fa-spinner fa-spin"/> : <Send size={16} />}<span className="ml-2">提交</span>
-                                </Button>
-                            </div>
-                       </div>
-                       <div className="flex-grow bg-[#1e1e1e]">
-                           <MonacoEditor language={language} value={userCode} onChange={setUserCode} />
-                       </div>
-                       <FeedbackPanel feedback={feedback} isLoading={isLoading.submission || isLoading.execution} />
+                    
+                    {/* Code editor and feedback side by side */}
+                    <div className="flex-1 flex" style={{height: '600px'}}>
+                        {/* Code editor on the left */}
+                        <div className="flex-1 bg-[#1e1e1e]">
+                            <MonacoEditor language={language} value={userCode} onChange={setUserCode} />
+                        </div>
+                        
+                        {/* Feedback panel on the right */}
+                        <div className="w-1/3 min-w-[300px]">
+                            <FeedbackPanel feedback={feedback} isLoading={isLoading.submission || isLoading.execution} />
+                        </div>
                     </div>
-                </ResizablePanel>
-            </ResizablePanelGroup>
+                </div>
+            </div>
         </main>
     );
 };
@@ -194,51 +258,117 @@ const MainContentPanel = ({ problem, userCode, setUserCode, feedback, isLoading,
 const FeedbackPanel = ({ feedback, isLoading }) => {
     if (isLoading) {
         return (
-             <div className="bg-gray-900 border-t-2 border-indigo-500 p-4 h-56 overflow-y-auto flex items-center justify-center">
-                 <p className="text-gray-400"><i className="fas fa-spinner fa-spin mr-2"></i>正在处理，请稍候...</p>
+             <div className="bg-gray-900 border-t-2 border-indigo-500 p-6 h-full overflow-y-auto flex items-center justify-center">
+                 <div className="text-center">
+                     <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-400 mx-auto mb-3"></div>
+                     <p className="text-gray-400 text-sm">正在分析您的代码，请稍候...</p>
+                 </div>
              </div>
         );
     }
     
-    if (!feedback) return null;
-    
+    if (!feedback) {
+        return (
+            <div className="bg-gray-900 border-t-2 border-indigo-500 p-6 h-full overflow-y-auto flex items-center justify-center">
+                <div className="text-center text-gray-500">
+                    <div className="text-4xl mb-3">💡</div>
+                    <p className="text-sm">点击"提交"按钮获取AI代码分析</p>
+                </div>
+            </div>
+        );
+    }
     
     return (
-        <div className="bg-gray-900 border-t-2 border-indigo-500 p-4 h-56 overflow-y-auto">
-            <h3 className="font-bold text-lg mb-3">反馈面板</h3>
-            {feedback.type === 'execution' && (
-                <div className={`flex items-center ${feedback.success ? 'text-green-400' : 'text-red-400'}`}>
-                    {feedback.success ? <Check size={18} className="mr-2"/> : <AlertTriangle size={18} className="mr-2"/>}
-                    {feedback.message}
-                </div>
-            )}
-            {feedback.type === 'submission' && (
-                feedback.error ? (
-                     <p className="text-red-400">{feedback.error}</p>
-                ) : (
-                    <div className="space-y-4">
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
-                             <StatItem label="正确率" value={feedback.testResults?.summary} isSuccess={feedback.testResults?.passed} />
-                             <StatItem label="时间复杂度" value={feedback.complexity?.time} />
-                             <StatItem label="空间复杂度" value={feedback.complexity?.space} />
-                        </div>
-                        <div>
-                             <h4 className="font-semibold text-gray-300">AI 代码评审</h4>
-                             <pre className="text-sm text-gray-400 mt-1 whitespace-pre-wrap font-sans bg-gray-800 p-3 rounded-md">{feedback.aiAnalysis}</pre>
-                        </div>
+        <div className="bg-gray-900 border-t-2 border-indigo-500 h-full overflow-y-auto">
+            {/* Header */}
+            <div className="bg-gray-800 px-6 py-4 border-b border-gray-700">
+                <h3 className="font-bold text-lg text-white flex items-center">
+                    <span className="mr-2">📊</span>
+                    代码分析结果
+                </h3>
+            </div>
+            
+            {/* Content */}
+            <div className="p-6 space-y-6">
+                {feedback.type === 'execution' && (
+                    <div className={`flex items-center p-4 rounded-lg ${feedback.success ? 'bg-green-900/20 border border-green-500/30' : 'bg-red-900/20 border border-red-500/30'}`}>
+                        {feedback.success ? 
+                            <Check size={20} className="mr-3 text-green-400"/> : 
+                            <AlertTriangle size={20} className="mr-3 text-red-400"/>
+                        }
+                        <span className={`font-medium ${feedback.success ? 'text-green-400' : 'text-red-400'}`}>
+                            {feedback.message}
+                        </span>
                     </div>
-                )
-            )}
+                )}
+                
+                {feedback.type === 'submission' && (
+                    feedback.error ? (
+                        <div className="bg-red-900/20 border border-red-500/30 p-4 rounded-lg">
+                            <div className="flex items-center mb-2">
+                                <AlertTriangle size={18} className="mr-2 text-red-400"/>
+                                <span className="font-semibold text-red-400">分析失败</span>
+                            </div>
+                            <p className="text-red-300 text-sm">{feedback.error}</p>
+                        </div>
+                    ) : (
+                        <div className="space-y-6">
+                            {/* Test Results */}
+                            <div className="bg-gray-800 rounded-lg p-4">
+                                <h4 className="font-semibold text-gray-200 mb-3 flex items-center">
+                                    <span className="mr-2">✅</span>
+                                    测试结果
+                                </h4>
+                                <div className="grid grid-cols-1 gap-3">
+                                    <div className="flex justify-between items-center p-3 bg-gray-700 rounded-md">
+                                        <span className="text-gray-300 text-sm">通过率</span>
+                                        <span className={`font-bold ${feedback.testResults?.passed ? 'text-green-400' : 'text-yellow-400'}`}>
+                                            {feedback.testResults?.summary || 'N/A'}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            {/* Complexity Analysis */}
+                            <div className="bg-gray-800 rounded-lg p-4">
+                                <h4 className="font-semibold text-gray-200 mb-3 flex items-center">
+                                    <span className="mr-2">⚡</span>
+                                    复杂度分析
+                                </h4>
+                                <div className="grid grid-cols-2 gap-3">
+                                    <div className="p-3 bg-gray-700 rounded-md">
+                                        <div className="text-gray-400 text-xs mb-1">时间复杂度</div>
+                                        <div className="font-mono text-sm text-blue-400">
+                                            {feedback.complexity?.time || 'N/A'}
+                                        </div>
+                                    </div>
+                                    <div className="p-3 bg-gray-700 rounded-md">
+                                        <div className="text-gray-400 text-xs mb-1">空间复杂度</div>
+                                        <div className="font-mono text-sm text-purple-400">
+                                            {feedback.complexity?.space || 'N/A'}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            {/* AI Code Review */}
+                            <div className="bg-gray-800 rounded-lg p-4">
+                                <h4 className="font-semibold text-gray-200 mb-3 flex items-center">
+                                    <span className="mr-2">🤖</span>
+                                    AI 代码评审
+                                </h4>
+                                <div className="bg-gray-700 rounded-md p-4">
+                                    <div className="text-gray-300 text-sm leading-relaxed whitespace-pre-wrap">
+                                        {feedback.aiAnalysis}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    )
+                )}
+            </div>
         </div>
     );
 };
-
-const StatItem = ({ label, value = 'N/A', isSuccess }) => (
-    <div className="bg-gray-800 p-3 rounded-lg">
-        <p className="text-sm text-gray-400">{label}</p>
-        <p className={`font-bold text-lg ${isSuccess === true ? 'text-green-400' : isSuccess === false ? 'text-yellow-400' : ''}`}>{value}</p>
-    </div>
-);
-
 
 export default CodingPractice;
