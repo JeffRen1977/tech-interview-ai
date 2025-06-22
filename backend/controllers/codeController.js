@@ -1,7 +1,5 @@
 const fetch = require('node-fetch');
-const admin = require('firebase-admin');
-
-const db = admin.firestore();
+const { db } = require('../config/firebase');
 
 // 帮助函数: 从可能包含Markdown的文本中稳健地提取JSON对象
 function extractJson(text) {

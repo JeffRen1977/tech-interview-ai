@@ -1,17 +1,4 @@
-const admin = require('firebase-admin');
-
-// 初始化Firebase Admin SDK
-try {
-    const serviceAccount = require('../serviceAccountKey.json');
-    admin.initializeApp({
-      credential: admin.credential.cert(serviceAccount)
-    });
-} catch (error) {
-    console.error("Firebase Admin SDK 初始化失败。", error);
-}
-
-const auth = admin.auth();
-const db = admin.firestore();
+const { auth, db } = require('../config/firebase');
 
 exports.registerUser = async (req, res) => {
     const { email, password } = req.body;

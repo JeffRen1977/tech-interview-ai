@@ -1,43 +1,72 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Mic } from 'lucide-react';
 import { Card } from '../components/ui/card';
 import { Button } from '../components/ui/button';
 import { Select } from '../components/ui/select';
+import CodingInterview from '../components/CodingInterview';
 
 const MockInterview = () => {
+    const [interviewType, setInterviewType] = useState('coding');
+    const [language, setLanguage] = useState('chinese');
+
+    const renderInterviewContent = () => {
+        switch (interviewType) {
+            case 'coding':
+                return <CodingInterview />;
+            case 'system-design':
+                return (
+                    <Card className="bg-gray-800 p-6">
+                        <h2 className="text-xl font-bold mb-4">系统设计面试</h2>
+                        <p className="text-gray-300">系统设计面试功能正在开发中...</p>
+                    </Card>
+                );
+            case 'behavioral':
+                return (
+                    <Card className="bg-gray-800 p-6">
+                        <h2 className="text-xl font-bold mb-4">行为面试</h2>
+                        <p className="text-gray-300">行为面试功能正在开发中...</p>
+                    </Card>
+                );
+            default:
+                return <CodingInterview />;
+        }
+    };
+
     return (
-      <div>
-        <h1 className="text-4xl font-bold mb-8">AI 模拟面试</h1>
-        <Card className="bg-gray-800 p-6">
-          <div className="flex justify-between items-start mb-6">
-            <div>
-              <h2 className="text-xl font-bold mb-2">面试设置</h2>
-              <div className="flex space-x-4">
-                <Select><option>面试类型: 算法</option><option>系统设计</option><option>行为题</option></Select>
-                <Select><option>语言: 中文</option><option>English</option></Select>
-              </div>
-            </div>
-            <div className="text-right">
-               <div className="text-lg font-mono bg-gray-700 px-4 py-2 rounded-lg">44:15</div>
-               <div className="space-x-2">
-                    <Button className="bg-gray-600 mt-2 text-xs">暂停</Button>
-                    <Button className="bg-red-600 mt-2 text-xs">结束</Button>
-               </div>
-            </div>
-          </div>
-          {/* 对话交互区 */}
-          <div className="h-[50vh] bg-black/30 rounded-lg p-4 space-y-4 overflow-y-auto">
-            <div className="flex items-start gap-3">
-                <div className="w-8 h-8 rounded-full bg-indigo-500 flex-shrink-0 flex items-center justify-center"><Mic size={16}/></div>
-                <div className="bg-gray-700 p-3 rounded-lg text-sm"><p>好的，我们开始吧。请看这道题：给定一个整数数组，找到两个数的和等于目标值的索引。</p></div>
-            </div>
-             <div className="flex items-start gap-3 justify-end">
-                <div className="bg-blue-600 p-3 rounded-lg text-sm"><p>我可以使用哈希表来解决这个问题，时间复杂度是O(n)。</p></div>
-                <div className="w-8 h-8 rounded-full bg-blue-500 flex-shrink-0 flex items-center justify-center">You</div>
-            </div>
-          </div>
-        </Card>
-      </div>
+        <div>
+            <h1 className="text-4xl font-bold mb-8">AI 模拟面试</h1>
+            
+            {/* 面试类型选择 */}
+            <Card className="bg-gray-800 p-6 mb-6">
+                <h2 className="text-xl font-bold mb-4">面试设置</h2>
+                <div className="flex space-x-4">
+                    <div>
+                        <label className="block text-sm font-medium mb-2">面试类型</label>
+                        <Select 
+                            value={interviewType} 
+                            onChange={(e) => setInterviewType(e.target.value)}
+                        >
+                            <option value="coding">编程面试</option>
+                            <option value="system-design">系统设计面试</option>
+                            <option value="behavioral">行为面试</option>
+                        </Select>
+                    </div>
+                    <div>
+                        <label className="block text-sm font-medium mb-2">语言</label>
+                        <Select 
+                            value={language} 
+                            onChange={(e) => setLanguage(e.target.value)}
+                        >
+                            <option value="chinese">中文</option>
+                            <option value="english">English</option>
+                        </Select>
+                    </div>
+                </div>
+            </Card>
+
+            {/* 面试内容 */}
+            {renderInterviewContent()}
+        </div>
     );
 };
 

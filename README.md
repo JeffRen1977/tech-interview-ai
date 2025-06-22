@@ -1,105 +1,163 @@
-AI 面试教练 (React + Vite + TailwindCSS)
-本项目是一个功能丰富的前端应用，旨在为准备技术面试的用户提供一个全面的、由AI驱动的练习平台。它采用了现代化的前端技术栈，包括React、Vite和TailwindCSS，以确保高效的开发体验和卓越的用户界面。
+# AI Interview Agent
 
-核心功能
-首页: 介绍平台功能并引导用户登录或开始练习。
+An intelligent interview preparation platform that provides AI-powered mock interviews for coding, system design, and behavioral questions.
 
-仪表盘: 展示用户的学习进度、练习统计和AI推荐的下一步学习重点。
+## Features
 
-智能题库: 提供包括算法、系统设计、SQL在内的多种题型，支持按难度、公司等维度筛选。
+### 🎯 Mock Interview Module
+- **Coding Interview**: Simulate whiteboard coding questions with AI feedback
+- **System Design Interview**: Practice system architecture questions (coming soon)
+- **Behavioral Interview**: Practice behavioral questions (coming soon)
 
-AI模拟面试: 与AI进行算法、系统设计或行为面试，并获得专业的评分和反馈。
+### 💻 Coding Interview Features
+- **Dynamic Question Generation**: AI generates coding questions based on difficulty, language, and topic preferences
+- **Whiteboard Interface**: Clean, distraction-free coding environment
+- **Real-time Timer**: Track your interview time with pause/resume functionality
+- **AI Feedback System**: Comprehensive evaluation including:
+  - **Correctness**: Solution accuracy assessment
+  - **Efficiency**: Time and space complexity analysis
+  - **Code Quality**: Code style and best practices
+  - **Problem Solving**: Approach and methodology evaluation
+  - **Communication**: Clarity of explanation
+- **Progressive Hints**: Get helpful hints when stuck
+- **Session Management**: Save and review interview sessions
+- **Final Assessment**: Comprehensive end-of-interview report
 
-简历优化: 分析用户简历与目标职位描述（JD）的匹配度，并提供优化建议。
+### 🎨 User Interface
+- Modern, responsive design with dark theme
+- Intuitive navigation and user experience
+- Real-time feedback and scoring
+- Progress tracking and performance analytics
 
-个性化教练: AI Agent根据用户的目标和进度，为其量身定制每日学习计划。
+## Technology Stack
 
-项目文件结构
-/ai-coach-frontend/
-│
-├── public/
-│   └── vite.svg
-│
-├── src/
-│   ├── components/
-│   │   └── ... (可复用UI组件)
-│   ├── pages/
-│   │   └── ... (主要页面组件)
-│   ├── App.jsx
-│   ├── index.css
-│   └── main.jsx
-│
-├── .gitignore
-├── index.html
-├── package.json
-├── postcss.config.js
-└── tailwind.config.js
+### Backend
+- **Node.js** with Express.js
+- **Firebase Firestore** for data persistence
+- **Google Gemini AI** for question generation and feedback
+- **CORS** enabled for frontend communication
 
-安装与运行指南
-第一步：准备环境
-确保您的电脑上已经安装了 Node.js (推荐版本 16 或更高)。
+### Frontend
+- **React 18** with Vite
+- **Tailwind CSS** for styling
+- **Lucide React** for icons
+- **Custom UI Components** for consistent design
 
-打开您的终端（命令行工具）。
+## Getting Started
 
-第二步：创建项目
-在您选择的位置创建一个新的项目文件夹并进入。
+### Prerequisites
+- Node.js (v16 or higher)
+- npm or yarn
+- Google Gemini API key
+- Firebase project setup
 
-mkdir ai-coach-frontend
-cd ai-coach-frontend
+### Installation
 
-使用 Vite 初始化一个新的React项目。
+1. **Clone the repository**
+   ```bash
+   git clone <repository-url>
+   cd ai-interview-agent
+   ```
 
-npm create vite@latest . -- --template react
+2. **Backend Setup**
+   ```bash
+   cd backend
+   npm install
+   ```
 
-注意：命令末尾的 . 表示在当前文件夹中创建项目。
+3. **Frontend Setup**
+   ```bash
+   cd frontend
+   npm install
+   ```
 
-第三步：安装依赖
-安装项目的主要依赖包。
+4. **Environment Configuration**
+   Create a `.env` file in the backend directory:
+   ```env
+   GEMINI_API_KEY=your_gemini_api_key_here
+   PORT=3000
+   ```
 
-npm install
+5. **Firebase Setup**
+   - Create a Firebase project
+   - Download your service account key
+   - Configure Firebase Admin SDK in the backend
 
-安装 TailwindCSS 及其相关依赖。
+### Running the Application
 
-npm install -D tailwindcss postcss autoprefixer
+1. **Start the Backend Server**
+   ```bash
+   cd backend
+   npm start
+   ```
 
-运行以下命令来创建TailwindCSS和PostCSS的配置文件 (tailwind.config.js 和 postcss.config.js)。
+2. **Start the Frontend Development Server**
+   ```bash
+   cd frontend
+   npm run dev
+   ```
 
-npx tailwindcss init -p
+3. **Access the Application**
+   - Frontend: http://localhost:5173
+   - Backend API: http://localhost:3000
 
-这个命令会替代之前package.json中的自定义脚本，是更标准的做法。
+## API Endpoints
 
-安装图标库 Lucide React。
+### Coding Interview
+- `POST /api/questions/coding-interview/start` - Start a new coding interview
+- `POST /api/questions/coding-interview/submit` - Submit a coding solution
+- `POST /api/questions/coding-interview/feedback` - Get feedback for a solution
+- `POST /api/questions/coding-interview/end` - End the interview session
 
-npm install lucide-react
+### Question Management
+- `POST /api/questions/generate-coding` - Generate coding questions
+- `POST /api/questions/save-coding` - Save coding questions
+- `POST /api/questions/generate-system` - Generate system design questions
+- `POST /api/questions/save-system-design` - Save system design questions
 
-第四步：配置TailwindCSS
-打开 tailwind.config.js 文件。
+## Usage
 
-用以下内容替换该文件的全部内容，以告知Tailwind要扫描哪些文件来生成CSS。
+### Starting a Coding Interview
+1. Navigate to the Mock Interview page
+2. Select "编程面试" (Coding Interview)
+3. Choose difficulty, programming language, and topic
+4. Click "开始面试" (Start Interview)
 
-/** @type {import('tailwindcss').Config} */
-export default {
-  content: [
-    "./index.html",
-    "./src/**/*.{js,ts,jsx,tsx}",
-  ],
-  theme: {
-    extend: {},
-  },
-  plugins: [],
-}
+### During the Interview
+1. Read the problem description carefully
+2. Use the hints if needed
+3. Write your solution in the code editor
+4. Explain your approach in the text area
+5. Submit your solution for AI feedback
+6. Review feedback and improve your solution
 
-打开 src/index.css 文件。
+### Interview Completion
+- The AI provides a comprehensive final assessment
+- Review your strengths and areas for improvement
+- Get personalized recommendations for next steps
 
-用以下内容替换该文件的全部内容，以引入Tailwind的基础样式。
+## AI Feedback Criteria
 
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+The AI evaluates your performance across multiple dimensions:
 
-第五步：启动开发服务器
-完成所有配置和安装后，在终端中运行以下命令：
+- **Correctness (25%)**: Solution accuracy and edge case handling
+- **Efficiency (25%)**: Time and space complexity optimization
+- **Code Quality (20%)**: Readability, maintainability, and best practices
+- **Problem Solving (20%)**: Approach methodology and logical thinking
+- **Communication (10%)**: Clarity of explanation and documentation
 
-npm run dev
+## Contributing
 
-您的浏览器将自动打开 http://localhost:5173，您就可以看到并开始使用这个应用了。
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Add tests if applicable
+5. Submit a pull request
+
+## License
+
+This project is licensed under the MIT License.
+
+## Support
+
+For support and questions, please open an issue in the repository.
