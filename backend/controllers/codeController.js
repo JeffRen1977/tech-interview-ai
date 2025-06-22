@@ -18,7 +18,6 @@ function extractJson(text) {
     return text.substring(firstBrace, lastBrace + 1);
 }
 
-
 // 获取所有编程题
 exports.getCodingQuestions = async (req, res) => {
     try {
@@ -117,5 +116,161 @@ exports.submitCodeForAnalysis = async (req, res) => {
     } catch (error) {
         console.error("Error calling AI or parsing response:", error);
         res.status(500).json({ message: `Failed to analyze code: ${error.message}` });
+    }
+};
+
+// 获取用户学习历史
+exports.getUserLearningHistory = async (req, res) => {
+    const { userId } = req.params;
+    if (!userId) {
+        return res.status(400).json({ message: "User ID is required." });
+    }
+
+    try {
+        const snapshot = await db.collection('user-learning-history')
+            .where('userId', '==', userId)
+            .get();
+        
+        const history = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        res.status(200).json({ history });
+    } catch (error) {
+        console.error("Error fetching user learning history:", error);
+        res.status(500).json({ message: "Failed to fetch learning history." });
+    }
+};
+
+// 保存问题到用户学习历史
+exports.saveToLearningHistory = async (req, res) => {
+    const { userId, questionId, feedback, userCode, language, completedAt } = req.body;
+    
+    if (!userId || !questionId) {
+        return res.status(400).json({ message: "User ID and Question ID are required." });
+    }
+
+    try {
+        const historyData = {
+            userId,
+            questionId,
+            feedback,
+            userCode,
+            language,
+            completedAt: completedAt || new Date(),
+            savedAt: new Date()
+        };
+
+        const docRef = await db.collection('user-learning-history').add(historyData);
+        res.status(200).json({ 
+            message: "Problem saved to learning history successfully.",
+            historyId: docRef.id 
+        });
+    } catch (error) {
+        console.error("Error saving to learning history:", error);
+        res.status(500).json({ message: "Failed to save to learning history." });
+    }
+};
+
+// 从用户学习历史中移除问题
+exports.removeFromLearningHistory = async (req, res) => {
+    const { historyId } = req.params;
+    
+    if (!historyId) {
+        return res.status(400).json({ message: "History ID is required." });
+    }
+
+    try {
+        await db.collection('user-learning-history').doc(historyId).delete();
+        res.status(200).json({ message: "Problem removed from learning history successfully." });
+    } catch (error) {
+        console.error("Error removing from learning history:", error);
+        res.status(500).json({ message: "Failed to remove from learning history." });
+    }
+};
+
+// 获取过滤后的编程题（排除已完成的）
+exports.getFilteredCodingQuestions = async (req, res) => {
+    const { userId, difficulty, algorithms, dataStructures, companies } = req.query;
+    
+    try {
+        let query = db.collection('coding-questions');
+        
+        // Apply filters
+        if (difficulty) {
+            query = query.where('difficulty', '==', difficulty);
+        }
+        
+        // Get all questions first (Firestore doesn't support array-contains-any with multiple fields)
+        const snapshot = await query.get();
+        let questions = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        
+        // Apply additional filters in memory
+        if (algorithms) {
+            const algorithmList = algorithms.split(',');
+            questions = questions.filter(q => 
+                q.algorithms && algorithmList.some(alg => 
+                    q.algorithms.some(qAlg => qAlg.toLowerCase().includes(alg.toLowerCase()))
+                )
+            );
+        }
+        
+        if (dataStructures) {
+            const dsList = dataStructures.split(',');
+            questions = questions.filter(q => 
+                q.dataStructures && dsList.some(ds => 
+                    q.dataStructures.some(qDs => qDs.toLowerCase().includes(ds.toLowerCase()))
+                )
+            );
+        }
+        
+        if (companies) {
+            const companyList = companies.split(',');
+            questions = questions.filter(q => 
+                q.companies && companyList.some(company => 
+                    q.companies.some(qCompany => qCompany.toLowerCase().includes(company.toLowerCase()))
+                )
+            );
+        }
+        
+        // Filter out completed questions if userId is provided
+        if (userId) {
+            const historySnapshot = await db.collection('user-learning-history')
+                .where('userId', '==', userId)
+                .get();
+            
+            const completedQuestionIds = historySnapshot.docs.map(doc => doc.data().questionId);
+            questions = questions.filter(q => !completedQuestionIds.includes(q.id));
+        }
+        
+        res.status(200).json({ 
+            questions,
+            total: questions.length,
+            filters: { difficulty, algorithms, dataStructures, companies }
+        });
+    } catch (error) {
+        console.error("Error fetching filtered coding questions:", error);
+        res.status(500).json({ message: "Failed to fetch filtered questions." });
+    }
+};
+
+// 获取可用的过滤选项
+exports.getFilterOptions = async (req, res) => {
+    try {
+        const snapshot = await db.collection('coding-questions').get();
+        const questions = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        
+        // Extract unique values
+        const difficulties = [...new Set(questions.map(q => q.difficulty).filter(Boolean))];
+        const algorithms = [...new Set(questions.flatMap(q => q.algorithms || []))];
+        const dataStructures = [...new Set(questions.flatMap(q => q.dataStructures || []))];
+        const companies = [...new Set(questions.flatMap(q => q.companies || []))];
+        
+        res.status(200).json({
+            difficulties,
+            algorithms,
+            dataStructures,
+            companies
+        });
+    } catch (error) {
+        console.error("Error fetching filter options:", error);
+        res.status(500).json({ message: "Failed to fetch filter options." });
     }
 };

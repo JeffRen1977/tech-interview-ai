@@ -4,11 +4,32 @@ import { Button } from '../components/ui/button';
 import { Select } from '../components/ui/select';
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from '../components/ui/resizable';
 import MonacoEditor from '../components/ui/MonacoEditor';
-import { BookCopy, Flame, HelpCircle, Play, Send, Check, X, AlertTriangle } from 'lucide-react';
+import QuestionFilterPanel from '../components/QuestionFilterPanel';
+import { BookCopy, Flame, HelpCircle, Play, Send, Check, X, AlertTriangle, Save, BookOpen, Filter } from 'lucide-react';
 import { apiRequest } from '../api.js';
 
 // --- 主组件：算法练习页面 ---
 const CodingPractice = () => {
+    console.log("CodingPractice component rendering...");
+    
+    // Simple error boundary
+    const [hasError, setHasError] = useState(false);
+    const [errorMessage, setErrorMessage] = useState('');
+    
+    if (hasError) {
+        return (
+            <div className="flex h-full items-center justify-center bg-gray-900">
+                <div className="text-center">
+                    <h2 className="text-xl font-bold text-red-400 mb-4">组件加载失败</h2>
+                    <p className="text-gray-400 mb-4">{errorMessage}</p>
+                    <Button onClick={() => window.location.reload()}>
+                        重新加载页面
+                    </Button>
+                </div>
+            </div>
+        );
+    }
+    
     const [problems, setProblems] = useState([]);
     const [selectedProblem, setSelectedProblem] = useState(null);
     const [userCode, setUserCode] = useState('');
@@ -16,27 +37,116 @@ const CodingPractice = () => {
     const [isLoading, setIsLoading] = useState({ list: true, execution: false, submission: false });
     const [error, setError] = useState(null);
     const [language, setLanguage] = useState('python');
+    
+    // New state for filtering and learning history
+    const [filters, setFilters] = useState({
+        difficulty: '',
+        algorithms: [],
+        dataStructures: [],
+        companies: []
+    });
+    const [showFilters, setShowFilters] = useState(false);
+    const [learningHistory, setLearningHistory] = useState([]);
+    const [isSaved, setIsSaved] = useState(false);
+    const [currentHistoryId, setCurrentHistoryId] = useState(null);
+    
+    // Mock user ID - in a real app, this would come from authentication
+    const userId = 'user123';
 
     // 组件加载时从数据库获取题目
     useEffect(() => {
-        const fetchQuestions = async () => {
-            setIsLoading(prev => ({ ...prev, list: true }));
-            try {
-                const data = await apiRequest('/code/questions', 'GET');
-                if (data.questions && data.questions.length > 0) {
-                    setProblems(data.questions);
+        console.log("CodingPractice useEffect triggered");
+        try {
+            loadFilteredQuestions();
+            loadLearningHistory();
+        } catch (error) {
+            console.error("Error in useEffect:", error);
+            setHasError(true);
+            setErrorMessage("组件加载失败: " + error.message);
+        }
+    }, [filters]);
+
+    const loadFilteredQuestions = async () => {
+        console.log("Loading filtered questions...");
+        setIsLoading(prev => ({ ...prev, list: true }));
+        try {
+            const queryParams = new URLSearchParams({
+                userId: userId,
+                ...(filters.difficulty && { difficulty: filters.difficulty }),
+                ...(filters.algorithms.length > 0 && { algorithms: filters.algorithms.join(',') }),
+                ...(filters.dataStructures.length > 0 && { dataStructures: filters.dataStructures.join(',') }),
+                ...(filters.companies.length > 0 && { companies: filters.companies.join(',') })
+            });
+            
+            console.log("Query params:", queryParams.toString());
+            const data = await apiRequest(`/code/questions/filtered?${queryParams}`, 'GET');
+            console.log("Received data:", data);
+            
+            if (data.questions && data.questions.length > 0) {
+                setProblems(data.questions);
+                if (!selectedProblem || !data.questions.find(p => p.id === selectedProblem.id)) {
                     handleSelectProblem(data.questions[0]);
-                } else {
-                    setError('题库中没有编程题。');
                 }
-            } catch (err) {
-                setError('无法加载题目列表，请稍后重试。');
-            } finally {
-                setIsLoading(prev => ({ ...prev, list: false }));
+            } else {
+                setProblems([]);
+                setSelectedProblem(null);
+                setError('没有找到符合条件的题目。');
             }
-        };
-        fetchQuestions();
-    }, []);
+        } catch (err) {
+            console.error("Error loading filtered questions:", err);
+            setError('无法加载题目列表，请稍后重试。');
+        } finally {
+            setIsLoading(prev => ({ ...prev, list: false }));
+        }
+    };
+
+    const loadLearningHistory = async () => {
+        try {
+            const data = await apiRequest(`/code/learning-history/${userId}`, 'GET');
+            setLearningHistory(data.history || []);
+        } catch (error) {
+            console.error('Failed to load learning history:', error);
+        }
+    };
+
+    const handleFiltersChange = (newFilters) => {
+        setFilters(newFilters);
+    };
+
+    const saveToLearningHistory = async () => {
+        if (!selectedProblem || !feedback) return;
+        
+        try {
+            const historyData = {
+                userId,
+                questionId: selectedProblem.id,
+                feedback,
+                userCode,
+                language,
+                completedAt: new Date().toISOString()
+            };
+            
+            const result = await apiRequest('/code/learning-history', 'POST', historyData);
+            setCurrentHistoryId(result.historyId);
+            setIsSaved(true);
+            await loadLearningHistory(); // Refresh learning history
+        } catch (error) {
+            console.error('Failed to save to learning history:', error);
+        }
+    };
+
+    const removeFromLearningHistory = async () => {
+        if (!currentHistoryId) return;
+        
+        try {
+            await apiRequest(`/code/learning-history/${currentHistoryId}`, 'DELETE');
+            setCurrentHistoryId(null);
+            setIsSaved(false);
+            await loadLearningHistory(); // Refresh learning history
+        } catch (error) {
+            console.error('Failed to remove from learning history:', error);
+        }
+    };
 
     const handleSelectProblem = (problem) => {
         // Only clear feedback if selecting a different problem
@@ -45,6 +155,11 @@ const CodingPractice = () => {
             setError(null);
         }
         setSelectedProblem(problem);
+        
+        // Check if this problem is already saved in learning history
+        const savedProblem = learningHistory.find(h => h.questionId === problem.id);
+        setIsSaved(!!savedProblem);
+        setCurrentHistoryId(savedProblem?.id || null);
         
         // Provide language-specific initial code
         const getInitialCode = (lang) => {
@@ -144,56 +259,139 @@ const CodingPractice = () => {
         }
     };
 
-    return (
-        <div className="flex h-full gap-8">
-            <LeftSidebar problems={problems} isLoading={isLoading.list} error={error} selectedProblem={selectedProblem} onSelectProblem={handleSelectProblem} />
-            <MainContentPanel 
-                problem={selectedProblem} 
-                userCode={userCode}
-                setUserCode={setUserCode}
-                feedback={feedback}
-                isLoading={isLoading}
-                onExecute={handleExecute}
-                onSubmit={handleSubmitCode}
-                language={language}
-                setLanguage={handleLanguageChange}
-            />
-        </div>
-    );
+    try {
+        return (
+            <div className="flex h-full gap-8">
+                {console.log("Rendering CodingPractice component")}
+                <LeftSidebar 
+                    problems={problems} 
+                    isLoading={isLoading.list} 
+                    error={error} 
+                    selectedProblem={selectedProblem} 
+                    onSelectProblem={handleSelectProblem} 
+                    showFilters={showFilters} 
+                    onToggleFilters={() => setShowFilters(!showFilters)} 
+                    filters={filters} 
+                    onFiltersChange={handleFiltersChange} 
+                    learningHistory={learningHistory} 
+                />
+                <MainContentPanel 
+                    problem={selectedProblem} 
+                    userCode={userCode}
+                    setUserCode={setUserCode}
+                    feedback={feedback}
+                    isLoading={isLoading}
+                    onExecute={handleExecute}
+                    onSubmit={handleSubmitCode}
+                    language={language}
+                    setLanguage={handleLanguageChange}
+                    isSaved={isSaved}
+                    onSave={saveToLearningHistory}
+                    onUnsave={removeFromLearningHistory}
+                />
+            </div>
+        );
+    } catch (error) {
+        console.error("Error rendering CodingPractice:", error);
+        setHasError(true);
+        setErrorMessage("渲染失败: " + error.message);
+        return null;
+    }
 };
 
 
 // --- 子组件：左侧导航与筛选 ---
-const LeftSidebar = ({ problems, isLoading, error, selectedProblem, onSelectProblem }) => (
+const LeftSidebar = ({ problems, isLoading, error, selectedProblem, onSelectProblem, showFilters, onToggleFilters, filters, onFiltersChange, learningHistory }) => (
     <nav className="w-1/3 max-w-sm flex-shrink-0 flex flex-col gap-6">
+        {/* Filter Panel */}
+        {showFilters && (
+            <QuestionFilterPanel 
+                onFiltersChange={onFiltersChange}
+                onReset={() => onFiltersChange({
+                    difficulty: '',
+                    algorithms: [],
+                    dataStructures: [],
+                    companies: []
+                })}
+            />
+        )}
+        
+        {/* Problems List */}
         <Card className="flex-1 bg-gray-800 border-gray-700 flex flex-col">
              <CardHeader>
-                <CardTitle className="text-lg">编程题库</CardTitle>
+                <CardTitle className="text-lg flex items-center justify-between">
+                    <span>编程题库</span>
+                    <Button
+                        onClick={onToggleFilters}
+                        variant="outline"
+                        size="sm"
+                        className="text-xs"
+                    >
+                        <Filter size={14} className="mr-1" />
+                        {showFilters ? '隐藏筛选' : '显示筛选'}
+                    </Button>
+                </CardTitle>
             </CardHeader>
             <CardContent className="flex-1 overflow-y-auto space-y-2">
                 {isLoading && <p className="text-gray-400 p-3">加载中...</p>}
                 {error && <p className="text-red-400 p-3">{error}</p>}
+                {!isLoading && !error && problems.length === 0 && (
+                    <p className="text-gray-400 p-3 text-center">没有找到符合条件的题目</p>
+                )}
                 {!isLoading && !error && problems.map(p => (
                     <div 
                         key={p.id} 
                         onClick={() => onSelectProblem(p)}
                         className={`p-3 rounded-md cursor-pointer text-sm transition-colors ${selectedProblem?.id === p.id ? 'bg-indigo-600 text-white font-semibold' : 'bg-gray-700 hover:bg-gray-600'}`}
                     >
-                        {p.title}
+                        <div className="flex justify-between items-start">
+                            <span className="flex-1">{p.title}</span>
+                            {learningHistory.find(h => h.questionId === p.id) && (
+                                <BookOpen size={14} className="text-green-400 ml-2 flex-shrink-0" />
+                            )}
+                        </div>
+                        <div className="text-xs text-gray-400 mt-1">
+                            {p.difficulty} • {p.algorithms?.slice(0, 2).join(', ')}
+                        </div>
                     </div>
                  ))}
             </CardContent>
         </Card>
-        <div className="space-y-2">
-            <Button variant="outline" className="w-full justify-start bg-gray-800 border-gray-700 hover:bg-gray-700"><BookCopy size={16} className="mr-2"/> 我的错题本</Button>
-            <Button variant="outline" className="w-full justify-start bg-gray-800 border-gray-700 hover:bg-gray-700"><Flame size={16} className="mr-2"/> 高频公司题</Button>
-        </div>
+        
+        {/* Learning History */}
+        <Card className="bg-gray-800 border-gray-700">
+            <CardHeader>
+                <CardTitle className="text-lg flex items-center">
+                    <BookOpen size={18} className="mr-2" />
+                    学习历史
+                </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-2">
+                {learningHistory.length === 0 ? (
+                    <p className="text-gray-400 text-sm text-center py-4">暂无学习记录</p>
+                ) : (
+                    learningHistory.slice(0, 5).map(history => (
+                        <div key={history.id} className="p-2 bg-gray-700 rounded text-xs">
+                            <div className="text-gray-300">{history.questionId}</div>
+                            <div className="text-gray-500">
+                                {new Date(history.completedAt).toLocaleDateString()}
+                            </div>
+                        </div>
+                    ))
+                )}
+                {learningHistory.length > 5 && (
+                    <p className="text-gray-400 text-xs text-center">
+                        还有 {learningHistory.length - 5} 条记录...
+                    </p>
+                )}
+            </CardContent>
+        </Card>
     </nav>
 );
 
 
 // --- 子组件：右侧主内容区 ---
-const MainContentPanel = ({ problem, userCode, setUserCode, feedback, isLoading, onExecute, onSubmit, language, setLanguage }) => {
+const MainContentPanel = ({ problem, userCode, setUserCode, feedback, isLoading, onExecute, onSubmit, language, setLanguage, isSaved, onSave, onUnsave }) => {
     if (!problem) {
         return (
             <main className="flex-1">
@@ -245,7 +443,13 @@ const MainContentPanel = ({ problem, userCode, setUserCode, feedback, isLoading,
                         
                         {/* Feedback panel on the right */}
                         <div className="w-1/3 min-w-[300px]">
-                            <FeedbackPanel feedback={feedback} isLoading={isLoading.submission || isLoading.execution} />
+                            <FeedbackPanel 
+                                feedback={feedback} 
+                                isLoading={isLoading.submission || isLoading.execution}
+                                isSaved={isSaved}
+                                onSave={onSave}
+                                onUnsave={onUnsave}
+                            />
                         </div>
                     </div>
                 </div>
@@ -255,7 +459,7 @@ const MainContentPanel = ({ problem, userCode, setUserCode, feedback, isLoading,
 };
 
 // --- 子组件：AI反馈面板 ---
-const FeedbackPanel = ({ feedback, isLoading }) => {
+const FeedbackPanel = ({ feedback, isLoading, isSaved, onSave, onUnsave }) => {
     if (isLoading) {
         return (
              <div className="bg-gray-900 border-t-2 border-indigo-500 p-6 h-full overflow-y-auto flex items-center justify-center">
@@ -282,10 +486,32 @@ const FeedbackPanel = ({ feedback, isLoading }) => {
         <div className="bg-gray-900 border-t-2 border-indigo-500 h-full overflow-y-auto">
             {/* Header */}
             <div className="bg-gray-800 px-6 py-4 border-b border-gray-700">
-                <h3 className="font-bold text-lg text-white flex items-center">
-                    <span className="mr-2">📊</span>
-                    代码分析结果
-                </h3>
+                <div className="flex items-center justify-between">
+                    <h3 className="font-bold text-lg text-white flex items-center">
+                        <span className="mr-2">📊</span>
+                        代码分析结果
+                    </h3>
+                    {feedback && feedback.type === 'submission' && !feedback.error && (
+                        <Button
+                            onClick={isSaved ? onUnsave : onSave}
+                            variant={isSaved ? "outline" : "default"}
+                            size="sm"
+                            className={`text-xs ${isSaved ? 'text-green-400 border-green-400 hover:bg-green-900/20' : 'bg-green-600 hover:bg-green-500'}`}
+                        >
+                            {isSaved ? (
+                                <>
+                                    <BookOpen size={14} className="mr-1" />
+                                    已保存
+                                </>
+                            ) : (
+                                <>
+                                    <Save size={14} className="mr-1" />
+                                    保存到学习历史
+                                </>
+                            )}
+                        </Button>
+                    )}
+                </div>
             </div>
             
             {/* Content */}

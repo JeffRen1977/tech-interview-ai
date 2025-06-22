@@ -12,37 +12,43 @@ const codingQuestions = [
         questionId: "max-consecutive-ones",
         title: "Maximum number of consecutive 1s",
         prompt: "Given a binary array, find the maximum number of consecutive 1s in this array.",
-        example: "Input: [1,1,0,1,1,1], Output: 3"
+        example: "Input: [1,1,0,1,1,1], Output: 3",
+        companies: ["Google", "Facebook", "Amazon", "Microsoft"]
     },
     {
         questionId: "binary-addition",
         title: "Binary addition",
         prompt: "Given two binary strings, return the sum of them (also a binary string).",
-        example: "Input: a = \"11\", b = \"1\", Output: \"100\""
+        example: "Input: a = \"11\", b = \"1\", Output: \"100\"",
+        companies: ["Apple", "Google", "Microsoft"]
     },
     {
         questionId: "valid-parentheses",
         title: "Minimal removal to get valid parentheses",
         prompt: "Given a string s of parenthesis'(' and ')' alongside lowercase English characters, your task is to remove the minimum number of parentheses so that the resulting parentheses string is valid.",
-        example: "Input: s = \"lee(t(c)o)de)\", Output: \"lee(t(c)o)de\""
+        example: "Input: s = \"lee(t(c)o)de)\", Output: \"lee(t(c)o)de\"",
+        companies: ["Facebook", "Amazon", "Google"]
     },
     {
         questionId: "lru-cache",
         title: "LRU Cache",
         prompt: "Design a Least Recently Used (LRU) Cache that supports get(key) and put(key, value) operations.",
-        example: "After a series of puts and gets, the cache should evict the least recently used item when at capacity."
+        example: "After a series of puts and gets, the cache should evict the least recently used item when at capacity.",
+        companies: ["Amazon", "Google", "Microsoft", "Facebook"]
     },
     {
         questionId: "coin-change",
         title: "Coin Change",
         prompt: "Given coins of different denominations and a total amount, write a function to calculate the minimum number of coins needed to compose that total amount.",
-        example: "Input: Coin = [1, 2, 5], Total Coin Value = 11, Output: 3"
+        example: "Input: Coin = [1, 2, 5], Total Coin Value = 11, Output: 3",
+        companies: ["Amazon", "Google", "Microsoft", "Apple"]
     },
     {
         questionId: "clone-graph",
         title: "Clone graph",
         prompt: "Given a reference to a node in a connected undirected graph, return a deep copy (clone) of the graph.",
-        example: "Each node in the graph contains a val (int) and a list (List[Node]) of its neighbors."
+        example: "Each node in the graph contains a val (int) and a list (List[Node]) of its neighbors.",
+        companies: ["Google", "Facebook", "Amazon"]
     }
 ];
 
