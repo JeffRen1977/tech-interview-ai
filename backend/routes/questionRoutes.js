@@ -8,7 +8,11 @@ const {
     startCodingInterview,
     submitCodingSolution,
     getCodingFeedback,
-    endCodingInterview
+    endCodingInterview,
+    startBehavioralInterview,
+    submitBehavioralResponse,
+    getBehavioralFeedback,
+    endBehavioralInterview
 } = require('../controllers/questionController');
 
 // 路由: /api/questions/generate-coding
@@ -35,5 +39,18 @@ router.post('/coding-interview/feedback', getCodingFeedback);
 
 // 结束编程面试
 router.post('/coding-interview/end', endCodingInterview);
+
+// 新增: 行为面试相关路由
+// 开始行为面试
+router.post('/behavioral-interview/start', startBehavioralInterview);
+
+// 提交行为回答
+router.post('/behavioral-interview/submit', submitBehavioralResponse);
+
+// 获取行为反馈
+router.post('/behavioral-interview/feedback', getBehavioralFeedback);
+
+// 结束行为面试
+router.post('/behavioral-interview/end', endBehavioralInterview);
 
 module.exports = router;

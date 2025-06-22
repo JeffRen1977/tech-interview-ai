@@ -340,3 +340,294 @@ exports.endCodingInterview = async (req, res) => {
         res.status(500).json({ message: `Failed to end interview: ${error.message}` });
     }
 };
+
+// --- 行为面试逻辑 ---
+exports.startBehavioralInterview = async (req, res) => {
+    const { role, level, company } = req.body;
+    
+    const prompt = `
+        Act as an expert behavioral interviewer. Generate a behavioral interview session with STAR framework questions.
+        
+        Role: ${role || 'Software Engineer'}
+        Level: ${level || 'Mid-level'}
+        Company: ${company || 'Tech Company'}
+        
+        Generate 5-7 behavioral questions covering key areas like leadership, conflict resolution, teamwork, problem-solving, and technical challenges.
+        
+        Provide the output in a single, clean JSON object format:
+        {
+          "sessionId": "unique-session-id",
+          "role": "${role || 'Software Engineer'}",
+          "level": "${level || 'Mid-level'}",
+          "company": "${company || 'Tech Company'}",
+          "duration": 45,
+          "questions": [
+            {
+              "id": "q1",
+              "category": "leadership",
+              "question": "Tell me about a time when you had to lead a team through a difficult project.",
+              "starFramework": {
+                "situation": "Describe the specific situation or context",
+                "task": "Explain your responsibility and what needed to be accomplished",
+                "action": "Detail the specific actions you took",
+                "result": "Share the outcomes and what you learned"
+              },
+              "expectedKeywords": ["leadership", "team", "project", "challenge"],
+              "scoringCriteria": {
+                "clarity": "How clearly the candidate explains the situation",
+                "specificity": "Use of specific examples and details",
+                "outcome": "Demonstration of positive results",
+                "learning": "Reflection and lessons learned"
+              }
+            }
+          ],
+          "evaluationCriteria": {
+            "communication": "Clarity and effectiveness of communication",
+            "specificity": "Use of specific examples and details",
+            "problemSolving": "Demonstration of problem-solving skills",
+            "leadership": "Leadership and teamwork abilities",
+            "selfAwareness": "Self-reflection and learning ability"
+          }
+        }
+    `;
+
+    try {
+        const geminiData = await callGeminiAPI(prompt);
+        const jsonText = extractJson(geminiData.candidates[0].content.parts[0].text);
+        const interviewData = JSON.parse(jsonText);
+        
+        // 创建面试会话
+        const sessionId = `behavioral_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+        const sessionData = {
+            sessionId,
+            interviewData,
+            startTime: new Date(),
+            status: 'active',
+            currentQuestionIndex: 0,
+            responses: [],
+            feedback: [],
+            timeRemaining: 45 * 60 // 45 minutes in seconds
+        };
+        
+        await db.collection('behavioral-interviews').doc(sessionId).set(sessionData);
+        
+        res.status(200).json({ 
+            sessionId,
+            interviewData,
+            message: 'Behavioral interview started successfully'
+        });
+    } catch (error) {
+        console.error("Error starting behavioral interview:", error);
+        res.status(500).json({ message: `Failed to start interview: ${error.message}` });
+    }
+};
+
+exports.submitBehavioralResponse = async (req, res) => {
+    const { sessionId, questionId, response, responseType } = req.body;
+    
+    if (!sessionId || !questionId || !response) {
+        return res.status(400).json({ message: 'Session ID, question ID, and response are required' });
+    }
+    
+    try {
+        const sessionRef = db.collection('behavioral-interviews').doc(sessionId);
+        const sessionDoc = await sessionRef.get();
+        
+        if (!sessionDoc.exists) {
+            return res.status(404).json({ message: 'Interview session not found' });
+        }
+        
+        const sessionData = sessionDoc.data();
+        const currentQuestion = sessionData.interviewData.questions.find(q => q.id === questionId);
+        
+        if (!currentQuestion) {
+            return res.status(404).json({ message: 'Question not found' });
+        }
+        
+        // 分析用户回答
+        const analysisPrompt = `
+            Act as an expert behavioral interviewer evaluating a candidate's response using the STAR framework.
+            
+            Question: ${currentQuestion.question}
+            Category: ${currentQuestion.category}
+            STAR Framework:
+            - Situation: ${currentQuestion.starFramework.situation}
+            - Task: ${currentQuestion.starFramework.task}
+            - Action: ${currentQuestion.starFramework.action}
+            - Result: ${currentQuestion.starFramework.result}
+            
+            Candidate's Response: ${response}
+            Response Type: ${responseType || 'text'}
+            
+            Evaluate the response based on the STAR framework and provide detailed feedback in JSON format:
+            {
+              "starAnalysis": {
+                "situation": {
+                  "score": 85,
+                  "feedback": "How well the situation was described",
+                  "strengths": ["Strength 1"],
+                  "improvements": ["Improvement 1"]
+                },
+                "task": {
+                  "score": 80,
+                  "feedback": "How clearly the task was explained",
+                  "strengths": ["Strength 1"],
+                  "improvements": ["Improvement 1"]
+                },
+                "action": {
+                  "score": 90,
+                  "feedback": "How specific and detailed the actions were",
+                  "strengths": ["Strength 1"],
+                  "improvements": ["Improvement 1"]
+                },
+                "result": {
+                  "score": 85,
+                  "feedback": "How well the results were quantified and explained",
+                  "strengths": ["Strength 1"],
+                  "improvements": ["Improvement 1"]
+                }
+              },
+              "overallScore": 85,
+              "communication": "excellent/good/fair/poor",
+              "specificity": "excellent/good/fair/poor",
+              "problemSolving": "excellent/good/fair/poor",
+              "leadership": "excellent/good/fair/poor",
+              "selfAwareness": "excellent/good/fair/poor",
+              "detailedFeedback": "Comprehensive feedback on the response",
+              "suggestions": ["Suggestion 1", "Suggestion 2"],
+              "nextQuestion": "Guidance for the next question"
+            }
+        `;
+        
+        const geminiData = await callGeminiAPI(analysisPrompt);
+        const jsonText = extractJson(geminiData.candidates[0].content.parts[0].text);
+        const feedback = JSON.parse(jsonText);
+        
+        // 保存回答和反馈
+        const responseData = {
+            questionId,
+            response,
+            responseType: responseType || 'text',
+            feedback,
+            timestamp: new Date()
+        };
+        
+        await sessionRef.update({
+            responses: admin.firestore.FieldValue.arrayUnion(responseData),
+            feedback: admin.firestore.FieldValue.arrayUnion(feedback),
+            currentQuestionIndex: admin.firestore.FieldValue.increment(1)
+        });
+        
+        res.status(200).json({ 
+            feedback,
+            nextQuestion: sessionData.interviewData.questions[sessionData.currentQuestionIndex + 1] || null,
+            message: 'Response submitted and evaluated successfully'
+        });
+    } catch (error) {
+        console.error("Error submitting behavioral response:", error);
+        res.status(500).json({ message: `Failed to submit response: ${error.message}` });
+    }
+};
+
+exports.getBehavioralFeedback = async (req, res) => {
+    const { sessionId } = req.body;
+    
+    if (!sessionId) {
+        return res.status(400).json({ message: 'Session ID is required' });
+    }
+    
+    try {
+        const sessionRef = db.collection('behavioral-interviews').doc(sessionId);
+        const sessionDoc = await sessionRef.get();
+        
+        if (!sessionDoc.exists) {
+            return res.status(404).json({ message: 'Interview session not found' });
+        }
+        
+        const sessionData = sessionDoc.data();
+        const latestFeedback = sessionData.feedback[sessionData.feedback.length - 1];
+        
+        if (!latestFeedback) {
+            return res.status(404).json({ message: 'No feedback available for this session' });
+        }
+        
+        res.status(200).json({ feedback: latestFeedback });
+    } catch (error) {
+        console.error("Error getting behavioral feedback:", error);
+        res.status(500).json({ message: `Failed to get feedback: ${error.message}` });
+    }
+};
+
+exports.endBehavioralInterview = async (req, res) => {
+    const { sessionId } = req.body;
+    
+    if (!sessionId) {
+        return res.status(400).json({ message: 'Session ID is required' });
+    }
+    
+    try {
+        const sessionRef = db.collection('behavioral-interviews').doc(sessionId);
+        const sessionDoc = await sessionRef.get();
+        
+        if (!sessionDoc.exists) {
+            return res.status(404).json({ message: 'Interview session not found' });
+        }
+        
+        const sessionData = sessionDoc.data();
+        
+        // 生成最终评估报告
+        const finalReportPrompt = `
+            Act as an expert behavioral interviewer providing a comprehensive final assessment.
+            
+            Interview Session Data:
+            - Role: ${sessionData.interviewData.role}
+            - Level: ${sessionData.interviewData.level}
+            - Company: ${sessionData.interviewData.company}
+            - Questions Answered: ${sessionData.responses.length}
+            - Total Feedback: ${sessionData.feedback.length}
+            
+            Provide a comprehensive final behavioral assessment in JSON format:
+            {
+              "overallScore": 85,
+              "categoryScores": {
+                "communication": 85,
+                "specificity": 80,
+                "problemSolving": 90,
+                "leadership": 85,
+                "selfAwareness": 80
+              },
+              "starFrameworkAnalysis": {
+                "situation": "Overall performance in describing situations",
+                "task": "Overall performance in explaining tasks",
+                "action": "Overall performance in detailing actions",
+                "result": "Overall performance in sharing results"
+              },
+              "strengths": ["Strength 1", "Strength 2", "Strength 3"],
+              "areasForImprovement": ["Area 1", "Area 2", "Area 3"],
+              "recommendations": ["Recommendation 1", "Recommendation 2"],
+              "finalAssessment": "Overall assessment of the candidate's behavioral interview performance",
+              "nextSteps": "Suggested next steps for improvement",
+              "hiringRecommendation": "strong_yes/yes/maybe/no"
+            }
+        `;
+        
+        const geminiData = await callGeminiAPI(finalReportPrompt);
+        const jsonText = extractJson(geminiData.candidates[0].content.parts[0].text);
+        const finalReport = JSON.parse(jsonText);
+        
+        // 更新会话状态
+        await sessionRef.update({
+            status: 'completed',
+            endTime: new Date(),
+            finalReport
+        });
+        
+        res.status(200).json({ 
+            finalReport,
+            message: 'Behavioral interview completed successfully'
+        });
+    } catch (error) {
+        console.error("Error ending behavioral interview:", error);
+        res.status(500).json({ message: `Failed to end interview: ${error.message}` });
+    }
+};

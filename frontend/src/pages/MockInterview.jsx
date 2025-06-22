@@ -4,6 +4,7 @@ import { Card } from '../components/ui/card';
 import { Button } from '../components/ui/button';
 import { Select } from '../components/ui/select';
 import CodingInterview from '../components/CodingInterview';
+import BehavioralInterview from '../components/BehavioralInterview';
 
 const MockInterview = () => {
     const [interviewType, setInterviewType] = useState('coding');
@@ -21,12 +22,7 @@ const MockInterview = () => {
                     </Card>
                 );
             case 'behavioral':
-                return (
-                    <Card className="bg-gray-800 p-6">
-                        <h2 className="text-xl font-bold mb-4">行为面试</h2>
-                        <p className="text-gray-300">行为面试功能正在开发中...</p>
-                    </Card>
-                );
+                return <BehavioralInterview />;
             default:
                 return <CodingInterview />;
         }
