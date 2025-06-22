@@ -9,7 +9,6 @@ lerna-debug.log*
 
 frontend/node_modules
 backend/node_modules
-backend/serviceAccountKey.json
 backend/.env
 dist
 dist-ssr
@@ -25,3 +24,4 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+backend/serviceAccountKey.json
