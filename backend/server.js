@@ -55,6 +55,15 @@ app.post('/api/auth/login', async (req, res) => {
 });
 
 
+function extractJson(text) {
+    const firstBrace = text.indexOf('{');
+    const lastBrace = text.lastIndexOf('}');
+    if (firstBrace === -1 || lastBrace === -1) {
+        throw new Error("Could not find a valid JSON object in the API response.");
+    }
+    return text.substring(firstBrace, lastBrace + 1);
+}
+
 // --- 问题生成与存储 API ---
 app.post('/api/questions/generate-coding', async (req, res) => {
     const { title, description } = req.body;
@@ -106,7 +115,6 @@ app.post('/api/questions/generate-coding', async (req, res) => {
 
         const geminiData = await geminiResponse.json();
 
-        // **FIX:** More robust JSON extraction to handle responses wrapped in markdown.
         const responseText = geminiData.candidates[0].content.parts[0].text;
         const firstBrace = responseText.indexOf('{');
         const lastBrace = responseText.lastIndexOf('}');
@@ -140,7 +148,6 @@ app.post('/api/questions/save-coding', async (req, res) => {
     }
 });
 
-// -- SYSTEM DESIGN QUESTIONS (NEW) --
 app.post('/api/questions/generate-system', async (req, res) => {
     const { title, description } = req.body;
     if (!title || !description) {
@@ -177,8 +184,9 @@ app.post('/api/questions/generate-system', async (req, res) => {
         if (!geminiResponse.ok) throw new Error(`Gemini API request failed: ${await geminiResponse.text()}`);
 
         const geminiData = await geminiResponse.json();
-        const jsonText = geminiData.candidates[0].content.parts[0].text.replace(/\\\`\\\`\\\`json/g, '').replace(/\\\`\\\`\\\`/g, '').trim();
-        const questionData = JSON.parse(jsonText);
+        // **FIX:** Using the robust JSON extraction helper function.
+        const jsonText = extractJson(geminiData.candidates[0].content.parts[0].text);
+        const questionData = JSON.parse(jsonText); 
         
         res.status(200).json({ questionData });
     } catch (error) {
@@ -193,15 +201,52 @@ app.post('/api/questions/save-system-design', async (req, res) => {
         return res.status(400).json({ message: 'Valid question data is required.' });
     }
     try {
-        // Add a new document with an auto-generated ID
-        const docRef = await db.collection('system-design-questions').add(questionData);
-        res.status(201).json({ message: `System design question "${questionData.title}" saved successfully with ID: ${docRef.id}!` });
+        const docId = questionData.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+        if (!docId) {
+            return res.status(400).json({ message: 'A valid ID could not be generated from the title.' });
+        }
+        await db.collection('system-design-questions').doc(docId).set(questionData);
+        res.status(201).json({ message: `System design question "${questionData.title}" saved successfully!` });
     } catch (error) {
         console.error("Error saving to Firestore:", error);
         res.status(500).json({ message: 'Failed to save question to database.' });
     }
 });
 
+// -- 行为面试题 (新增) --
+app.post('/api/questions/generate-behavioral', async (req, res) => {
+    const { skill } = req.body;
+    if (!skill) {
+        return res.status(400).json({ message: 'Skill is required' });
+    }
+    // TODO: (此处可以添加调用Gemini生成问题的逻辑)
+    // For now, we will just create a simple question structure
+    const questionData = {
+        title: `Tell me about a time you demonstrated ${skill}`,
+        prompt: `Describe a situation where you had to use your ${skill} skills. What was the context, what did you do, and what was the result?`,
+        category: 'Behavioral',
+        tags: [skill.toLowerCase()]
+    };
+    res.status(200).json({ questionData });
+});
+
+app.post('/api/questions/save-behavioral', async (req, res) => {
+    const { questionData } = req.body;
+    if (!questionData || !questionData.title) {
+        return res.status(400).json({ message: 'Valid question data is required.' });
+    }
+    try {
+        const docId = questionData.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+        if (!docId) {
+            return res.status(400).json({ message: 'A valid ID could not be generated from the title.' });
+        }
+        await db.collection('behavioral-questions').doc(docId).set(questionData);
+        res.status(201).json({ message: `Behavioral question "${questionData.title}" saved successfully!` });
+    } catch (error) {
+        console.error("Error saving to Firestore:", error);
+        res.status(500).json({ message: 'Failed to save question to database.' });
+    }
+});
 
 
 // --- 启动服务器 ---
