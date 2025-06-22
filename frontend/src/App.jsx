@@ -4,6 +4,7 @@ import Dashboard from './pages/Dashboard';
 import CodingPractice from './pages/CodingPractice';
 import MockInterview from './pages/MockInterview';
 import ResumeOptimizer from './pages/ResumeOptimizer';
+import Admin from './pages/Admin';
 import Placeholder from './components/Placeholder';
 import Sidebar from './components/Sidebar';
 import MainContent from './components/MainContent';
@@ -21,7 +22,7 @@ export default function App() {
     setIsLoggedIn(false);
     setActiveView('dashboard'); // Reset to default view on logout
   };
-  
+
   if (!isLoggedIn) {
     return <HomePage onLogin={handleLogin} />;
   }
@@ -34,6 +35,7 @@ export default function App() {
         {activeView === 'coding-practice' && <CodingPractice />}
         {activeView === 'mock-interview' && <MockInterview />}
         {activeView === 'resume-optimizer' && <ResumeOptimizer />}
+        {activeView === 'admin' && <Admin />}
         {activeView === 'company-prep' && <Placeholder title="公司面试定制化准备" />}
         {activeView === 'feedback-center' && <Placeholder title="学习与反馈闭环" />}
         {activeView === 'coach-agent' && <Placeholder title="AI 个性化教练 (Agent)" />}
@@ -42,3 +44,4 @@ export default function App() {
     </div>
   );
 }
+

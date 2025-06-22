@@ -1,5 +1,5 @@
 import React from 'react';
-import { LayoutDashboard, Code, Mic, FileText, Building, History, UserCog, BrainCircuit } from 'lucide-react';
+import { LayoutDashboard, Code, Mic, FileText, Building, History, UserCog, BrainCircuit, Shield } from 'lucide-react';
 
 const Sidebar = ({ activeView, setAppView, onLogout }) => {
   const navItems = [
@@ -10,6 +10,7 @@ const Sidebar = ({ activeView, setAppView, onLogout }) => {
     { id: 'company-prep', icon: <Building />, label: '公司面试准备' },
     { id: 'feedback-center', icon: <History />, label: '复盘与反馈' },
     { id: 'coach-agent', icon: <UserCog />, label: 'AI 个性化教练' },
+    { id: 'admin', icon: <Shield />, label: '管理工具' }, // 新增管理工具链接
   ];
 
   return (
