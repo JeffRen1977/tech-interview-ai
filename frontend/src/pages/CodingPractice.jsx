@@ -1,65 +1,244 @@
-import React, { useState } from 'react';
-import { ChevronDown, ChevronRight } from 'lucide-react';
-import { Card } from '../components/ui/card';
+import React, { useState, useEffect } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Button } from '../components/ui/button';
 import { Select } from '../components/ui/select';
+import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from '../components/ui/resizable';
+import MonacoEditor from '../components/ui/MonacoEditor';
+import { BookCopy, Flame, HelpCircle, Play, Send, Check, X, AlertTriangle } from 'lucide-react';
+import { apiRequest } from '../api.js';
 
+// --- 主组件：算法练习页面 ---
 const CodingPractice = () => {
-  const [isSubNavOpen, setIsSubNavOpen] = useState(true);
-  
-  return (
-    <div className="flex h-full gap-8">
-      {/* 左侧导航栏 */}
-      <nav className="w-56 pr-6 border-r border-gray-700">
-        <h2 className="text-xl font-bold mb-4">算法练习</h2>
-        <ul className="space-y-1">
-          <li><a href="#" className="block font-semibold p-2 rounded-md bg-indigo-600/30 text-white">题库总览</a></li>
-          <li><a href="#" className="block p-2 rounded-md hover:bg-gray-700 text-gray-300">我的错题本</a></li>
-          <li>
-            <a href="#" onClick={() => setIsSubNavOpen(!isSubNavOpen)} className="flex justify-between items-center p-2 rounded-md hover:bg-gray-700 text-gray-300">
-              <span>高频公司题</span> {isSubNavOpen ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
-            </a>
-            {isSubNavOpen && (
-              <ul className="pl-6 mt-1 text-sm text-gray-400 space-y-1">
-                <li><a href="#" className="block p-1 hover:text-white">Google</a></li>
-                <li><a href="#" className="block p-1 hover:text-white">Meta</a></li>
-              </ul>
-            )}
-          </li>
-          <li><a href="#" className="block p-2 rounded-md hover:bg-gray-700 text-gray-300">系统设计题</a></li>
-        </ul>
-      </nav>
+    const [problems, setProblems] = useState([]);
+    const [selectedProblem, setSelectedProblem] = useState(null);
+    const [userCode, setUserCode] = useState('');
+    const [feedback, setFeedback] = useState(null);
+    const [isLoading, setIsLoading] = useState({ list: true, execution: false, submission: false });
+    const [error, setError] = useState(null);
+    const [language, setLanguage] = useState('python');
 
-      {/* 主内容区域 */}
-      <main className="flex-1">
-        <h1 className="text-4xl font-bold mb-8">题库总览</h1>
-        <div className="flex flex-wrap gap-4 mb-6">
-            <Select><option>公司: Google</option></Select>
-            <Select><option>难度: Medium</option></Select>
-            <Select><option>类型: Array</option></Select>
+    // 组件加载时从数据库获取题目
+    useEffect(() => {
+        const fetchQuestions = async () => {
+            setIsLoading(prev => ({ ...prev, list: true }));
+            try {
+                const data = await apiRequest('/code/questions', 'GET');
+                if (data.questions && data.questions.length > 0) {
+                    setProblems(data.questions);
+                    handleSelectProblem(data.questions[0]);
+                } else {
+                    setError('题库中没有编程题。');
+                }
+            } catch (err) {
+                setError('无法加载题目列表，请稍后重试。');
+            } finally {
+                setIsLoading(prev => ({ ...prev, list: false }));
+            }
+        };
+        fetchQuestions();
+    }, []);
+
+    const handleSelectProblem = (problem) => {
+        setSelectedProblem(problem);
+        setUserCode(problem.initialCode || `# 在此输入您的代码`);
+        setFeedback(null);
+        setError(null);
+    };
+    
+    // 执行代码（模拟编译和运行测试用例）
+    const handleExecute = async () => {
+        if (!selectedProblem) return;
+        setIsLoading(prev => ({ ...prev, execution: true, submission: false }));
+        setFeedback(null);
+        try {
+            const result = await apiRequest('/code/execute', 'POST', { 
+                userCode: userCode,
+                testCases: selectedProblem.testCases
+            });
+            setFeedback({ type: 'execution', ...result });
+        } catch (error) {
+            setFeedback({ type: 'execution', success: false, message: `执行出错: ${error.message}` });
+        } finally {
+            setIsLoading(prev => ({ ...prev, execution: false }));
+        }
+    };
+
+    // 提交代码以获取AI分析
+    const handleSubmitCode = async () => {
+        if (!selectedProblem) return;
+        console.log("DEBUG: '提交' button clicked.");
+        setIsLoading(prev => ({ ...prev, submission: true, execution: false }));
+        setFeedback(null);
+        try {
+            const result = await apiRequest('/code/submit', 'POST', {
+                question: selectedProblem,
+                userCode: userCode,
+                language: language,
+            });
+            console.log("DEBUG: Received submission analysis from backend:", result);
+            setFeedback({ type: 'submission', ...result });
+        } catch (error) {
+             console.error("DEBUG: Submission API call failed:", error);
+             setFeedback({ type: 'submission', error: `AI分析失败: ${error.message}` });
+        } finally {
+            setIsLoading(prev => ({ ...prev, submission: false }));
+        }
+    };
+    // **新增** DEBUG: 监听 feedback 状态的变化
+    useEffect(() => {
+        console.log("DEBUG: Feedback state updated:", feedback);
+    }, [feedback]);
+
+    return (
+        <div className="flex h-full gap-8">
+            <LeftSidebar problems={problems} isLoading={isLoading.list} error={error} selectedProblem={selectedProblem} onSelectProblem={handleSelectProblem} />
+            <MainContentPanel 
+                key={selectedProblem ? selectedProblem.id : 'empty'} 
+                problem={selectedProblem} 
+                userCode={userCode}
+                setUserCode={setUserCode}
+                feedback={feedback}
+                isLoading={isLoading}
+                onExecute={handleExecute}
+                onSubmit={handleSubmitCode}
+                language={language}
+                setLanguage={setLanguage}
+            />
         </div>
-        {/* 做题区 (Split Pane) */}
-        <div className="flex flex-col h-[70vh] gap-4">
-          <Card className="flex-1 bg-gray-800 p-6 overflow-y-auto">
-            <h3 className="text-xl font-bold mb-2">题目: Two Sum</h3>
-            <p className="text-sm text-gray-300">给定一个整数数组 `nums` 和一个整数目标值 `target`，请你在该数组中找出 和为目标值 `target` 的那 两个 整数，并返回它们的数组下标。</p>
-            <p className="text-sm text-gray-300 mt-2">你可以假设每种输入只会对应一个答案。但是，数组中同一个元素在答案里不能重复出现。</p>
-          </Card>
-          <Card className="flex-1 bg-gray-800 flex flex-col">
-            <div className="p-2 border-b border-gray-700 flex justify-between items-center">
-                <span className="text-sm">代码编辑器</span>
-                <Select className="text-xs h-8"><option>Python</option><option>Java</option><option>C++</option></Select>
-            </div>
-            <div className="flex-grow bg-black/50 font-mono text-sm p-2"># 在这里编写你的代码</div>
-            <div className="p-2 border-t border-gray-700 flex justify-end items-center space-x-2">
-              <Button className="bg-gray-600 text-xs">AI解释</Button>
-              <Button className="bg-green-600 text-xs">提交</Button>
-            </div>
-          </Card>
-        </div>
-      </main>
-    </div>
-  );
+    );
 };
+
+
+// --- 子组件：左侧导航与筛选 ---
+const LeftSidebar = ({ problems, isLoading, error, selectedProblem, onSelectProblem }) => (
+    <nav className="w-1/3 max-w-sm flex-shrink-0 flex flex-col gap-6">
+        <Card className="flex-1 bg-gray-800 border-gray-700 flex flex-col">
+             <CardHeader>
+                <CardTitle className="text-lg">编程题库</CardTitle>
+            </CardHeader>
+            <CardContent className="flex-1 overflow-y-auto space-y-2">
+                {isLoading && <p className="text-gray-400 p-3">加载中...</p>}
+                {error && <p className="text-red-400 p-3">{error}</p>}
+                {!isLoading && !error && problems.map(p => (
+                    <div 
+                        key={p.id} 
+                        onClick={() => onSelectProblem(p)}
+                        className={`p-3 rounded-md cursor-pointer text-sm transition-colors ${selectedProblem?.id === p.id ? 'bg-indigo-600 text-white font-semibold' : 'bg-gray-700 hover:bg-gray-600'}`}
+                    >
+                        {p.title}
+                    </div>
+                 ))}
+            </CardContent>
+        </Card>
+        <div className="space-y-2">
+            <Button variant="outline" className="w-full justify-start bg-gray-800 border-gray-700 hover:bg-gray-700"><BookCopy size={16} className="mr-2"/> 我的错题本</Button>
+            <Button variant="outline" className="w-full justify-start bg-gray-800 border-gray-700 hover:bg-gray-700"><Flame size={16} className="mr-2"/> 高频公司题</Button>
+        </div>
+    </nav>
+);
+
+
+// --- 子组件：右侧主内容区 ---
+const MainContentPanel = ({ problem, userCode, setUserCode, feedback, isLoading, onExecute, onSubmit, language, setLanguage }) => {
+    if (!problem) {
+        return (
+            <main className="flex-1">
+                <div className="h-full flex items-center justify-center bg-gray-800 rounded-lg">
+                    <p className="text-gray-400">请从左侧选择一个问题开始练习。</p>
+                </div>
+            </main>
+        );
+    }
+    
+    return (
+        <main className="flex-1">
+            <ResizablePanelGroup direction="vertical" className="h-[85vh] border border-gray-700 rounded-lg">
+                <ResizablePanel defaultSize={45}>
+                    <div className="p-6 h-full overflow-y-auto">
+                        <h2 className="text-2xl font-bold mb-4">{problem.title}</h2>
+                        <div className="prose prose-invert max-w-none text-gray-300 whitespace-pre-wrap">
+                            <p>{problem.description}</p>
+                            <h3 className="font-semibold mt-4 mb-2">例子:</h3>
+                            <pre className="bg-gray-900 p-4 rounded-md mt-2">{problem.example?.replace(/\\n/g, '\n')}</pre>
+                        </div>
+                    </div>
+                </ResizablePanel>
+                <ResizableHandle />
+                <ResizablePanel defaultSize={55}>
+                    <div className="flex flex-col h-full">
+                       <div className="bg-gray-700 p-2 flex justify-between items-center flex-shrink-0">
+                            <Select value={language} onChange={(e) => setLanguage(e.target.value)} className="w-32">
+                                <option value="python">Python</option>
+                            </Select>
+                            <div>
+                                <Button onClick={onExecute} disabled={isLoading.execution || isLoading.submission} className="bg-gray-600 hover:bg-gray-500 mr-2">
+                                   {isLoading.execution ? <i className="fas fa-spinner fa-spin"/> : <Play size={16} />}<span className="ml-2">执行</span>
+                                </Button>
+                                <Button onClick={onSubmit} disabled={isLoading.execution || isLoading.submission} className="bg-green-600 hover:bg-green-500">
+                                    {isLoading.submission ? <i className="fas fa-spinner fa-spin"/> : <Send size={16} />}<span className="ml-2">提交</span>
+                                </Button>
+                            </div>
+                       </div>
+                       <div className="flex-grow bg-[#1e1e1e]">
+                           <MonacoEditor language={language} value={userCode} onChange={setUserCode} />
+                       </div>
+                       <FeedbackPanel feedback={feedback} isLoading={isLoading.submission || isLoading.execution} />
+                    </div>
+                </ResizablePanel>
+            </ResizablePanelGroup>
+        </main>
+    );
+};
+
+// --- 子组件：AI反馈面板 ---
+const FeedbackPanel = ({ feedback, isLoading }) => {
+    if (isLoading) {
+        return (
+             <div className="bg-gray-900 border-t-2 border-indigo-500 p-4 h-56 overflow-y-auto flex items-center justify-center">
+                 <p className="text-gray-400"><i className="fas fa-spinner fa-spin mr-2"></i>正在处理，请稍候...</p>
+             </div>
+        );
+    }
+    
+    if (!feedback) return null;
+    
+    
+    return (
+        <div className="bg-gray-900 border-t-2 border-indigo-500 p-4 h-56 overflow-y-auto">
+            <h3 className="font-bold text-lg mb-3">反馈面板</h3>
+            {feedback.type === 'execution' && (
+                <div className={`flex items-center ${feedback.success ? 'text-green-400' : 'text-red-400'}`}>
+                    {feedback.success ? <Check size={18} className="mr-2"/> : <AlertTriangle size={18} className="mr-2"/>}
+                    {feedback.message}
+                </div>
+            )}
+            {feedback.type === 'submission' && (
+                feedback.error ? (
+                     <p className="text-red-400">{feedback.error}</p>
+                ) : (
+                    <div className="space-y-4">
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
+                             <StatItem label="正确率" value={feedback.testResults?.summary} isSuccess={feedback.testResults?.passed} />
+                             <StatItem label="时间复杂度" value={feedback.complexity?.time} />
+                             <StatItem label="空间复杂度" value={feedback.complexity?.space} />
+                        </div>
+                        <div>
+                             <h4 className="font-semibold text-gray-300">AI 代码评审</h4>
+                             <pre className="text-sm text-gray-400 mt-1 whitespace-pre-wrap font-sans bg-gray-800 p-3 rounded-md">{feedback.aiAnalysis}</pre>
+                        </div>
+                    </div>
+                )
+            )}
+        </div>
+    );
+};
+
+const StatItem = ({ label, value = 'N/A', isSuccess }) => (
+    <div className="bg-gray-800 p-3 rounded-lg">
+        <p className="text-sm text-gray-400">{label}</p>
+        <p className={`font-bold text-lg ${isSuccess === true ? 'text-green-400' : isSuccess === false ? 'text-yellow-400' : ''}`}>{value}</p>
+    </div>
+);
+
 
 export default CodingPractice;
