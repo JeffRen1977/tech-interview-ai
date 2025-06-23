@@ -1,24 +1,29 @@
 import React from 'react';
 import { LayoutDashboard, Code, Mic, FileText, Building, History, UserCog, BrainCircuit, Shield, Clock } from 'lucide-react';
+import { useLanguage } from '../contexts/LanguageContext';
+import { getText } from '../utils/translations';
 
 const Sidebar = ({ activeView, setAppView, onLogout }) => {
+  const { language } = useLanguage();
+  const t = (key) => getText(key, language);
+
   const navItems = [
-    { id: 'dashboard', icon: <LayoutDashboard />, label: '仪表盘' },
-    { id: 'coding-practice', icon: <Code />, label: '算法练习' },
-    { id: 'mock-interview', icon: <Mic />, label: 'AI 模拟面试' },
-    { id: 'user-history', icon: <Clock />, label: '面试历史' },
-    { id: 'resume-optimizer', icon: <FileText />, label: '简历与职位匹配' },
-    { id: 'company-prep', icon: <Building />, label: '公司面试准备' },
-    { id: 'learn-feedback', icon: <History />, label: 'Learn & Feedback' },
-    { id: 'coach-agent', icon: <UserCog />, label: 'AI 个性化教练' },
-    { id: 'admin', icon: <Shield />, label: '管理工具' }, // 新增管理工具链接
+    { id: 'dashboard', icon: <LayoutDashboard />, label: t('dashboard') },
+    { id: 'coding-practice', icon: <Code />, label: t('codingPractice') },
+    { id: 'mock-interview', icon: <Mic />, label: t('mockInterview') },
+    { id: 'user-history', icon: <Clock />, label: t('userHistory') },
+    { id: 'resume-optimizer', icon: <FileText />, label: t('resumeOptimizer') },
+    { id: 'company-prep', icon: <Building />, label: t('companyPrep') },
+    { id: 'learn-feedback', icon: <History />, label: t('learnFeedback') },
+    { id: 'coach-agent', icon: <UserCog />, label: t('coachAgent') },
+    { id: 'admin', icon: <Shield />, label: t('admin') },
   ];
 
   return (
     <nav className="w-64 bg-gray-800 p-4 flex flex-col justify-between">
       <div>
         <div className="text-2xl font-bold mb-10 text-center text-white flex items-center justify-center">
-          <BrainCircuit className="w-8 h-8 mr-2" /> AI 教练
+          <BrainCircuit className="w-8 h-8 mr-2" /> {t('appTitle')}
         </div>
         <ul className="space-y-2">
           {navItems.map(item => (
@@ -34,7 +39,7 @@ const Sidebar = ({ activeView, setAppView, onLogout }) => {
       </div>
       <div className="p-4 bg-gray-700 rounded-lg">
         <p className="font-semibold text-sm">Jianfeng Ren</p>
-        <button onClick={onLogout} className="text-xs text-indigo-400 hover:underline">登出</button>
+        <button onClick={onLogout} className="text-xs text-indigo-400 hover:underline">{t('logout')}</button>
       </div>
     </nav>
   );

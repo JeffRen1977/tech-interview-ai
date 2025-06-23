@@ -4,6 +4,8 @@ import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Select } from '../components/ui/select';
 import { Textarea } from '../components/ui/textarea';
+import { useLanguage } from '../contexts/LanguageContext';
+import { getText } from '../utils/translations';
 
 const TECH_STACKS = [
   'React', 'Node.js', 'Python', 'Java', 'C++', 'Go', 'TypeScript', 'SQL', 'AWS', 'Docker', 'Kubernetes'
@@ -12,6 +14,9 @@ const LANGUAGES = ['English', 'Chinese', 'Spanish', 'French', 'German', 'Other']
 const USER_ID = 'demo-user'; // Replace with real userId from auth
 
 const CoachAgent = () => {
+  const { language } = useLanguage();
+  const t = (key) => getText(key, language);
+  
   const [tab, setTab] = useState('profile');
   const [profile, setProfile] = useState({
     targetCompanies: '',
@@ -59,8 +64,8 @@ const CoachAgent = () => {
       body: JSON.stringify({ ...profile, userId: USER_ID })
     });
     const data = await res.json();
-    if (data.success) setMessage('Profile saved!');
-    else setMessage('Failed to save profile.');
+    if (data.success) setMessage(t('profileSaved'));
+    else setMessage(t('failedToSave'));
     setSaving(false);
   };
 
@@ -97,9 +102,9 @@ const CoachAgent = () => {
   }, [messages, tab]);
 
   const TABS = [
-    { key: 'profile', label: 'Personalized Configuration' },
-    { key: 'plan', label: "Today's Daily Plan" },
-    { key: 'goal-chat', label: 'Goal-Oriented Conversation' }
+    { key: 'profile', label: t('personalizedConfiguration') },
+    { key: 'plan', label: t('dailyPlan') },
+    { key: 'goal-chat', label: t('goalOrientedConversation') }
   ];
 
   // Goal-Oriented Conversation handlers
@@ -107,7 +112,10 @@ const CoachAgent = () => {
     e.preventDefault();
     if (goalInput.trim()) {
       setGoal(goalInput.trim());
-      setMessages([{ role: 'ai', content: `你的目标已设定为："${goalInput.trim()}"。请随时提问或请求建议！` }]);
+      const goalMessage = language === 'zh' 
+        ? `你的目标已设定为："${goalInput.trim()}"。请随时提问或请求建议！`
+        : `Your goal has been set to: "${goalInput.trim()}". Feel free to ask questions or request advice!`;
+      setMessages([{ role: 'ai', content: goalMessage }]);
       setGoalInput('');
     }
   };
@@ -130,10 +138,16 @@ const CoachAgent = () => {
       if (data && data.reply) {
         setMessages(msgs => [...msgs, { role: 'ai', content: data.reply }]);
       } else {
-        setMessages(msgs => [...msgs, { role: 'ai', content: 'AI 没有返回有效回复，请稍后再试。' }]);
+        const errorMessage = language === 'zh' 
+          ? 'AI 没有返回有效回复，请稍后再试。'
+          : 'AI did not return a valid response, please try again later.';
+        setMessages(msgs => [...msgs, { role: 'ai', content: errorMessage }]);
       }
     } catch (err) {
-      setMessages(msgs => [...msgs, { role: 'ai', content: '请求失败，请检查网络或稍后再试。' }]);
+      const errorMessage = language === 'zh' 
+        ? '请求失败，请检查网络或稍后再试。'
+        : 'Request failed, please check your network or try again later.';
+      setMessages(msgs => [...msgs, { role: 'ai', content: errorMessage }]);
     } finally {
       setChatLoading(false);
     }
@@ -142,35 +156,35 @@ const CoachAgent = () => {
   return (
     <div className="min-h-screen bg-gray-900 text-white p-6">
       <div className="max-w-2xl mx-auto space-y-10">
-        <h1 className="text-3xl font-bold mb-4 text-center">AI 个性化教练</h1>
+        <h1 className="text-3xl font-bold mb-4 text-center">{t('coachAgentTitle')}</h1>
         <div className="flex space-x-4 mb-6 justify-center">
-          {TABS.map(t => (
+          {TABS.map(tabItem => (
             <button
-              key={t.key}
-              className={`px-4 py-2 rounded-t font-semibold focus:outline-none transition-colors duration-150 ${tab === t.key ? 'bg-gray-800 text-blue-400 border-b-2 border-blue-400' : 'bg-gray-700 text-gray-300'}`}
-              onClick={() => setTab(t.key)}
+              key={tabItem.key}
+              className={`px-4 py-2 rounded-t font-semibold focus:outline-none transition-colors duration-150 ${tab === tabItem.key ? 'bg-gray-800 text-blue-400 border-b-2 border-blue-400' : 'bg-gray-700 text-gray-300'}`}
+              onClick={() => setTab(tabItem.key)}
             >
-              {t.label}
+              {tabItem.label}
             </button>
           ))}
         </div>
         {tab === 'profile' && (
           <Card className="bg-gray-800 p-6">
-            <h2 className="text-2xl font-bold mb-4">Personalized Coach-Agent Configuration</h2>
-            {loading ? <div>Loading...</div> : (
+            <h2 className="text-2xl font-bold mb-4">{t('personalizedConfiguration')}</h2>
+            {loading ? <div>{t('loading')}</div> : (
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
-                  <label className="block mb-1 font-semibold">Target Companies</label>
+                  <label className="block mb-1 font-semibold">{t('targetCompanies')}</label>
                   <Input
                     name="targetCompanies"
                     value={profile.targetCompanies}
                     onChange={handleChange}
-                    placeholder="e.g. Google, Meta, ByteDance"
+                    placeholder={t('targetCompaniesPlaceholder')}
                     className="w-full"
                   />
                 </div>
                 <div>
-                  <label className="block mb-1 font-semibold">Technology Stacks</label>
+                  <label className="block mb-1 font-semibold">{t('technologyStacks')}</label>
                   <div className="flex flex-wrap gap-3">
                     {TECH_STACKS.map(stack => (
                       <label key={stack} className="flex items-center gap-1">
@@ -188,19 +202,19 @@ const CoachAgent = () => {
                   </div>
                 </div>
                 <div>
-                  <label className="block mb-1 font-semibold">Language Preference</label>
+                  <label className="block mb-1 font-semibold">{t('languagePreference')}</label>
                   <Select
                     name="language"
                     value={profile.language}
                     onChange={handleChange}
                     className="w-full"
                   >
-                    <option value="">Select language</option>
+                    <option value="">{t('selectLanguage')}</option>
                     {LANGUAGES.map(l => <option key={l} value={l}>{l}</option>)}
                   </Select>
                 </div>
                 <div>
-                  <label className="block mb-1 font-semibold">Available Time (per day, hours)</label>
+                  <label className="block mb-1 font-semibold">{t('availableTime')}</label>
                   <Input
                     name="availableTime"
                     type="number"
@@ -208,22 +222,22 @@ const CoachAgent = () => {
                     max="24"
                     value={profile.availableTime}
                     onChange={handleChange}
-                    placeholder="e.g. 2"
+                    placeholder={t('availableTimePlaceholder')}
                     className="w-full"
                   />
                 </div>
                 <div>
-                  <label className="block mb-1 font-semibold">Other Preferences</label>
+                  <label className="block mb-1 font-semibold">{t('otherPreferences')}</label>
                   <Textarea
                     name="preferences"
                     value={profile.preferences}
                     onChange={handleChange}
-                    placeholder="e.g. Prefer remote, want more system design practice, etc."
+                    placeholder={t('otherPreferencesPlaceholder')}
                     className="w-full"
                   />
                 </div>
                 <Button type="submit" className="bg-blue-600 hover:bg-blue-700" disabled={saving}>
-                  {saving ? 'Saving...' : 'Save Profile'}
+                  {saving ? t('saving') : t('saveProfile')}
                 </Button>
                 {message && <div className="mt-2 text-green-400">{message}</div>}
               </form>
@@ -232,13 +246,13 @@ const CoachAgent = () => {
         )}
         {tab === 'plan' && (
           <Card className="bg-gray-800 p-6">
-            <h2 className="text-2xl font-bold mb-4">Today's AI Daily Plan</h2>
+            <h2 className="text-2xl font-bold mb-4">{t('todaysAIPlan')}</h2>
             {planLoading ? (
-              <div>Loading daily plan...</div>
+              <div>{t('loadingDailyPlan')}</div>
             ) : planError ? (
               <div className="text-red-500">{planError}</div>
             ) : dailyPlan.length === 0 ? (
-              <div className="text-gray-400">No plan generated for today.</div>
+              <div className="text-gray-400">{t('noPlanGenerated')}</div>
             ) : (
               <ul className="space-y-4">
                 {dailyPlan.map((task, i) => (
@@ -258,32 +272,32 @@ const CoachAgent = () => {
               onClick={fetchDailyPlan}
               disabled={planLoading}
             >
-              {planLoading ? 'Regenerating...' : 'Regenerate Plan'}
+              {planLoading ? t('regenerating') : t('regeneratePlan')}
             </button>
           </Card>
         )}
         {tab === 'goal-chat' && (
           <Card className="bg-gray-800 p-6 flex flex-col h-[600px]">
-            <h2 className="text-2xl font-bold mb-4">Goal-Oriented Conversation</h2>
+            <h2 className="text-2xl font-bold mb-4">{t('goalOrientedConversation')}</h2>
             {!goal ? (
               <form onSubmit={handleSetGoal} className="mb-6 flex gap-2">
                 <Input
                   value={goalInput}
                   onChange={e => setGoalInput(e.target.value)}
-                  placeholder="请输入你的目标，例如：3个月内拿到Google offer"
+                  placeholder={t('goalInputPlaceholder')}
                   className="flex-1"
                 />
-                <Button type="submit" className="bg-blue-600">设定目标</Button>
+                <Button type="submit" className="bg-blue-600">{t('setGoal')}</Button>
               </form>
             ) : (
               <div className="mb-4">
-                <div className="text-sm text-gray-400 mb-1">当前目标：</div>
+                <div className="text-sm text-gray-400 mb-1">{t('currentGoal')}</div>
                 <div className="font-semibold text-blue-300 mb-2">{goal}</div>
-                <Button size="sm" variant="outline" onClick={() => { setGoal(''); setMessages([]); }}>重新设定目标</Button>
+                <Button size="sm" variant="outline" onClick={() => { setGoal(''); setMessages([]); }}>{t('resetGoal')}</Button>
               </div>
             )}
             <div className="flex-1 overflow-y-auto bg-gray-900 rounded p-4 mb-4 border border-gray-700">
-              {messages.length === 0 && <div className="text-gray-500 text-center">请设定目标后开始与AI教练对话。</div>}
+              {messages.length === 0 && <div className="text-gray-500 text-center">{t('pleaseSetGoal')}</div>}
               {messages.map((msg, idx) => (
                 <div key={idx} className={`mb-3 flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                   <div className={`max-w-[70%] px-4 py-2 rounded-lg text-sm whitespace-pre-line ${msg.role === 'user' ? 'bg-blue-600 text-white' : 'bg-gray-700 text-gray-100'}`}>
@@ -297,13 +311,13 @@ const CoachAgent = () => {
               <Input
                 value={chatInput}
                 onChange={e => setChatInput(e.target.value)}
-                placeholder={goal ? '输入你的问题或请求建议...' : '请先设定目标'}
+                placeholder={goal ? t('inputQuestion') : t('pleaseSetGoalFirst')}
                 disabled={!goal || chatLoading}
                 className="flex-1"
                 onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { handleSendMessage(e); e.preventDefault(); } }}
               />
               <Button type="submit" className="bg-blue-600" disabled={!goal || chatLoading || !chatInput.trim()}>
-                {chatLoading ? '发送中...' : '发送'}
+                {chatLoading ? t('sending') : t('send')}
               </Button>
             </form>
           </Card>

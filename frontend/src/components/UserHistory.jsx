@@ -3,12 +3,17 @@ import { Card } from './ui/card';
 import { Button } from './ui/button';
 import { Select } from './ui/select';
 import { apiRequest } from '../api';
+import { useLanguage } from '../contexts/LanguageContext';
+import { getText } from '../utils/translations';
 import { 
     Clock, Calendar, TrendingUp, Award, AlertCircle, 
     CheckCircle, Lightbulb, BarChart3, Filter, Search
 } from 'lucide-react';
 
 const UserHistory = () => {
+    const { language } = useLanguage();
+    const t = (key) => getText(key, language);
+    
     const [history, setHistory] = useState([]);
     const [loading, setLoading] = useState(true);
     const [filterType, setFilterType] = useState('all');
@@ -111,13 +116,13 @@ const UserHistory = () => {
     const getInterviewTypeName = (type) => {
         switch (type) {
             case 'coding':
-                return '编程面试';
+                return t('codingInterview');
             case 'system-design':
-                return '系统设计面试';
+                return t('systemDesignInterview');
             case 'behavioral':
-                return '行为面试';
+                return t('behavioralInterview');
             default:
-                return '未知类型';
+                return t('unknownType');
         }
     };
 
@@ -142,7 +147,7 @@ const UserHistory = () => {
 
     const formatDate = (dateString) => {
         const date = new Date(dateString);
-        return date.toLocaleDateString('zh-CN', {
+        return date.toLocaleDateString(language === 'zh' ? 'zh-CN' : 'en-US', {
             year: 'numeric',
             month: 'short',
             day: 'numeric',
@@ -172,7 +177,7 @@ const UserHistory = () => {
             <div className="max-w-6xl mx-auto p-6">
                 <div className="text-center">
                     <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
-                    <p className="mt-4 text-gray-300">加载中...</p>
+                    <p className="mt-4 text-gray-300">{t('loading')}</p>
                 </div>
             </div>
         );
@@ -180,14 +185,14 @@ const UserHistory = () => {
 
     return (
         <div className="max-w-6xl mx-auto p-6">
-            <h1 className="text-4xl font-bold mb-8">面试历史</h1>
+            <h1 className="text-4xl font-bold mb-8">{t('interviewHistory')}</h1>
 
             {/* Statistics Cards */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
                 <Card className="bg-gray-800 p-6">
                     <div className="flex items-center justify-between">
                         <div>
-                            <p className="text-gray-400 text-sm">总面试次数</p>
+                            <p className="text-gray-400 text-sm">{t('totalInterviews')}</p>
                             <p className="text-2xl font-bold">{stats.totalInterviews}</p>
                         </div>
                         <BarChart3 className="w-8 h-8 text-blue-500" />
@@ -197,7 +202,7 @@ const UserHistory = () => {
                 <Card className="bg-gray-800 p-6">
                     <div className="flex items-center justify-between">
                         <div>
-                            <p className="text-gray-400 text-sm">平均分数</p>
+                            <p className="text-gray-400 text-sm">{t('averageScore')}</p>
                             <p className={`text-2xl font-bold ${getScoreColor(stats.averageScore)}`}>
                                 {stats.averageScore}/100
                             </p>
@@ -209,8 +214,8 @@ const UserHistory = () => {
                 <Card className="bg-gray-800 p-6">
                     <div className="flex items-center justify-between">
                         <div>
-                            <p className="text-gray-400 text-sm">最强领域</p>
-                            <p className="text-lg font-semibold">{stats.bestCategory || '暂无数据'}</p>
+                            <p className="text-gray-400 text-sm">{t('bestCategory')}</p>
+                            <p className="text-lg font-semibold">{stats.bestCategory || t('noData')}</p>
                         </div>
                         <Award className="w-8 h-8 text-yellow-500" />
                     </div>
@@ -219,8 +224,8 @@ const UserHistory = () => {
                 <Card className="bg-gray-800 p-6">
                     <div className="flex items-center justify-between">
                         <div>
-                            <p className="text-gray-400 text-sm">需要改进</p>
-                            <p className="text-lg font-semibold">{stats.improvementAreas.length} 个领域</p>
+                            <p className="text-gray-400 text-sm">{t('needsImprovement')}</p>
+                            <p className="text-lg font-semibold">{stats.improvementAreas.length} {t('areas')}</p>
                         </div>
                         <AlertCircle className="w-8 h-8 text-red-500" />
                     </div>
@@ -231,12 +236,12 @@ const UserHistory = () => {
             <Card className="bg-gray-800 p-6 mb-6">
                 <div className="flex flex-col md:flex-row gap-4">
                     <div className="flex-1">
-                        <label className="block text-sm font-medium mb-2">搜索</label>
+                        <label className="block text-sm font-medium mb-2">{t('search')}</label>
                         <div className="relative">
                             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
                             <input
                                 type="text"
-                                placeholder="搜索面试题目..."
+                                placeholder={t('searchPlaceholder')}
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
                                 className="w-full pl-10 pr-4 py-2 bg-gray-700 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -244,32 +249,32 @@ const UserHistory = () => {
                         </div>
                     </div>
                     <div>
-                        <label className="block text-sm font-medium mb-2">面试类型</label>
+                        <label className="block text-sm font-medium mb-2">{t('interviewType')}</label>
                         <Select 
                             value={filterType} 
                             onChange={(e) => setFilterType(e.target.value)}
                         >
-                            <option value="all">全部类型</option>
-                            <option value="coding">编程面试</option>
-                            <option value="system-design">系统设计面试</option>
-                            <option value="behavioral">行为面试</option>
+                            <option value="all">{t('allTypes')}</option>
+                            <option value="coding">{t('codingInterview')}</option>
+                            <option value="system-design">{t('systemDesignInterview')}</option>
+                            <option value="behavioral">{t('behavioralInterview')}</option>
                         </Select>
                     </div>
                     <div>
-                        <label className="block text-sm font-medium mb-2">主题</label>
+                        <label className="block text-sm font-medium mb-2">{t('topic')}</label>
                         <Select 
                             value={filterTopic} 
                             onChange={(e) => setFilterTopic(e.target.value)}
                         >
-                            <option value="all">全部主题</option>
-                            <option value="machine-learning">机器学习</option>
-                            <option value="computer-vision">计算机视觉</option>
-                            <option value="natural-language-processing">自然语言处理</option>
-                            <option value="reinforcement-learning">强化学习</option>
-                            <option value="deep-learning">深度学习</option>
-                            <option value="ai-infrastructure">AI基础设施</option>
-                            <option value="recommendation-systems">推荐系统</option>
-                            <option value="autonomous-systems">自动驾驶系统</option>
+                            <option value="all">{t('allTopics')}</option>
+                            <option value="machine-learning">{t('machineLearning')}</option>
+                            <option value="computer-vision">{t('computerVision')}</option>
+                            <option value="natural-language-processing">{t('naturalLanguageProcessing')}</option>
+                            <option value="reinforcement-learning">{t('reinforcementLearning')}</option>
+                            <option value="deep-learning">{t('deepLearning')}</option>
+                            <option value="ai-infrastructure">{t('aiInfrastructure')}</option>
+                            <option value="recommendation-systems">{t('recommendationSystems')}</option>
+                            <option value="autonomous-systems">{t('autonomousSystems')}</option>
                         </Select>
                     </div>
                 </div>
@@ -279,7 +284,7 @@ const UserHistory = () => {
             <div className="space-y-4">
                 {filteredHistory.length === 0 ? (
                     <Card className="bg-gray-800 p-6 text-center">
-                        <p className="text-gray-300">暂无面试历史记录</p>
+                        <p className="text-gray-300">{t('noHistory')}</p>
                     </Card>
                 ) : (
                     filteredHistory.map((interview, index) => (
@@ -302,11 +307,11 @@ const UserHistory = () => {
                                     </div>
                                     
                                     <h3 className="text-lg font-semibold mb-2">
-                                        {interview.questionData?.title || '未知题目'}
+                                        {interview.questionData?.title || t('unknownQuestion')}
                                     </h3>
                                     
                                     <p className="text-gray-300 text-sm mb-3 line-clamp-2">
-                                        {interview.questionData?.description || '暂无描述'}
+                                        {interview.questionData?.description || t('noDescription')}
                                     </p>
                                     
                                     <div className="flex items-center gap-4 text-sm text-gray-400">
@@ -333,14 +338,14 @@ const UserHistory = () => {
                                         size="sm"
                                         onClick={() => window.open(`/interview-detail/${interview.sessionId}`, '_blank')}
                                     >
-                                        查看详情
+                                        {t('viewDetails')}
                                     </Button>
                                     <Button 
                                         variant="outline" 
                                         size="sm"
                                         onClick={() => window.print()}
                                     >
-                                        打印报告
+                                        {t('printReport')}
                                     </Button>
                                 </div>
                             </div>
@@ -350,7 +355,7 @@ const UserHistory = () => {
                                 <div className="mt-4 pt-4 border-t border-gray-700">
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                         <div>
-                                            <h4 className="text-sm font-semibold text-green-400 mb-2">优势</h4>
+                                            <h4 className="text-sm font-semibold text-green-400 mb-2">{t('strengths')}</h4>
                                             <ul className="space-y-1">
                                                 {interview.finalReport.strengths.slice(0, 2).map((strength, idx) => (
                                                     <li key={idx} className="flex items-center gap-2 text-sm text-gray-300">
@@ -361,7 +366,7 @@ const UserHistory = () => {
                                             </ul>
                                         </div>
                                         <div>
-                                            <h4 className="text-sm font-semibold text-yellow-400 mb-2">改进建议</h4>
+                                            <h4 className="text-sm font-semibold text-yellow-400 mb-2">{t('improvementSuggestions')}</h4>
                                             <ul className="space-y-1">
                                                 {interview.finalReport.areasForImprovement?.slice(0, 2).map((area, idx) => (
                                                     <li key={idx} className="flex items-center gap-2 text-sm text-gray-300">

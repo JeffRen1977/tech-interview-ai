@@ -1,5 +1,7 @@
 import React from 'react';
-import { Book, Mic, FileText, UserCog, BrainCircuit } from 'lucide-react';
+import { Book, Mic, FileText, UserCog, BrainCircuit, Globe } from 'lucide-react';
+import { useLanguage } from '../contexts/LanguageContext';
+import { getText } from '../utils/translations';
 
 const Button = ({ children, className, ...props }) => <button className={`inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors disabled:opacity-50 ${className}`} {...props}>{children}</button>;
 
@@ -12,36 +14,69 @@ const FeatureCard = ({ icon, title, description }) => (
 );
 
 const HomePage = ({ onLogin }) => {
+  const { language, toggleLanguage, isChinese } = useLanguage();
+  const t = (key) => getText(key, language);
+
   return (
     <div className="flex flex-col min-h-screen bg-gray-900 text-white">
       <header className="w-full px-8 py-4 flex justify-between items-center fixed top-0 left-0 bg-gray-900/80 backdrop-blur-sm z-10">
-        <div className="text-2xl font-bold flex items-center"><BrainCircuit className="w-8 h-8 mr-2 text-indigo-400" /> AI 面试教练</div>
+        <div className="text-2xl font-bold flex items-center">
+          <BrainCircuit className="w-8 h-8 mr-2 text-indigo-400" /> 
+          {t('appTitle')}
+        </div>
         <nav className="hidden md:flex items-center space-x-6 text-gray-300">
-          <a href="#features" className="hover:text-indigo-400">产品功能</a>
+          <a href="#features" className="hover:text-indigo-400">{t('features')}</a>
+          <Button 
+            onClick={toggleLanguage} 
+            className="flex items-center gap-2 bg-gray-700 hover:bg-gray-600 px-3 py-1"
+          >
+            <Globe size={16} />
+            {isChinese ? 'EN' : '中文'}
+          </Button>
         </nav>
-        <Button onClick={onLogin} className="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2">登录/注册</Button>
+        <Button onClick={onLogin} className="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2">
+          {t('loginRegister')}
+        </Button>
       </header>
 
       <main className="flex-grow flex flex-col items-center justify-center text-center px-4">
         <section className="w-full max-w-4xl py-20">
-          <h1 className="text-5xl md:text-7xl font-extrabold mb-4 leading-tight">你的专属 AI 面试教练</h1>
-          <p className="text-lg md:text-xl text-gray-400 mb-8">算法、系统设计、行为面试，一站式搞定</p>
+          <h1 className="text-5xl md:text-7xl font-extrabold mb-4 leading-tight">{t('heroTitle')}</h1>
+          <p className="text-lg md:text-xl text-gray-400 mb-8">{t('heroSubtitle')}</p>
           <div className="flex justify-center space-x-4">
-            <Button onClick={onLogin} className="bg-indigo-600 hover:bg-indigo-500 text-white px-8 py-3 text-lg">开始准备</Button>
+            <Button onClick={onLogin} className="bg-indigo-600 hover:bg-indigo-500 text-white px-8 py-3 text-lg">
+              {t('startPreparing')}
+            </Button>
           </div>
         </section>
         
         <section id="features" className="w-full max-w-5xl py-20">
-          <h2 className="text-3xl font-bold mb-8">核心功能</h2>
+          <h2 className="text-3xl font-bold mb-8">{t('coreFeatures')}</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-              <FeatureCard icon={<Book className="text-green-400" />} title="智能题库" description="覆盖LeetCode热题、系统设计与SQL，支持多维度筛选。" />
-              <FeatureCard icon={<Mic className="text-blue-400" />} title="AI模拟面试" description="与AI进行算法、系统设计或行为面试，获得专业反馈。" />
-              <FeatureCard icon={<FileText className="text-purple-400" />} title="简历优化" description="分析简历与职位描述（JD）的匹配度，提供优化建议。" />
-              <FeatureCard icon={<UserCog className="text-yellow-400" />} title="个性化教练" description="AI Agent根据你的目标和进度，为你量身定制每日学习计划。" />
+              <FeatureCard 
+                icon={<Book className="text-green-400" />} 
+                title={t('smartQuestionBank')} 
+                description={t('smartQuestionBankDesc')} 
+              />
+              <FeatureCard 
+                icon={<Mic className="text-blue-400" />} 
+                title={t('aiMockInterview')} 
+                description={t('aiMockInterviewDesc')} 
+              />
+              <FeatureCard 
+                icon={<FileText className="text-purple-400" />} 
+                title={t('resumeOptimizer')} 
+                description={t('resumeOptimizerDesc')} 
+              />
+              <FeatureCard 
+                icon={<UserCog className="text-yellow-400" />} 
+                title={t('personalizedCoach')} 
+                description={t('personalizedCoachDesc')} 
+              />
           </div>
         </section>
       </main>
-      <footer className="w-full p-4 text-center text-gray-500 text-sm bg-gray-900">© 2025 AI 面试教练. 保留所有权利。</footer>
+      <footer className="w-full p-4 text-center text-gray-500 text-sm bg-gray-900">{t('copyright')}</footer>
     </div>
   );
 };

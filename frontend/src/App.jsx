@@ -11,10 +11,14 @@ import MainContent from './components/MainContent';
 import UserHistory from './components/UserHistory';
 import LearnAndFeedback from './pages/LearnAndFeedback';
 import CoachAgent from './pages/CoachAgent';
+import { LanguageProvider, useLanguage } from './contexts/LanguageContext';
+import { getText } from './utils/translations';
 
-export default function App() {
+const AppContent = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [activeView, setActiveView] = useState('dashboard');
+  const { language } = useLanguage();
+  const t = (key) => getText(key, language);
 
   const handleLogin = () => {
     setIsLoggedIn(true);
@@ -40,12 +44,20 @@ export default function App() {
         {activeView === 'resume-optimizer' && <ResumeOptimizer />}
         {activeView === 'admin' && <Admin />}
         {activeView === 'user-history' && <UserHistory />}
-        {activeView === 'company-prep' && <Placeholder title="公司面试定制化准备" />}
+        {activeView === 'company-prep' && <Placeholder title={t('companyPrep')} />}
         {activeView === 'coach-agent' && <CoachAgent />}
-        {activeView === 'behavioral-practice' && <Placeholder title="行为面试训练" />}
+        {activeView === 'behavioral-practice' && <Placeholder title={t('behavioralPractice')} />}
         {activeView === 'learn-feedback' && <LearnAndFeedback />}
       </MainContent>
     </div>
+  );
+};
+
+export default function App() {
+  return (
+    <LanguageProvider>
+      <AppContent />
+    </LanguageProvider>
   );
 }
 
