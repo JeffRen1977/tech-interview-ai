@@ -10,6 +10,7 @@ import Sidebar from './components/Sidebar';
 import MainContent from './components/MainContent';
 import UserHistory from './components/UserHistory';
 import LearnAndFeedback from './pages/LearnAndFeedback';
+import CoachAgent from './pages/CoachAgent';
 
 export default function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -40,7 +41,7 @@ export default function App() {
         {activeView === 'admin' && <Admin />}
         {activeView === 'user-history' && <UserHistory />}
         {activeView === 'company-prep' && <Placeholder title="公司面试定制化准备" />}
-        {activeView === 'coach-agent' && <Placeholder title="AI 个性化教练 (Agent)" />}
+        {activeView === 'coach-agent' && <CoachAgent />}
         {activeView === 'behavioral-practice' && <Placeholder title="行为面试训练" />}
         {activeView === 'learn-feedback' && <LearnAndFeedback />}
       </MainContent>
