@@ -88,7 +88,30 @@ Format your response as JSON:
   }
 };
 
+// GET /api/ability-map
+const getAbilityMap = async (req, res) => {
+  // Mocked ability stats
+  const abilities = [
+    { type: 'Algorithms', knowledgePoint: 'Binary Search', correct: 8, wrong: 2 },
+    { type: 'JavaScript', knowledgePoint: 'Type Coercion', correct: 3, wrong: 5 },
+    { type: 'System Design', knowledgePoint: 'Scalability', correct: 2, wrong: 4 },
+    { type: 'Algorithms', knowledgePoint: 'Dynamic Programming', correct: 1, wrong: 6 },
+    { type: 'JavaScript', knowledgePoint: 'Closures', correct: 7, wrong: 1 }
+  ];
+  // Recommend exercises for weak points (wrong > correct)
+  const recommendations = abilities
+    .filter(a => a.wrong > a.correct)
+    .map(a => ({
+      type: a.type,
+      knowledgePoint: a.knowledgePoint,
+      exerciseId: `${a.type.toLowerCase().replace(/\s/g, '-')}-${a.knowledgePoint.toLowerCase().replace(/\s/g, '-')}`,
+      title: `${a.knowledgePoint} Practice`
+    }));
+  res.json({ success: true, abilities, recommendations });
+};
+
 module.exports = {
   getWrongQuestions,
-  getAIExplanationAndRedoPlan
+  getAIExplanationAndRedoPlan,
+  getAbilityMap
 }; 
