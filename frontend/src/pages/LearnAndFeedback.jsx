@@ -75,9 +75,75 @@ function AbilityMap() {
   );
 }
 
+function VideoInterviewFeedback() {
+  const [video, setVideo] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [result, setResult] = useState(null);
+  const [error, setError] = useState(null);
+
+  const handleFileChange = (e) => {
+    setVideo(e.target.files[0]);
+    setResult(null);
+    setError(null);
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!video) return;
+    setLoading(true);
+    setResult(null);
+    setError(null);
+    const formData = new FormData();
+    formData.append('video', video);
+    try {
+      const res = await fetch('/api/wrong-questions/learn-feedback/video-feedback', {
+        method: 'POST',
+        body: formData
+      });
+      const data = await res.json();
+      if (data.success) setResult(data);
+      else setError('Failed to analyze video.');
+    } catch (err) {
+      setError('Failed to analyze video.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="space-y-6">
+      <h3 className="text-lg font-semibold mb-2">Video Interview Feedback</h3>
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <input type="file" accept="video/*" onChange={handleFileChange} className="block text-white" />
+        <button type="submit" className="px-4 py-2 bg-blue-600 rounded hover:bg-blue-700 text-white" disabled={loading || !video}>
+          {loading ? 'Analyzing...' : 'Analyze Video'}
+        </button>
+      </form>
+      {error && <div className="text-red-500">{error}</div>}
+      {result && (
+        <div className="bg-gray-800 p-4 rounded-lg space-y-4 mt-4">
+          <div>
+            <h4 className="font-semibold text-blue-400 mb-1">Language Expression</h4>
+            <p className="text-gray-200 whitespace-pre-wrap">{result.languageFeedback}</p>
+          </div>
+          <div>
+            <h4 className="font-semibold text-green-400 mb-1">Body Language</h4>
+            <p className="text-gray-200 whitespace-pre-wrap">{result.bodyLanguageFeedback}</p>
+          </div>
+          <div>
+            <h4 className="font-semibold text-yellow-300 mb-1">Logical Structure</h4>
+            <p className="text-gray-200 whitespace-pre-wrap">{result.logicFeedback}</p>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 const TABS = [
   { key: 'wrong', label: 'Wrong Question Book / Review Assistant' },
-  { key: 'ability', label: 'Ability Map' }
+  { key: 'ability', label: 'Ability Map' },
+  { key: 'video', label: 'Video Interview Feedback' }
 ];
 
 const LearnAndFeedback = () => {
@@ -166,6 +232,7 @@ const LearnAndFeedback = () => {
           </>
         )}
         {tab === 'ability' && <AbilityMap />}
+        {tab === 'video' && <VideoInterviewFeedback />}
       </div>
     </div>
   );

@@ -110,8 +110,21 @@ const getAbilityMap = async (req, res) => {
   res.json({ success: true, abilities, recommendations });
 };
 
+// POST /api/learn-feedback/video-feedback
+const videoInterviewFeedback = async (req, res) => {
+  // For now, just mock the AI feedback
+  // In a real implementation, you would process req.file and send it to an AI service
+  res.json({
+    success: true,
+    languageFeedback: 'Your language was clear and professional, but try to avoid filler words like "um" and "uh".',
+    bodyLanguageFeedback: 'You maintained good eye contact, but consider using more hand gestures to emphasize points.',
+    logicFeedback: 'Your answers followed a logical structure, but could benefit from more concrete examples.'
+  });
+};
+
 module.exports = {
   getWrongQuestions,
   getAIExplanationAndRedoPlan,
-  getAbilityMap
+  getAbilityMap,
+  videoInterviewFeedback
 }; 
