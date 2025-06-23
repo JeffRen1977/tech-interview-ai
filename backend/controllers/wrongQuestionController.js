@@ -1,5 +1,7 @@
 const fetch = require('node-fetch');
 require('dotenv').config();
+const fs = require('fs');
+const path = require('path');
 
 // Mock user wrong questions (replace with DB in production)
 const mockWrongQuestions = [
@@ -112,14 +114,63 @@ const getAbilityMap = async (req, res) => {
 
 // POST /api/learn-feedback/video-feedback
 const videoInterviewFeedback = async (req, res) => {
-  // For now, just mock the AI feedback
-  // In a real implementation, you would process req.file and send it to an AI service
-  res.json({
-    success: true,
-    languageFeedback: 'Your language was clear and professional, but try to avoid filler words like "um" and "uh".',
-    bodyLanguageFeedback: 'You maintained good eye contact, but consider using more hand gestures to emphasize points.',
-    logicFeedback: 'Your answers followed a logical structure, but could benefit from more concrete examples.'
-  });
+  const videoPath = req.file.path;
+  try {
+    const geminiApiKey = process.env.GEMINI_API_KEY;
+    const videoData = fs.readFileSync(videoPath);
+    const base64Video = videoData.toString('base64');
+    const prompt = `
+Please:
+1. Transcribe all spoken words in this video.
+2. Analyze the transcript for language expression, logical structure, and (if possible) body language cues.
+Return a JSON object with keys: transcript, languageFeedback, logicFeedback, bodyLanguageFeedback.
+`;
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro:generateContent?key=${geminiApiKey}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [
+            {
+              parts: [
+                { text: prompt },
+                {
+                  inlineData: {
+                    mimeType: req.file.mimetype || 'video/mp4',
+                    data: base64Video
+                  }
+                }
+              ]
+            }
+          ]
+        })
+      }
+    );
+    const data = await response.json();
+    // Extract and parse the feedback from Gemini's response
+    let text = '';
+    if (data.candidates && data.candidates[0]) {
+      text = data.candidates[0].content.parts[0].text;
+      // Clean markdown code block if present
+      if (text.startsWith('```json')) text = text.substring(7, text.length - 3).trim();
+      else if (text.startsWith('```')) text = text.substring(3, text.length - 3).trim();
+      let feedback;
+      try {
+        feedback = JSON.parse(text);
+      } catch (e) {
+        feedback = { transcript: '', languageFeedback: text, logicFeedback: '', bodyLanguageFeedback: '' };
+      }
+      res.json({ success: true, ...feedback });
+    } else {
+      res.status(500).json({ error: 'Gemini feedback failed', details: data });
+    }
+  } catch (err) {
+    res.status(500).json({ error: 'Video analysis failed', details: err.message });
+  } finally {
+    // Clean up uploaded file
+    fs.unlink(videoPath, () => {});
+  }
 };
 
 module.exports = {
