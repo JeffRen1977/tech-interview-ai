@@ -99,4 +99,49 @@ Return the plan as a JSON array, each item with: { type, title, description, est
   }
 };
 
-module.exports = { saveUserProfile, getUserProfile, getDailyPlan }; 
+// POST /api/coach-agent/goal-chat
+const goalChat = async (req, res) => {
+  const { goal, messages, newMessage } = req.body;
+  if (!goal || !messages || !Array.isArray(messages) || !newMessage) {
+    return res.status(400).json({ error: 'goal, messages, and newMessage are required' });
+  }
+  try {
+    // Compose conversation history for Gemini
+    let historyText = messages.map(m => (m.role === 'user' ? 'User: ' : 'AI: ') + m.content).join('\n');
+    const prompt = `
+You are an AI interview coach. The user has set the following goal: "${goal}".
+Continue the following conversation, always keeping the user's goal in mind. Be proactive, supportive, and provide actionable advice. If the user asks for a plan, break it down into steps. If the user seems lost, help them clarify their next actions.
+
+Conversation so far:
+${historyText}
+
+User: ${newMessage}
+AI:`;
+    const geminiApiKey = process.env.GEMINI_API_KEY;
+    if (!geminiApiKey) {
+      // Mock reply if no API key
+      return res.json({ reply: `（模拟回复）你的目标是：${goal}。你刚才说：“${newMessage}”。AI建议：坚持下去，每天进步一点点！` });
+    }
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiApiKey}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contents: [{ parts: [{ text: prompt }] }]
+      })
+    });
+    const data = await response.json();
+    let text = '';
+    if (data.candidates && data.candidates[0]) {
+      text = data.candidates[0].content.parts[0].text;
+      // Remove code block markers if present
+      if (text.startsWith('```')) text = text.replace(/^```[a-z]*\n?/i, '').replace(/```$/, '').trim();
+      return res.json({ reply: text });
+    } else {
+      return res.status(500).json({ error: 'Gemini chat failed', details: data });
+    }
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to generate chat reply', details: err.message });
+  }
+};
+
+module.exports = { saveUserProfile, getUserProfile, getDailyPlan, goalChat }; 
