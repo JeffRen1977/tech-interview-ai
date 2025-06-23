@@ -6,10 +6,14 @@ import { Select } from '../components/ui/select';
 import CodingInterview from '../components/CodingInterview';
 import BehavioralInterview from '../components/BehavioralInterview';
 import SystemDesignInterview from '../components/SystemDesignInterview';
+import { useLanguage } from '../contexts/LanguageContext';
+import { getText } from '../utils/translations';
 
 const MockInterview = () => {
+    const { language } = useLanguage();
+    const t = (key) => getText(key, language);
     const [interviewType, setInterviewType] = useState('coding');
-    const [language, setLanguage] = useState('chinese');
+    const [interviewLanguage, setInterviewLanguage] = useState('chinese');
 
     const renderInterviewContent = () => {
         switch (interviewType) {
@@ -26,31 +30,31 @@ const MockInterview = () => {
 
     return (
         <div>
-            <h1 className="text-4xl font-bold mb-8">AI 模拟面试</h1>
+            <h1 className="text-4xl font-bold mb-8">{t('aiMockInterviewTitle')}</h1>
             
             {/* 面试类型选择 */}
             <Card className="bg-gray-800 p-6 mb-6">
-                <h2 className="text-xl font-bold mb-4">面试设置</h2>
+                <h2 className="text-xl font-bold mb-4">{t('interviewSettings')}</h2>
                 <div className="flex space-x-4">
                     <div>
-                        <label className="block text-sm font-medium mb-2">面试类型</label>
+                        <label className="block text-sm font-medium mb-2">{t('interviewType')}</label>
                         <Select 
                             value={interviewType} 
                             onChange={(e) => setInterviewType(e.target.value)}
                         >
-                            <option value="coding">编程面试</option>
-                            <option value="system-design">系统设计面试</option>
-                            <option value="behavioral">行为面试</option>
+                            <option value="coding">{t('codingInterview')}</option>
+                            <option value="system-design">{t('systemDesignInterview')}</option>
+                            <option value="behavioral">{t('behavioralInterview')}</option>
                         </Select>
                     </div>
                     <div>
-                        <label className="block text-sm font-medium mb-2">语言</label>
+                        <label className="block text-sm font-medium mb-2">{t('language')}</label>
                         <Select 
-                            value={language} 
-                            onChange={(e) => setLanguage(e.target.value)}
+                            value={interviewLanguage} 
+                            onChange={(e) => setInterviewLanguage(e.target.value)}
                         >
-                            <option value="chinese">中文</option>
-                            <option value="english">English</option>
+                            <option value="chinese">{t('chinese')}</option>
+                            <option value="english">{t('english')}</option>
                         </Select>
                     </div>
                 </div>

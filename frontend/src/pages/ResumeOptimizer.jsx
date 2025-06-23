@@ -5,8 +5,13 @@ import { Button } from '../components/ui/button';
 import { Textarea } from '../components/ui/textarea';
 import { Input } from '../components/ui/input';
 import { resumeAPI } from '../api';
+import { useLanguage } from '../contexts/LanguageContext';
+import { getText } from '../utils/translations';
 
 const ResumeOptimizer = () => {
+    const { language } = useLanguage();
+    const t = (key) => getText(key, language);
+
     const [activeTab, setActiveTab] = useState('analyzer');
     const [resumeText, setResumeText] = useState('');
     const [jobDescription, setJobDescription] = useState('');
@@ -32,7 +37,7 @@ const ResumeOptimizer = () => {
     // Resume Analyzer
     const handleResumeAnalysis = async () => {
         if (!resumeText.trim()) {
-            alert('Please enter your resume text first.');
+            alert(t('pleaseEnterResumeText'));
             return;
         }
 
@@ -42,7 +47,7 @@ const ResumeOptimizer = () => {
             setResults({ type: 'analysis', data: response.analysis });
         } catch (error) {
             console.error('Resume analysis error:', error);
-            alert('Failed to analyze resume. Please try again.');
+            alert(t('analyzeResumeFailed'));
         } finally {
             setLoading(false);
         }
@@ -51,7 +56,7 @@ const ResumeOptimizer = () => {
     // JD Matching Assessment
     const handleJDMatching = async () => {
         if (!resumeText.trim() || !jobDescription.trim()) {
-            alert('Please enter both resume text and job description.');
+            alert(t('pleaseEnterResumeAndJD'));
             return;
         }
 
@@ -61,7 +66,7 @@ const ResumeOptimizer = () => {
             setResults({ type: 'matching', data: response.assessment });
         } catch (error) {
             console.error('JD matching error:', error);
-            alert('Failed to assess JD matching. Please try again.');
+            alert(t('assessJDMatchingFailed'));
         } finally {
             setLoading(false);
         }
@@ -70,7 +75,7 @@ const ResumeOptimizer = () => {
     // Cover Letter Generator
     const handleCoverLetterGeneration = async () => {
         if (!resumeText.trim() || !jobDescription.trim() || !companyName.trim() || !positionTitle.trim()) {
-            alert('Please fill in all required fields: resume, job description, company name, and position title.');
+            alert(t('pleaseFillAllFields'));
             return;
         }
 
@@ -86,7 +91,7 @@ const ResumeOptimizer = () => {
             setResults({ type: 'coverLetter', data: response.coverLetter });
         } catch (error) {
             console.error('Cover letter generation error:', error);
-            alert('Failed to generate cover letter. Please try again.');
+            alert(t('generateCoverLetterFailed'));
         } finally {
             setLoading(false);
         }
@@ -113,9 +118,9 @@ const ResumeOptimizer = () => {
     };
 
     const tabs = [
-        { id: 'analyzer', label: 'Resume Analyzer', icon: FileText },
-        { id: 'matching', label: 'JD Matching', icon: Target },
-        { id: 'coverLetter', label: 'Cover Letter', icon: Mail }
+        { id: 'analyzer', label: t('resumeAnalyzer'), icon: FileText },
+        { id: 'matching', label: t('jdMatching'), icon: Target },
+        { id: 'coverLetter', label: t('coverLetter'), icon: Mail }
     ];
 
     const renderResults = () => {
@@ -145,20 +150,20 @@ const ResumeOptimizer = () => {
                         <CardHeader>
                             <CardTitle className="flex items-center gap-2 text-xl">
                                 <FileText className="w-6 h-6 text-blue-400" />
-                                Resume Analysis Results
+                                {t('resumeAnalysisResults')}
                             </CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-6">
                             {/* Overall Assessment */}
                             <div className="p-4 bg-gray-900 rounded-lg">
-                                <h4 className="font-semibold text-lg mb-2 text-blue-400">Overall Assessment</h4>
+                                <h4 className="font-semibold text-lg mb-2 text-blue-400">{t('overallAssessment')}</h4>
                                 <p className="text-gray-300 whitespace-pre-wrap">{overallAssessment}</p>
                             </div>
                             
                             {/* Optimization Suggestions */}
                             {optimizationSuggestions?.length > 0 && (
                                 <div className="p-4 bg-gray-900 rounded-lg">
-                                    <h4 className="font-semibold text-lg mb-2 text-green-400">Optimization Suggestions</h4>
+                                    <h4 className="font-semibold text-lg mb-2 text-green-400">{t('optimizationSuggestions')}</h4>
                                     <ul className="list-disc list-inside space-y-2 text-gray-300">
                                         {optimizationSuggestions.map((suggestion, index) => (
                                             <li key={index}>{suggestion}</li>
@@ -170,7 +175,7 @@ const ResumeOptimizer = () => {
                             {/* Recommended Modifications */}
                             {recommendedModifications?.length > 0 && (
                                 <div className="p-4 bg-gray-900 rounded-lg">
-                                    <h4 className="font-semibold text-lg mb-2 text-yellow-400">Recommended Modifications</h4>
+                                    <h4 className="font-semibold text-lg mb-2 text-yellow-400">{t('recommendedModifications')}</h4>
                                     <ul className="list-disc list-inside space-y-2 text-gray-300">
                                         {recommendedModifications.map((mod, index) => (
                                             <li key={index}>{mod}</li>
@@ -182,7 +187,7 @@ const ResumeOptimizer = () => {
                             {/* Experience Improvements */}
                             {experienceImprovements?.length > 0 && (
                                 <div className="p-4 bg-gray-900 rounded-lg">
-                                    <h4 className="font-semibold text-lg mb-2 text-purple-400">Experience Improvements</h4>
+                                    <h4 className="font-semibold text-lg mb-2 text-purple-400">{t('experienceImprovements')}</h4>
                                     <ul className="list-disc list-inside space-y-2 text-gray-300">
                                         {experienceImprovements.map((imp, index) => (
                                             <li key={index}>{imp}</li>
@@ -194,7 +199,7 @@ const ResumeOptimizer = () => {
                             {/* Skills to Highlight */}
                             {skillsToHighlight?.length > 0 && (
                                 <div className="p-4 bg-gray-900 rounded-lg">
-                                    <h4 className="font-semibold text-lg mb-2 text-red-400">Skills to Highlight</h4>
+                                    <h4 className="font-semibold text-lg mb-2 text-red-400">{t('skillsToHighlight')}</h4>
                                     <div className="flex flex-wrap gap-2">
                                         {skillsToHighlight.map((skill, index) => (
                                             <span key={index} className="bg-red-600/50 text-white px-3 py-1 rounded-full text-sm font-medium">
@@ -208,7 +213,7 @@ const ResumeOptimizer = () => {
                              {/* Formatting Suggestions */}
                              {formattingSuggestions?.length > 0 && (
                                 <div className="p-4 bg-gray-900 rounded-lg">
-                                    <h4 className="font-semibold text-lg mb-2 text-indigo-400">Formatting Suggestions</h4>
+                                    <h4 className="font-semibold text-lg mb-2 text-indigo-400">{t('formattingSuggestions')}</h4>
                                     <ul className="list-disc list-inside space-y-2 text-gray-300">
                                         {formattingSuggestions.map((suggestion, index) => (
                                             <li key={index}>{suggestion}</li>
@@ -227,7 +232,7 @@ const ResumeOptimizer = () => {
                         <CardHeader>
                             <CardTitle className="flex items-center gap-2 text-xl">
                                 <Target className="w-6 h-6 text-green-400" />
-                                JD Matching Assessment
+                                {t('jdMatchingAssessment')}
                             </CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-6">
@@ -235,12 +240,12 @@ const ResumeOptimizer = () => {
                                 <div className="text-5xl font-bold text-green-400 mb-2">
                                     {matchingScore || 0}%
                                 </div>
-                                <div className="text-gray-300 font-semibold">Overall Match Score</div>
+                                <div className="text-gray-300 font-semibold">{t('overallMatchScore')}</div>
                             </div>
     
                             {matchingAnalysis && (
                                 <div className="p-4 bg-gray-900 rounded-lg">
-                                    <h4 className="font-semibold text-lg mb-3 text-green-400">Detailed Analysis</h4>
+                                    <h4 className="font-semibold text-lg mb-3 text-green-400">{t('detailedAnalysis')}</h4>
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                         {Object.entries(matchingAnalysis).map(([key, value]) => (
                                             <div key={key} className="p-3 bg-gray-800 rounded">
@@ -255,7 +260,7 @@ const ResumeOptimizer = () => {
                             
                             {missingSkills?.length > 0 && (
                                 <div className="p-4 bg-gray-900 rounded-lg">
-                                    <h4 className="font-semibold text-lg mb-2 text-red-400">Skills to Add</h4>
+                                    <h4 className="font-semibold text-lg mb-2 text-red-400">{t('skillsToAdd')}</h4>
                                     <div className="flex flex-wrap gap-2">
                                         {missingSkills.map((skill, index) => (
                                             <span key={index} className="bg-red-600/50 text-white px-3 py-1 rounded-full text-sm font-medium">
@@ -268,7 +273,7 @@ const ResumeOptimizer = () => {
     
                             {reinforcementPoints?.length > 0 && (
                                 <div className="p-4 bg-gray-900 rounded-lg">
-                                    <h4 className="font-semibold text-lg mb-2 text-yellow-400">Reinforcement Points</h4>
+                                    <h4 className="font-semibold text-lg mb-2 text-yellow-400">{t('reinforcementPoints')}</h4>
                                     <ul className="list-disc list-inside space-y-2 text-gray-300">
                                         {reinforcementPoints.map((point, index) => (
                                             <li key={index}>{point}</li>
@@ -286,36 +291,26 @@ const ResumeOptimizer = () => {
                     <Card className="bg-gray-800 mt-6">
                         <CardHeader>
                             <CardTitle className="flex items-center gap-2 text-xl">
-                                <Mail className="w-6 h-6 text-purple-400" />
-                                Generated Cover Letter
+                                <Mail className="w-6 h-6 text-indigo-400" />
+                                {t('coverLetterResult')}
                             </CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-6">
-                            <div className="bg-gray-900 p-4 rounded-lg">
-                                <div className="flex justify-end gap-2 mb-4">
-                                     <Button 
-                                        onClick={() => copyToClipboard(coverLetter)}
-                                        className="bg-blue-600 hover:bg-blue-700 text-xs px-2 py-1"
-                                    >
-                                        {copied ? <Check className="w-4 h-4 mr-1" /> : <Copy className="w-4 h-4 mr-1" />}
-                                        {copied ? 'Copied' : 'Copy'}
+                            <div className="p-4 bg-gray-900 rounded-lg">
+                                <h4 className="font-semibold text-lg mb-2 text-indigo-400">{t('coverLetter')}</h4>
+                                <Textarea value={coverLetter} readOnly className="h-40 bg-gray-800 border-gray-700" />
+                                <div className="flex gap-2 mt-2">
+                                    <Button onClick={() => copyToClipboard(coverLetter)} variant="outline" size="sm">
+                                        <Copy size={16} /> {copied ? t('copied') : t('copy')}
                                     </Button>
-                                    <Button 
-                                        onClick={() => downloadAsFile(coverLetter, 'cover-letter.txt')}
-                                        className="bg-green-600 hover:bg-green-700 text-xs px-2 py-1"
-                                    >
-                                        <Download className="w-4 h-4 mr-1" />
-                                        Download
+                                    <Button onClick={() => downloadAsFile(coverLetter, 'cover_letter.txt')} variant="outline" size="sm">
+                                        <Download size={16} /> {t('download')}
                                     </Button>
                                 </div>
-                                <pre className="whitespace-pre-wrap text-gray-300 font-sans">
-                                    {coverLetter}
-                                </pre>
                             </div>
-                            
                             {keyHighlights?.length > 0 && (
-                                 <div className="p-4 bg-gray-900 rounded-lg">
-                                    <h4 className="font-semibold text-lg mb-2 text-purple-400">Key Highlights</h4>
+                                <div className="p-4 bg-gray-900 rounded-lg">
+                                    <h4 className="font-semibold text-lg mb-2 text-purple-400">{t('keyHighlights')}</h4>
                                     <ul className="list-disc list-inside space-y-2 text-gray-300">
                                         {keyHighlights.map((highlight, index) => (
                                             <li key={index}>{highlight}</li>
@@ -326,7 +321,7 @@ const ResumeOptimizer = () => {
     
                             {customizationNotes && (
                                 <div className="p-4 bg-gray-900 rounded-lg">
-                                    <h4 className="font-semibold text-lg mb-2 text-purple-400">Customization Notes</h4>
+                                    <h4 className="font-semibold text-lg mb-2 text-purple-400">{t('customizationNotes')}</h4>
                                     <p className="text-gray-300 italic">"{customizationNotes}"</p>
                                 </div>
                             )}
@@ -342,7 +337,7 @@ const ResumeOptimizer = () => {
     return (
         <div className="min-h-screen bg-gray-900 text-white p-6">
             <div className="max-w-6xl mx-auto">
-                <h1 className="text-4xl font-bold mb-8 text-center">Resume Optimization Suite</h1>
+                <h1 className="text-4xl font-bold mb-8 text-center">{t('resumeOptimizationSuite')}</h1>
                 
                 {/* Tab Navigation */}
                 <div className="flex justify-center mb-8">
@@ -374,7 +369,7 @@ const ResumeOptimizer = () => {
                         <CardHeader>
                             <CardTitle className="flex items-center gap-2">
                                 <FileText className="w-5 h-5" />
-                                Resume Content
+                                {t('resumeContent')}
                             </CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-4">
@@ -388,11 +383,11 @@ const ResumeOptimizer = () => {
                                 />
                                 <label htmlFor="resume-upload" className="cursor-pointer">
                                     <CloudUpload className="w-8 h-8 mx-auto mb-2 text-gray-400" />
-                                    <p className="text-gray-400">Upload resume file or paste content below</p>
+                                    <p className="text-gray-400">{t('uploadResumeFileOrPaste')}</p>
                                 </label>
                             </div>
                             <Textarea
-                                placeholder="Paste your resume content here..."
+                                placeholder={t('pasteResumeContent')}
                                 value={resumeText}
                                 onChange={(e) => setResumeText(e.target.value)}
                                 className="h-40 bg-gray-900 border-gray-600"
@@ -405,12 +400,12 @@ const ResumeOptimizer = () => {
                         <CardHeader>
                             <CardTitle className="flex items-center gap-2">
                                 <Target className="w-5 h-5" />
-                                Job Description
+                                {t('jobDescription')}
                             </CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-4">
                             <Textarea
-                                placeholder="Paste the job description here..."
+                                placeholder={t('pasteJobDescription')}
                                 value={jobDescription}
                                 onChange={(e) => setJobDescription(e.target.value)}
                                 className="h-40 bg-gray-900 border-gray-600"
@@ -420,19 +415,19 @@ const ResumeOptimizer = () => {
                             {activeTab === 'coverLetter' && (
                                 <div className="space-y-3">
                                     <Input
-                                        placeholder="Company Name"
+                                        placeholder={t('companyName')}
                                         value={companyName}
                                         onChange={(e) => setCompanyName(e.target.value)}
                                         className="bg-gray-900 border-gray-600"
                                     />
                                     <Input
-                                        placeholder="Position Title"
+                                        placeholder={t('positionTitle')}
                                         value={positionTitle}
                                         onChange={(e) => setPositionTitle(e.target.value)}
                                         className="bg-gray-900 border-gray-600"
                                     />
                                     <Textarea
-                                        placeholder="Company Culture (optional)"
+                                        placeholder={t('companyCultureOptional')}
                                         value={companyCulture}
                                         onChange={(e) => setCompanyCulture(e.target.value)}
                                         className="h-20 bg-gray-900 border-gray-600"
@@ -444,30 +439,25 @@ const ResumeOptimizer = () => {
                 </div>
 
                 {/* Action Button */}
-                <div className="text-center mb-6">
-                    <Button
-                        onClick={
-                            activeTab === 'analyzer' ? handleResumeAnalysis :
-                            activeTab === 'matching' ? handleJDMatching :
-                            handleCoverLetterGeneration
-                        }
-                        disabled={loading}
-                        className="bg-blue-600 hover:bg-blue-700 px-8 py-3 text-lg"
-                    >
-                        {loading ? (
-                            <div className="flex items-center gap-2">
-                                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
-                                Processing...
-                            </div>
-                        ) : (
-                            activeTab === 'analyzer' ? 'Analyze Resume' :
-                            activeTab === 'matching' ? 'Assess Matching' :
-                            'Generate Cover Letter'
-                        )}
-                    </Button>
+                <div className="flex justify-center mb-8 gap-4">
+                    {activeTab === 'analyzer' && (
+                        <Button onClick={handleResumeAnalysis} className="bg-blue-600 hover:bg-blue-700">
+                            {t('analyzeResume')}
+                        </Button>
+                    )}
+                    {activeTab === 'matching' && (
+                        <Button onClick={handleJDMatching} className="bg-green-600 hover:bg-green-700">
+                            {t('assessJDMatching')}
+                        </Button>
+                    )}
+                    {activeTab === 'coverLetter' && (
+                        <Button onClick={handleCoverLetterGeneration} className="bg-indigo-600 hover:bg-indigo-700">
+                            {t('generateCoverLetter')}
+                        </Button>
+                    )}
                 </div>
 
-                {/* Results Section */}
+                {/* Results */}
                 {renderResults()}
             </div>
         </div>

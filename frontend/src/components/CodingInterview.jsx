@@ -4,9 +4,14 @@ import { Button } from './ui/button';
 import { Select } from './ui/select';
 import { Textarea } from './ui/textarea';
 import { apiRequest } from '../api';
+import { useLanguage } from '../contexts/LanguageContext';
+import { getText } from '../utils/translations';
 import { Play, Pause, Square, Clock, Lightbulb, CheckCircle, AlertCircle } from 'lucide-react';
 
 const CodingInterview = () => {
+    const { language } = useLanguage();
+    const t = (key) => getText(key, language);
+    
     const [interviewState, setInterviewState] = useState('setup'); // setup, active, completed
     const [sessionId, setSessionId] = useState(null);
     const [questionData, setQuestionData] = useState(null);
@@ -17,7 +22,7 @@ const CodingInterview = () => {
     const [feedback, setFeedback] = useState(null);
     const [showHints, setShowHints] = useState(false);
     const [difficulty, setDifficulty] = useState('medium');
-    const [language, setLanguage] = useState('any');
+    const [programmingLanguage, setProgrammingLanguage] = useState('any');
     const [topic, setTopic] = useState('algorithms');
     const [finalReport, setFinalReport] = useState(null);
     
@@ -53,7 +58,7 @@ const CodingInterview = () => {
         try {
             const response = await apiRequest('/questions/coding-interview/start', 'POST', {
                 difficulty,
-                language,
+                language: programmingLanguage,
                 topic
             });
             
@@ -64,13 +69,13 @@ const CodingInterview = () => {
             startTimeRef.current = Date.now();
         } catch (error) {
             console.error('Failed to start interview:', error);
-            alert('Failed to start interview: ' + error.message);
+            alert(`${t('failedToStartInterview')} ${error.message}`);
         }
     };
 
     const submitSolution = async () => {
         if (!solution.trim()) {
-            alert('Please provide a solution before submitting.');
+            alert(t('pleaseProvideSolution'));
             return;
         }
 
@@ -85,7 +90,7 @@ const CodingInterview = () => {
             setFeedback(response.feedback);
         } catch (error) {
             console.error('Failed to submit solution:', error);
-            alert('Failed to submit solution: ' + error.message);
+            alert(`${t('failedToSubmitSolution')} ${error.message}`);
         }
     };
 
@@ -100,7 +105,7 @@ const CodingInterview = () => {
             setIsTimerRunning(false);
         } catch (error) {
             console.error('Failed to end interview:', error);
-            alert('Failed to end interview: ' + error.message);
+            alert(`${t('failedToEndInterview')} ${error.message}`);
         }
     };
 
@@ -127,36 +132,36 @@ const CodingInterview = () => {
     if (interviewState === 'setup') {
         return (
             <div className="max-w-4xl mx-auto p-6">
-                <h1 className="text-4xl font-bold mb-8 text-center">编程面试模拟</h1>
+                <h1 className="text-4xl font-bold mb-8 text-center">{t('codingInterviewSimulation')}</h1>
                 <Card className="bg-gray-800 p-6">
-                    <h2 className="text-2xl font-bold mb-6">面试设置</h2>
+                    <h2 className="text-2xl font-bold mb-6">{t('interviewSetup')}</h2>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
                         <div>
-                            <label className="block text-sm font-medium mb-2">难度</label>
+                            <label className="block text-sm font-medium mb-2">{t('difficulty')}</label>
                             <Select value={difficulty} onChange={(e) => setDifficulty(e.target.value)}>
-                                <option value="easy">简单</option>
-                                <option value="medium">中等</option>
-                                <option value="hard">困难</option>
+                                <option value="easy">{t('easy')}</option>
+                                <option value="medium">{t('medium')}</option>
+                                <option value="hard">{t('hard')}</option>
                             </Select>
                         </div>
                         <div>
-                            <label className="block text-sm font-medium mb-2">编程语言</label>
-                            <Select value={language} onChange={(e) => setLanguage(e.target.value)}>
-                                <option value="any">任意语言</option>
-                                <option value="python">Python</option>
-                                <option value="javascript">JavaScript</option>
-                                <option value="java">Java</option>
-                                <option value="cpp">C++</option>
+                            <label className="block text-sm font-medium mb-2">{t('programmingLanguage')}</label>
+                            <Select value={programmingLanguage} onChange={(e) => setProgrammingLanguage(e.target.value)}>
+                                <option value="any">{t('anyLanguage')}</option>
+                                <option value="python">{t('python')}</option>
+                                <option value="javascript">{t('javascript')}</option>
+                                <option value="java">{t('java')}</option>
+                                <option value="cpp">{t('cpp')}</option>
                             </Select>
                         </div>
                         <div>
-                            <label className="block text-sm font-medium mb-2">主题</label>
+                            <label className="block text-sm font-medium mb-2">{t('topic')}</label>
                             <Select value={topic} onChange={(e) => setTopic(e.target.value)}>
-                                <option value="algorithms">算法</option>
-                                <option value="data-structures">数据结构</option>
-                                <option value="dynamic-programming">动态规划</option>
-                                <option value="graph">图论</option>
-                                <option value="string">字符串</option>
+                                <option value="algorithms">{t('algorithms')}</option>
+                                <option value="data-structures">{t('dataStructures')}</option>
+                                <option value="dynamic-programming">{t('dynamicProgramming')}</option>
+                                <option value="graph">{t('graphTheory')}</option>
+                                <option value="string">{t('string')}</option>
                             </Select>
                         </div>
                     </div>
@@ -164,7 +169,7 @@ const CodingInterview = () => {
                         onClick={startInterview}
                         className="w-full bg-blue-600 hover:bg-blue-700"
                     >
-                        开始面试
+                        {t('startInterview')}
                     </Button>
                 </Card>
             </div>
@@ -174,10 +179,10 @@ const CodingInterview = () => {
     if (interviewState === 'completed') {
         return (
             <div className="max-w-4xl mx-auto p-6">
-                <h1 className="text-4xl font-bold mb-8 text-center">面试完成</h1>
+                <h1 className="text-4xl font-bold mb-8 text-center">{t('interviewCompleted')}</h1>
                 <Card className="bg-gray-800 p-6">
                     <div className="text-center mb-6">
-                        <h2 className="text-2xl font-bold mb-2">最终评估</h2>
+                        <h2 className="text-2xl font-bold mb-2">{t('finalAssessment')}</h2>
                         <div className={`text-4xl font-bold ${getScoreColor(finalReport?.overallScore)}`}>
                             {finalReport?.overallScore}/100
                         </div>
@@ -185,7 +190,7 @@ const CodingInterview = () => {
                     
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
-                            <h3 className="text-lg font-bold mb-3">优势</h3>
+                            <h3 className="text-lg font-bold mb-3">{t('strengths')}</h3>
                             <ul className="space-y-2">
                                 {finalReport?.strengths?.map((strength, index) => (
                                     <li key={index} className="flex items-center gap-2">
@@ -196,7 +201,7 @@ const CodingInterview = () => {
                             </ul>
                         </div>
                         <div>
-                            <h3 className="text-lg font-bold mb-3">需要改进的地方</h3>
+                            <h3 className="text-lg font-bold mb-3">{t('areasForImprovement')}</h3>
                             <ul className="space-y-2">
                                 {finalReport?.areasForImprovement?.map((area, index) => (
                                     <li key={index} className="flex items-center gap-2">
@@ -209,10 +214,10 @@ const CodingInterview = () => {
                     </div>
                     
                     <div className="mt-6">
-                        <h3 className="text-lg font-bold mb-3">建议</h3>
+                        <h3 className="text-lg font-bold mb-3">{t('finalAssessmentComment')}</h3>
                         <p className="text-gray-300 mb-4">{finalReport?.finalAssessment}</p>
                         <div className="bg-gray-700 p-4 rounded-lg">
-                            <h4 className="font-bold mb-2">下一步建议</h4>
+                            <h4 className="font-bold mb-2">{t('nextSteps')}</h4>
                             <p>{finalReport?.nextSteps}</p>
                         </div>
                     </div>
@@ -221,7 +226,7 @@ const CodingInterview = () => {
                         onClick={() => window.location.reload()}
                         className="w-full mt-6 bg-blue-600 hover:bg-blue-700"
                     >
-                        重新开始
+                        {t('startNewInterview')}
                     </Button>
                 </Card>
             </div>
@@ -231,164 +236,109 @@ const CodingInterview = () => {
     return (
         <div className="max-w-6xl mx-auto p-6">
             <div className="flex justify-between items-center mb-6">
-                <h1 className="text-3xl font-bold">编程面试</h1>
+                <h1 className="text-3xl font-bold">{questionData?.title}</h1>
                 <div className="flex items-center gap-4">
-                    <div className="flex items-center gap-2 bg-gray-700 px-4 py-2 rounded-lg">
+                    <div className="flex items-center gap-2">
                         <Clock className="w-5 h-5" />
-                        <span className="font-mono text-lg">{formatTime(timeSpent)}</span>
+                        <span className="font-mono">{formatTime(timeSpent)}</span>
                     </div>
                     <Button onClick={toggleTimer} variant="outline" size="sm">
-                        {isTimerRunning ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
+                        {isTimerRunning ? <Pause size={16} /> : <Play size={16} />}
                     </Button>
-                    <Button onClick={endInterview} variant="destructive" size="sm">
-                        <Square className="w-4 h-4" />
-                        结束
+                    <Button onClick={endInterview} variant="outline" size="sm">
+                        <Square size={16} />
                     </Button>
                 </div>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                {/* 问题区域 */}
-                <Card className="bg-gray-800 p-6">
-                    <h2 className="text-xl font-bold mb-4">问题</h2>
-                    <div className="space-y-4">
-                        <div>
-                            <h3 className="font-bold text-lg">{questionData?.title}</h3>
-                            <p className="text-gray-300 mt-2">{questionData?.description}</p>
-                        </div>
-                        
-                        {questionData?.example && (
-                            <div>
-                                <h4 className="font-bold">示例:</h4>
-                                <pre className="bg-gray-700 p-3 rounded mt-2 text-sm overflow-x-auto">
-                                    {questionData.example}
-                                </pre>
-                            </div>
-                        )}
-                        
-                        {questionData?.constraints && (
-                            <div>
-                                <h4 className="font-bold">约束条件:</h4>
-                                <p className="text-gray-300 mt-2">{questionData.constraints}</p>
-                            </div>
-                        )}
-                        
-                        <div>
-                            <Button 
-                                onClick={() => setShowHints(!showHints)}
-                                variant="outline"
-                                size="sm"
-                                className="flex items-center gap-2"
-                            >
-                                <Lightbulb className="w-4 h-4" />
-                                {showHints ? '隐藏提示' : '显示提示'}
-                            </Button>
-                            
-                            {showHints && questionData?.hints && (
-                                <div className="mt-3 bg-gray-700 p-3 rounded">
-                                    <h4 className="font-bold mb-2">提示:</h4>
-                                    <ul className="space-y-1">
-                                        {questionData.hints.map((hint, index) => (
-                                            <li key={index} className="text-sm">• {hint}</li>
-                                        ))}
-                                    </ul>
-                                </div>
-                            )}
-                        </div>
-                    </div>
-                </Card>
-
-                {/* 解答区域 */}
+                {/* Question and Solution */}
                 <div className="space-y-6">
-                    <Card className="bg-gray-800 p-6">
-                        <h2 className="text-xl font-bold mb-4">你的解答</h2>
-                        <div className="space-y-4">
-                            <div>
-                                <label className="block text-sm font-medium mb-2">解题思路</label>
-                                <Textarea
-                                    value={approach}
-                                    onChange={(e) => setApproach(e.target.value)}
-                                    placeholder="描述你的解题思路..."
-                                    className="min-h-[100px]"
-                                />
+                    <Card className="bg-gray-800">
+                        <div className="p-6">
+                            <h2 className="text-xl font-bold mb-4">{t('currentQuestion')}</h2>
+                            <div className="prose prose-invert max-w-none">
+                                <p className="text-gray-300">{questionData?.description}</p>
+                                {questionData?.example && (
+                                    <div className="mt-4">
+                                        <h3 className="font-semibold mb-2">{t('example')}</h3>
+                                        <pre className="bg-gray-900 p-4 rounded-md text-sm overflow-x-auto">
+                                            {questionData.example}
+                                        </pre>
+                                    </div>
+                                )}
                             </div>
-                            <div>
-                                <label className="label block text-sm font-medium mb-2">代码实现</label>
-                                <Textarea
-                                    value={solution}
-                                    onChange={(e) => setSolution(e.target.value)}
-                                    placeholder="在这里编写你的代码..."
-                                    className="min-h-[300px] font-mono text-sm"
-                                />
-                            </div>
-                            <Button 
-                                onClick={submitSolution}
-                                className="w-full bg-green-600 hover:bg-green-700"
-                            >
-                                提交解答
-                            </Button>
                         </div>
                     </Card>
 
-                    {/* 反馈区域 */}
-                    {feedback && (
-                        <Card className="bg-gray-800 p-6">
-                            <h2 className="text-xl font-bold mb-4">AI 反馈</h2>
-                            <div className="space-y-4">
-                                <div className="text-center">
-                                    <div className={`text-3xl font-bold ${getScoreColor(feedback.score)}`}>
-                                        {feedback.score}/100
-                                    </div>
-                                </div>
-                                
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div className="flex items-center gap-2">
-                                        {getFeedbackIcon(feedback.correctness)}
-                                        <span>正确性: {feedback.correctness}</span>
-                                    </div>
-                                    <div className="flex items-center gap-2">
-                                        {getFeedbackIcon(feedback.efficiency)}
-                                        <span>效率: {feedback.efficiency}</span>
-                                    </div>
-                                    <div className="flex items-center gap-2">
-                                        {getFeedbackIcon(feedback.codeQuality)}
-                                        <span>代码质量: {feedback.codeQuality}</span>
-                                    </div>
-                                    <div className="flex items-center gap-2">
-                                        {getFeedbackIcon(feedback.problemSolving)}
-                                        <span>问题解决: {feedback.problemSolving}</span>
-                                    </div>
-                                </div>
-                                
-                                <div>
-                                    <h4 className="font-bold mb-2">详细反馈</h4>
-                                    <p className="text-gray-300">{feedback.detailedFeedback}</p>
-                                </div>
-                                
-                                {feedback.suggestions && feedback.suggestions.length > 0 && (
-                                    <div>
-                                        <h4 className="font-bold mb-2">建议</h4>
-                                        <ul className="space-y-1">
-                                            {feedback.suggestions.map((suggestion, index) => (
-                                                <li key={index} className="text-sm">• {suggestion}</li>
-                                            ))}
-                                        </ul>
-                                    </div>
-                                )}
-                                
-                                {feedback.nextHints && feedback.nextHints.length > 0 && (
-                                    <div>
-                                        <h4 className="font-bold mb-2">下一步提示</h4>
-                                        <ul className="space-y-1">
-                                            {feedback.nextHints.map((hint, index) => (
-                                                <li key={index} className="text-sm">• {hint}</li>
-                                            ))}
-                                        </ul>
-                                    </div>
+                    <Card className="bg-gray-800">
+                        <div className="p-6">
+                            <h2 className="text-xl font-bold mb-4">{t('solution')}</h2>
+                            <Textarea
+                                value={solution}
+                                onChange={(e) => setSolution(e.target.value)}
+                                placeholder={t('pleaseProvideSolution')}
+                                className="h-48 font-mono"
+                            />
+                            <div className="mt-4">
+                                <h3 className="font-semibold mb-2">{t('approach')}</h3>
+                                <Textarea
+                                    value={approach}
+                                    onChange={(e) => setApproach(e.target.value)}
+                                    placeholder="Describe your approach..."
+                                    className="h-24"
+                                />
+                            </div>
+                            <div className="mt-4 flex gap-2">
+                                <Button onClick={submitSolution} className="bg-green-600 hover:bg-green-700">
+                                    {t('submitSolution')}
+                                </Button>
+                                {showHints && (
+                                    <Button variant="outline" onClick={() => setShowHints(false)}>
+                                        <Lightbulb size={16} className="mr-2" />
+                                        {t('hideHints')}
+                                    </Button>
                                 )}
                             </div>
-                        </Card>
-                    )}
+                        </div>
+                    </Card>
+                </div>
+
+                {/* Feedback */}
+                <div>
+                    <Card className="bg-gray-800 h-full">
+                        <div className="p-6">
+                            <h2 className="text-xl font-bold mb-4">{t('interviewFeedback')}</h2>
+                            {feedback ? (
+                                <div className="space-y-4">
+                                    {feedback.ratings && (
+                                        <div className="grid grid-cols-2 gap-4">
+                                            {Object.entries(feedback.ratings).map(([category, rating]) => (
+                                                <div key={category} className="flex items-center justify-between p-3 bg-gray-700 rounded-md">
+                                                    <span className="text-sm">{t(category)}</span>
+                                                    <div className="flex items-center gap-2">
+                                                        {getFeedbackIcon(rating)}
+                                                        <span className="text-sm font-medium">{t(rating)}</span>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
+                                    {feedback.comments && (
+                                        <div className="mt-4">
+                                            <h3 className="font-semibold mb-2">{t('comments')}</h3>
+                                            <p className="text-gray-300 text-sm">{feedback.comments}</p>
+                                        </div>
+                                    )}
+                                </div>
+                            ) : (
+                                <div className="text-center text-gray-400 py-8">
+                                    <Lightbulb className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                                    <p>{t('submitSolutionForFeedback')}</p>
+                                </div>
+                            )}
+                        </div>
+                    </Card>
                 </div>
             </div>
         </div>

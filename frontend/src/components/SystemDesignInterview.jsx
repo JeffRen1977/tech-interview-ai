@@ -4,12 +4,17 @@ import { Button } from './ui/button';
 import { Select } from './ui/select';
 import { Textarea } from './ui/textarea';
 import { apiRequest } from '../api';
+import { useLanguage } from '../contexts/LanguageContext';
+import { getText } from '../utils/translations';
 import { 
     Play, Pause, Square, Clock, Lightbulb, CheckCircle, AlertCircle, 
     Mic, MicOff, Save, Undo, Redo, Download, Upload, Volume2, VolumeX
 } from 'lucide-react';
 
 const SystemDesignInterview = () => {
+    const { language } = useLanguage();
+    const t = (key) => getText(key, language);
+    
     const [interviewState, setInterviewState] = useState('setup'); // setup, active, completed
     const [sessionId, setSessionId] = useState(null);
     const [questionData, setQuestionData] = useState(null);
@@ -29,7 +34,7 @@ const SystemDesignInterview = () => {
     const [showHints, setShowHints] = useState(false);
     const [topic, setTopic] = useState('machine-learning');
     const [difficulty, setDifficulty] = useState('medium');
-    const [language, setLanguage] = useState('chinese');
+    const [interviewLanguage, setInterviewLanguage] = useState('chinese');
     
     const canvasRef = useRef(null);
     const contextRef = useRef(null);
@@ -86,7 +91,7 @@ const SystemDesignInterview = () => {
             const response = await apiRequest('/questions/system-design-interview/start', 'POST', {
                 topic,
                 difficulty,
-                language
+                language: interviewLanguage
             });
             
             setSessionId(response.sessionId);
@@ -96,7 +101,7 @@ const SystemDesignInterview = () => {
             startTimeRef.current = Date.now();
         } catch (error) {
             console.error('Failed to start interview:', error);
-            alert('Failed to start interview: ' + error.message);
+            alert(`${t('failedToStartInterview')} ${error.message}`);
         }
     };
 
@@ -189,7 +194,7 @@ const SystemDesignInterview = () => {
             setIsRecording(true);
         } catch (error) {
             console.error('Error starting recording:', error);
-            alert('Failed to start recording: ' + error.message);
+            alert(`${t('failedToStartRecording')} ${error.message}`);
         }
     };
 
@@ -205,34 +210,30 @@ const SystemDesignInterview = () => {
         try {
             const formData = new FormData();
             formData.append('audio', audioBlob);
-            
-            const response = await apiRequest('/questions/transcribe-audio', 'POST', formData, true);
-            setTranscribedText(response.transcription);
-            setVoiceInput(prev => prev + ' ' + response.transcription);
+            formData.append('language', language);
+
+            const response = await apiRequest('/transcribe', 'POST', formData, true);
+            setTranscribedText(response.transcript);
+            setVoiceInput(prev => prev + ' ' + response.transcript);
         } catch (error) {
-            console.error('Error transcribing audio:', error);
-            alert('Failed to transcribe audio: ' + error.message);
+            console.error('Transcription failed:', error);
+            alert('Transcription failed: ' + error.message);
         }
     };
 
     const submitSolution = async () => {
-        if (!voiceInput.trim() && whiteboardData.length === 0) {
-            alert('Please provide voice input or draw on the whiteboard before submitting.');
-            return;
-        }
-
         try {
             const response = await apiRequest('/questions/system-design-interview/submit', 'POST', {
                 sessionId,
-                voiceInput,
                 whiteboardData,
+                voiceInput,
                 timeSpent
             });
             
             setFeedback(response.feedback);
         } catch (error) {
             console.error('Failed to submit solution:', error);
-            alert('Failed to submit solution: ' + error.message);
+            alert(`${t('failedToSubmitSolution')} ${error.message}`);
         }
     };
 
@@ -247,7 +248,7 @@ const SystemDesignInterview = () => {
             setIsTimerRunning(false);
         } catch (error) {
             console.error('Failed to end interview:', error);
-            alert('Failed to end interview: ' + error.message);
+            alert(`${t('failedToEndInterview')} ${error.message}`);
         }
     };
 
@@ -269,37 +270,37 @@ const SystemDesignInterview = () => {
 
     if (interviewState === 'setup') {
         return (
-            <div className="max-w-6xl mx-auto p-6">
-                <h1 className="text-4xl font-bold mb-8 text-center">系统设计面试模拟</h1>
+            <div className="max-w-4xl mx-auto p-6">
+                <h1 className="text-4xl font-bold mb-8 text-center">{t('systemDesignInterviewSimulation')}</h1>
                 <Card className="bg-gray-800 p-6">
-                    <h2 className="text-2xl font-bold mb-6">面试设置</h2>
+                    <h2 className="text-2xl font-bold mb-6">{t('interviewSetup')}</h2>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
                         <div>
-                            <label className="block text-sm font-medium mb-2">主题领域</label>
+                            <label className="block text-sm font-medium mb-2">{t('topic')}</label>
                             <Select value={topic} onChange={(e) => setTopic(e.target.value)}>
-                                <option value="machine-learning">机器学习系统</option>
-                                <option value="computer-vision">计算机视觉</option>
-                                <option value="natural-language-processing">自然语言处理</option>
-                                <option value="reinforcement-learning">强化学习</option>
-                                <option value="deep-learning">深度学习</option>
-                                <option value="ai-infrastructure">AI基础设施</option>
-                                <option value="recommendation-systems">推荐系统</option>
-                                <option value="autonomous-systems">自动驾驶系统</option>
+                                <option value="machine-learning">{t('machineLearning')}</option>
+                                <option value="computer-vision">{t('computerVision')}</option>
+                                <option value="natural-language-processing">{t('naturalLanguageProcessing')}</option>
+                                <option value="reinforcement-learning">{t('reinforcementLearning')}</option>
+                                <option value="deep-learning">{t('deepLearning')}</option>
+                                <option value="ai-infrastructure">{t('aiInfrastructure')}</option>
+                                <option value="recommendation-systems">{t('recommendationSystems')}</option>
+                                <option value="autonomous-systems">{t('autonomousSystems')}</option>
                             </Select>
                         </div>
                         <div>
-                            <label className="block text-sm font-medium mb-2">难度</label>
+                            <label className="block text-sm font-medium mb-2">{t('difficulty')}</label>
                             <Select value={difficulty} onChange={(e) => setDifficulty(e.target.value)}>
-                                <option value="easy">初级</option>
-                                <option value="medium">中级</option>
-                                <option value="hard">高级</option>
+                                <option value="easy">{t('easy')}</option>
+                                <option value="medium">{t('medium')}</option>
+                                <option value="hard">{t('hard')}</option>
                             </Select>
                         </div>
                         <div>
-                            <label className="block text-sm font-medium mb-2">语言</label>
-                            <Select value={language} onChange={(e) => setLanguage(e.target.value)}>
-                                <option value="chinese">中文</option>
-                                <option value="english">English</option>
+                            <label className="block text-sm font-medium mb-2">{t('language')}</label>
+                            <Select value={interviewLanguage} onChange={(e) => setInterviewLanguage(e.target.value)}>
+                                <option value="chinese">{t('chinese')}</option>
+                                <option value="english">{t('english')}</option>
                             </Select>
                         </div>
                     </div>
@@ -307,7 +308,7 @@ const SystemDesignInterview = () => {
                         onClick={startInterview}
                         className="w-full bg-blue-600 hover:bg-blue-700"
                     >
-                        开始面试
+                        {t('startInterview')}
                     </Button>
                 </Card>
             </div>
@@ -316,11 +317,11 @@ const SystemDesignInterview = () => {
 
     if (interviewState === 'completed') {
         return (
-            <div className="max-w-6xl mx-auto p-6">
-                <h1 className="text-4xl font-bold mb-8 text-center">面试完成</h1>
+            <div className="max-w-4xl mx-auto p-6">
+                <h1 className="text-4xl font-bold mb-8 text-center">{t('interviewCompleted')}</h1>
                 <Card className="bg-gray-800 p-6">
                     <div className="text-center mb-6">
-                        <h2 className="text-2xl font-bold mb-2">最终评估</h2>
+                        <h2 className="text-2xl font-bold mb-2">{t('finalAssessment')}</h2>
                         <div className={`text-4xl font-bold ${getScoreColor(finalReport?.overallScore)}`}>
                             {finalReport?.overallScore}/100
                         </div>
@@ -328,7 +329,7 @@ const SystemDesignInterview = () => {
                     
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
-                            <h3 className="text-lg font-bold mb-3">优势</h3>
+                            <h3 className="text-lg font-bold mb-3">{t('strengths')}</h3>
                             <ul className="space-y-2">
                                 {finalReport?.strengths?.map((strength, index) => (
                                     <li key={index} className="flex items-center gap-2">
@@ -339,7 +340,7 @@ const SystemDesignInterview = () => {
                             </ul>
                         </div>
                         <div>
-                            <h3 className="text-lg font-bold mb-3">需要改进的地方</h3>
+                            <h3 className="text-lg font-bold mb-3">{t('areasForImprovement')}</h3>
                             <ul className="space-y-2">
                                 {finalReport?.areasForImprovement?.map((area, index) => (
                                     <li key={index} className="flex items-center gap-2">
@@ -352,245 +353,205 @@ const SystemDesignInterview = () => {
                     </div>
                     
                     <div className="mt-6">
-                        <h3 className="text-lg font-bold mb-3">建议</h3>
-                        <ul className="space-y-2">
-                            {finalReport?.recommendations?.map((rec, index) => (
-                                <li key={index} className="flex items-start gap-2">
-                                    <Lightbulb className="w-4 h-4 text-blue-500 mt-1" />
-                                    {rec}
-                                </li>
-                            ))}
-                        </ul>
+                        <h3 className="text-lg font-bold mb-3">{t('finalAssessmentComment')}</h3>
+                        <p className="text-gray-300 mb-4">{finalReport?.finalAssessment}</p>
+                        <div className="bg-gray-700 p-4 rounded-lg">
+                            <h4 className="font-bold mb-2">{t('nextSteps')}</h4>
+                            <p>{finalReport?.nextSteps}</p>
+                        </div>
                     </div>
                     
-                    <div className="mt-6">
-                        <h3 className="text-lg font-bold mb-3">下一步</h3>
-                        <p className="text-gray-300">{finalReport?.nextSteps}</p>
-                    </div>
-                    
-                    <div className="mt-6 flex gap-4">
-                        <Button 
-                            onClick={() => setInterviewState('setup')}
-                            className="bg-blue-600 hover:bg-blue-700"
-                        >
-                            重新开始
-                        </Button>
-                        <Button 
-                            onClick={() => window.print()}
-                            className="bg-green-600 hover:bg-green-700"
-                        >
-                            打印报告
-                        </Button>
-                    </div>
+                    <Button 
+                        onClick={() => window.location.reload()}
+                        className="w-full mt-6 bg-blue-600 hover:bg-blue-700"
+                    >
+                        {t('startNewInterview')}
+                    </Button>
                 </Card>
             </div>
         );
     }
 
     return (
-        <div className="max-w-6xl mx-auto p-6">
+        <div className="max-w-7xl mx-auto p-6">
             <div className="flex justify-between items-center mb-6">
-                <h1 className="text-3xl font-bold">系统设计面试</h1>
+                <h1 className="text-3xl font-bold">{questionData?.title}</h1>
                 <div className="flex items-center gap-4">
                     <div className="flex items-center gap-2">
                         <Clock className="w-5 h-5" />
-                        <span className="text-xl font-mono">{formatTime(timeSpent)}</span>
+                        <span className="font-mono">{formatTime(timeSpent)}</span>
                     </div>
-                    <Button 
-                        onClick={() => setIsTimerRunning(!isTimerRunning)}
-                        variant="outline"
-                        size="sm"
-                    >
-                        {isTimerRunning ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
+                    <Button onClick={() => setIsTimerRunning(!isTimerRunning)} variant="outline" size="sm">
+                        {isTimerRunning ? <Pause size={16} /> : <Play size={16} />}
+                    </Button>
+                    <Button onClick={endInterview} variant="outline" size="sm">
+                        <Square size={16} />
                     </Button>
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                {/* Question Panel */}
-                <Card className="bg-gray-800 p-6">
-                    <h2 className="text-xl font-bold mb-4">问题</h2>
-                    {questionData && (
-                        <div className="space-y-4">
-                            <h3 className="text-lg font-semibold">{questionData.title}</h3>
-                            <p className="text-gray-300">{questionData.description}</p>
-                            
-                            {questionData.requirements && (
-                                <div>
-                                    <h4 className="font-semibold mb-2">要求:</h4>
-                                    <ul className="list-disc list-inside space-y-1 text-gray-300">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                {/* Question */}
+                <Card className="bg-gray-800">
+                    <div className="p-6">
+                        <h2 className="text-xl font-bold mb-4">{t('currentQuestion')}</h2>
+                        <div className="prose prose-invert max-w-none">
+                            <p className="text-gray-300">{questionData?.description}</p>
+                            {questionData?.requirements && (
+                                <div className="mt-4">
+                                    <h3 className="font-semibold mb-2">{t('requirements')}</h3>
+                                    <ul className="space-y-1">
                                         {questionData.requirements.map((req, index) => (
-                                            <li key={index}>{req}</li>
+                                            <li key={index} className="text-sm text-gray-300">• {req}</li>
                                         ))}
                                     </ul>
                                 </div>
                             )}
-                            
-                            {showHints && questionData.hints && (
-                                <div>
-                                    <h4 className="font-semibold mb-2">提示:</h4>
-                                    <ul className="list-disc list-inside space-y-1 text-gray-300">
-                                        {questionData.hints.map((hint, index) => (
-                                            <li key={index}>{hint}</li>
-                                        ))}
-                                    </ul>
-                                </div>
-                            )}
-                            
-                            <Button 
-                                onClick={() => setShowHints(!showHints)}
-                                variant="outline"
-                                size="sm"
-                            >
-                                <Lightbulb className="w-4 h-4 mr-2" />
-                                {showHints ? '隐藏提示' : '显示提示'}
-                            </Button>
-                        </div>
-                    )}
-                </Card>
-
-                {/* Whiteboard Panel */}
-                <Card className="bg-gray-800 p-6">
-                    <div className="flex justify-between items-center mb-4">
-                        <h2 className="text-xl font-bold">白板</h2>
-                        <div className="flex gap-2">
-                            <input
-                                type="color"
-                                value={drawingColor}
-                                onChange={(e) => setDrawingColor(e.target.value)}
-                                className="w-8 h-8 rounded border"
-                            />
-                            <select
-                                value={brushSize}
-                                onChange={(e) => setBrushSize(Number(e.target.value))}
-                                className="bg-gray-700 border border-gray-600 rounded px-2"
-                            >
-                                <option value={1}>细</option>
-                                <option value={2}>中</option>
-                                <option value={4}>粗</option>
-                            </select>
-                            <Button onClick={clearCanvas} variant="outline" size="sm">
-                                <Square className="w-4 h-4" />
-                            </Button>
-                            <Button onClick={undo} variant="outline" size="sm">
-                                <Undo className="w-4 h-4" />
-                            </Button>
                         </div>
                     </div>
-                    
-                    <div className="border border-gray-600 rounded-lg overflow-hidden">
+                </Card>
+
+                {/* Whiteboard */}
+                <Card className="bg-gray-800">
+                    <div className="p-6">
+                        <div className="flex justify-between items-center mb-4">
+                            <h2 className="text-xl font-bold">{t('whiteboard')}</h2>
+                            <div className="flex gap-2">
+                                <Button onClick={undo} variant="outline" size="sm" disabled={whiteboardData.length === 0}>
+                                    <Undo size={16} />
+                                </Button>
+                                <Button onClick={clearCanvas} variant="outline" size="sm">
+                                    {t('clear')}
+                                </Button>
+                            </div>
+                        </div>
+                        
+                        <div className="mb-4">
+                            <div className="flex gap-2 mb-2">
+                                <input
+                                    type="color"
+                                    value={drawingColor}
+                                    onChange={(e) => setDrawingColor(e.target.value)}
+                                    className="w-8 h-8 rounded border"
+                                />
+                                <input
+                                    type="range"
+                                    min="1"
+                                    max="10"
+                                    value={brushSize}
+                                    onChange={(e) => setBrushSize(parseInt(e.target.value))}
+                                    className="flex-1"
+                                />
+                            </div>
+                        </div>
+                        
                         <canvas
                             ref={canvasRef}
                             onMouseDown={startDrawing}
                             onMouseMove={draw}
                             onMouseUp={stopDrawing}
                             onMouseLeave={stopDrawing}
-                            className="w-full h-96 bg-gray-900 cursor-crosshair"
+                            className="w-full h-96 bg-gray-900 rounded-lg cursor-crosshair border"
                         />
                     </div>
                 </Card>
-            </div>
 
-            {/* Voice Input Panel */}
-            <Card className="bg-gray-800 p-6 mt-6">
-                <div className="flex justify-between items-center mb-4">
-                    <h2 className="text-xl font-bold">语音输入</h2>
-                    <div className="flex gap-2">
-                        <Button
-                            onClick={isRecording ? stopRecording : startRecording}
-                            variant={isRecording ? "destructive" : "default"}
-                            size="sm"
-                        >
-                            {isRecording ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
-                            {isRecording ? '停止录音' : '开始录音'}
-                        </Button>
-                    </div>
-                </div>
-                
-                <Textarea
-                    value={voiceInput}
-                    onChange={(e) => setVoiceInput(e.target.value)}
-                    placeholder="在这里输入您的系统设计思路，或使用语音输入..."
-                    className="min-h-32 bg-gray-700 border-gray-600"
-                />
-                
-                {transcribedText && (
-                    <div className="mt-2 p-3 bg-gray-700 rounded">
-                        <p className="text-sm text-gray-300">
-                            <strong>转录结果:</strong> {transcribedText}
-                        </p>
-                    </div>
-                )}
-            </Card>
-
-            {/* Feedback Panel */}
-            {feedback && (
-                <Card className="bg-gray-800 p-6 mt-6">
-                    <h2 className="text-xl font-bold mb-4">实时反馈</h2>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div>
-                            <h3 className="font-semibold mb-2">评估结果</h3>
-                            <div className="space-y-2">
-                                <div className="flex items-center justify-between">
-                                    <span>系统设计能力:</span>
-                                    <div className="flex items-center gap-2">
-                                        {getFeedbackIcon(feedback.systemDesign)}
-                                        <span className={getScoreColor(feedback.score)}>
-                                            {feedback.score}/100
-                                        </span>
+                {/* Voice Input and Feedback */}
+                <div className="space-y-6">
+                    <Card className="bg-gray-800">
+                        <div className="p-6">
+                            <h2 className="text-xl font-bold mb-4">{t('voiceInput')}</h2>
+                            <div className="space-y-4">
+                                <div className="flex gap-2">
+                                    <Button 
+                                        onClick={startRecording}
+                                        disabled={isRecording}
+                                        variant="outline"
+                                        className="flex items-center gap-2"
+                                    >
+                                        <Mic size={16} />
+                                        {t('startRecording')}
+                                    </Button>
+                                    <Button 
+                                        onClick={stopRecording}
+                                        disabled={!isRecording}
+                                        variant="outline"
+                                        className="flex items-center gap-2"
+                                    >
+                                        <MicOff size={16} />
+                                        {t('stopRecording')}
+                                    </Button>
+                                </div>
+                                
+                                {isRecording && (
+                                    <div className="p-3 bg-red-900/20 border border-red-500/30 rounded-lg">
+                                        <p className="text-red-400 text-sm flex items-center gap-2">
+                                            <Mic className="w-4 h-4 animate-pulse" />
+                                            {t('recordingInProgress')}
+                                        </p>
                                     </div>
-                                </div>
-                                <div className="flex items-center justify-between">
-                                    <span>技术深度:</span>
-                                    {getFeedbackIcon(feedback.technicalDepth)}
-                                </div>
-                                <div className="flex items-center justify-between">
-                                    <span>沟通表达:</span>
-                                    {getFeedbackIcon(feedback.communication)}
-                                </div>
-                                <div className="flex items-center justify-between">
-                                    <span>创新思维:</span>
-                                    {getFeedbackIcon(feedback.innovation)}
-                                </div>
+                                )}
+                                
+                                <Textarea
+                                    value={voiceInput}
+                                    onChange={(e) => setVoiceInput(e.target.value)}
+                                    placeholder={t('voiceInputPlaceholder')}
+                                    className="min-h-[150px]"
+                                />
+                                
+                                <Button 
+                                    onClick={submitSolution}
+                                    disabled={!voiceInput.trim()}
+                                    className="w-full bg-green-600 hover:bg-green-700"
+                                >
+                                    {t('submitSolution')}
+                                </Button>
                             </div>
                         </div>
-                        <div>
-                            <h3 className="font-semibold mb-2">详细反馈</h3>
-                            <p className="text-gray-300 text-sm">{feedback.detailedFeedback}</p>
-                        </div>
-                    </div>
-                    
-                    {feedback.suggestions && (
-                        <div className="mt-4">
-                            <h3 className="font-semibold mb-2">建议</h3>
-                            <ul className="space-y-1">
-                                {feedback.suggestions.map((suggestion, index) => (
-                                    <li key={index} className="flex items-start gap-2 text-sm">
-                                        <Lightbulb className="w-4 h-4 text-blue-500 mt-0.5" />
-                                        {suggestion}
-                                    </li>
-                                ))}
-                            </ul>
-                        </div>
-                    )}
-                </Card>
-            )}
+                    </Card>
 
-            {/* Action Buttons */}
-            <div className="flex justify-center gap-4 mt-6">
-                <Button 
-                    onClick={submitSolution}
-                    className="bg-green-600 hover:bg-green-700"
-                    disabled={!voiceInput.trim() && whiteboardData.length === 0}
-                >
-                    提交解答
-                </Button>
-                <Button 
-                    onClick={endInterview}
-                    className="bg-red-600 hover:bg-red-700"
-                >
-                    结束面试
-                </Button>
+                    {/* Feedback */}
+                    {feedback && (
+                        <Card className="bg-gray-800">
+                            <div className="p-6">
+                                <h2 className="text-xl font-bold mb-4">{t('interviewFeedback')}</h2>
+                                <div className="space-y-4">
+                                    {feedback.ratings && (
+                                        <div className="grid grid-cols-1 gap-4">
+                                            {Object.entries(feedback.ratings).map(([category, rating]) => (
+                                                <div key={category} className="flex items-center justify-between p-3 bg-gray-700 rounded-md">
+                                                    <span className="text-sm">{t(category)}</span>
+                                                    <div className="flex items-center gap-2">
+                                                        {getFeedbackIcon(rating)}
+                                                        <span className="text-sm font-medium">{t(rating)}</span>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
+                                    
+                                    {feedback.comments && (
+                                        <div className="mt-4">
+                                            <h3 className="font-semibold mb-2">{t('comments')}</h3>
+                                            <p className="text-gray-300 text-sm">{feedback.comments}</p>
+                                        </div>
+                                    )}
+                                    
+                                    {feedback.suggestions && feedback.suggestions.length > 0 && (
+                                        <div className="mt-4">
+                                            <h3 className="font-semibold mb-2">{t('suggestions')}</h3>
+                                            <ul className="space-y-1">
+                                                {feedback.suggestions.map((suggestion, index) => (
+                                                    <li key={index} className="text-sm text-gray-300">• {suggestion}</li>
+                                                ))}
+                                            </ul>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        </Card>
+                    )}
+                </div>
             </div>
         </div>
     );

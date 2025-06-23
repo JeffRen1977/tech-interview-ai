@@ -4,9 +4,14 @@ import { Button } from './ui/button';
 import { Select } from './ui/select';
 import { Textarea } from './ui/textarea';
 import { apiRequest } from '../api';
+import { useLanguage } from '../contexts/LanguageContext';
+import { getText } from '../utils/translations';
 import { Play, Pause, Square, Clock, Mic, MicOff, CheckCircle, AlertCircle, Star } from 'lucide-react';
 
 const BehavioralInterview = () => {
+    const { language } = useLanguage();
+    const t = (key) => getText(key, language);
+    
     const [interviewState, setInterviewState] = useState('setup'); // setup, active, completed
     const [sessionId, setSessionId] = useState(null);
     const [interviewData, setInterviewData] = useState(null);
@@ -35,7 +40,7 @@ const BehavioralInterview = () => {
             recognitionRef.current = new SpeechRecognition();
             recognitionRef.current.continuous = true;
             recognitionRef.current.interimResults = true;
-            recognitionRef.current.lang = 'en-US';
+            recognitionRef.current.lang = language === 'zh' ? 'zh-CN' : 'en-US';
             
             recognitionRef.current.onresult = (event) => {
                 let finalTranscript = '';
@@ -49,7 +54,7 @@ const BehavioralInterview = () => {
                 }
             };
         }
-    }, []);
+    }, [language]);
 
     // Timer effect
     useEffect(() => {
@@ -97,7 +102,7 @@ const BehavioralInterview = () => {
             setIsTimerRunning(true);
         } catch (error) {
             console.error('Failed to start interview:', error);
-            alert('Failed to start interview: ' + error.message);
+            alert(`${t('failedToStartInterview')} ${error.message}`);
         }
     };
 
@@ -118,7 +123,7 @@ const BehavioralInterview = () => {
 
     const submitResponse = async () => {
         if (!response.trim()) {
-            alert('Please provide a response before submitting.');
+            alert(t('pleaseProvideResponse'));
             return;
         }
 
@@ -143,7 +148,7 @@ const BehavioralInterview = () => {
             }
         } catch (error) {
             console.error('Failed to submit response:', error);
-            alert('Failed to submit response: ' + error.message);
+            alert(`${t('failedToSubmitResponse')} ${error.message}`);
         }
     };
 
@@ -158,7 +163,7 @@ const BehavioralInterview = () => {
             setIsTimerRunning(false);
         } catch (error) {
             console.error('Failed to end interview:', error);
-            alert('Failed to end interview: ' + error.message);
+            alert(`${t('failedToEndInterview')} ${error.message}`);
         }
     };
 
@@ -185,36 +190,35 @@ const BehavioralInterview = () => {
     if (interviewState === 'setup') {
         return (
             <div className="max-w-4xl mx-auto p-6">
-                <h1 className="text-4xl font-bold mb-8 text-center">行为面试模拟</h1>
+                <h1 className="text-4xl font-bold mb-8 text-center">{t('behavioralInterviewSimulation')}</h1>
                 <Card className="bg-gray-800 p-6">
-                    <h2 className="text-2xl font-bold mb-6">面试设置</h2>
+                    <h2 className="text-2xl font-bold mb-6">{t('interviewSetup')}</h2>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
                         <div>
-                            <label className="block text-sm font-medium mb-2">职位</label>
+                            <label className="block text-sm font-medium mb-2">{t('role')}</label>
                             <Select value={role} onChange={(e) => setRole(e.target.value)}>
-                                <option value="Software Engineer">软件工程师</option>
-                                <option value="Senior Software Engineer">高级软件工程师</option>
-                                <option value="Engineering Manager">工程经理</option>
-                                <option value="Product Manager">产品经理</option>
-                                <option value="Data Scientist">数据科学家</option>
+                                <option value="Software Engineer">{t('softwareEngineer')}</option>
+                                <option value="Senior Software Engineer">{t('seniorSoftwareEngineer')}</option>
+                                <option value="Engineering Manager">{t('engineeringManager')}</option>
+                                <option value="Product Manager">{t('productManager')}</option>
+                                <option value="Data Scientist">{t('dataScientist')}</option>
                             </Select>
                         </div>
                         <div>
-                            <label className="block text-sm font-medium mb-2">级别</label>
+                            <label className="block text-sm font-medium mb-2">{t('level')}</label>
                             <Select value={level} onChange={(e) => setLevel(e.target.value)}>
-                                <option value="Entry-level">初级</option>
-                                <option value="Mid-level">中级</option>
-                                <option value="Senior">高级</option>
-                                <option value="Lead">主管</option>
+                                <option value="Entry-level">{t('entryLevel')}</option>
+                                <option value="Mid-level">{t('midLevel')}</option>
+                                <option value="Senior-level">{t('seniorLevel')}</option>
                             </Select>
                         </div>
                         <div>
-                            <label className="block text-sm font-medium mb-2">公司类型</label>
+                            <label className="block text-sm font-medium mb-2">{t('company')}</label>
                             <Select value={company} onChange={(e) => setCompany(e.target.value)}>
-                                <option value="Tech Company">科技公司</option>
-                                <option value="Startup">初创公司</option>
-                                <option value="Enterprise">大企业</option>
-                                <option value="Consulting">咨询公司</option>
+                                <option value="Tech Company">{t('techCompany')}</option>
+                                <option value="Startup">Startup</option>
+                                <option value="Enterprise">Enterprise</option>
+                                <option value="Consulting">Consulting</option>
                             </Select>
                         </div>
                     </div>
@@ -244,7 +248,7 @@ const BehavioralInterview = () => {
                         onClick={startInterview}
                         className="w-full bg-blue-600 hover:bg-blue-700"
                     >
-                        开始面试
+                        {t('startInterview')}
                     </Button>
                 </Card>
             </div>
@@ -254,10 +258,10 @@ const BehavioralInterview = () => {
     if (interviewState === 'completed') {
         return (
             <div className="max-w-4xl mx-auto p-6">
-                <h1 className="text-4xl font-bold mb-8 text-center">面试完成</h1>
+                <h1 className="text-4xl font-bold mb-8 text-center">{t('interviewCompleted')}</h1>
                 <Card className="bg-gray-800 p-6">
                     <div className="text-center mb-6">
-                        <h2 className="text-2xl font-bold mb-2">最终评估</h2>
+                        <h2 className="text-2xl font-bold mb-2">{t('finalAssessment')}</h2>
                         <div className={`text-4xl font-bold ${getScoreColor(finalReport?.overallScore)}`}>
                             {finalReport?.overallScore}/100
                         </div>
@@ -277,7 +281,7 @@ const BehavioralInterview = () => {
                     
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                         <div>
-                            <h3 className="text-lg font-bold mb-3">优势</h3>
+                            <h3 className="text-lg font-bold mb-3">{t('strengths')}</h3>
                             <ul className="space-y-2">
                                 {finalReport?.strengths?.map((strength, index) => (
                                     <li key={index} className="flex items-center gap-2">
@@ -288,7 +292,7 @@ const BehavioralInterview = () => {
                             </ul>
                         </div>
                         <div>
-                            <h3 className="text-lg font-bold mb-3">需要改进的地方</h3>
+                            <h3 className="text-lg font-bold mb-3">{t('areasForImprovement')}</h3>
                             <ul className="space-y-2">
                                 {finalReport?.areasForImprovement?.map((area, index) => (
                                     <li key={index} className="flex items-center gap-2">
@@ -301,32 +305,10 @@ const BehavioralInterview = () => {
                     </div>
                     
                     <div className="mb-6">
-                        <h3 className="text-lg font-bold mb-3">STAR 框架分析</h3>
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                            <div className="bg-gray-700 p-3 rounded">
-                                <div className="font-bold text-sm">Situation</div>
-                                <div className="text-sm text-gray-300">{finalReport?.starFrameworkAnalysis?.situation}</div>
-                            </div>
-                            <div className="bg-gray-700 p-3 rounded">
-                                <div className="font-bold text-sm">Task</div>
-                                <div className="text-sm text-gray-300">{finalReport?.starFrameworkAnalysis?.task}</div>
-                            </div>
-                            <div className="bg-gray-700 p-3 rounded">
-                                <div className="font-bold text-sm">Action</div>
-                                <div className="text-sm text-gray-300">{finalReport?.starFrameworkAnalysis?.action}</div>
-                            </div>
-                            <div className="bg-gray-700 p-3 rounded">
-                                <div className="font-bold text-sm">Result</div>
-                                <div className="text-sm text-gray-300">{finalReport?.starFrameworkAnalysis?.result}</div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div className="mb-6">
-                        <h3 className="text-lg font-bold mb-3">建议</h3>
+                        <h3 className="text-lg font-bold mb-3">{t('finalAssessmentComment')}</h3>
                         <p className="text-gray-300 mb-4">{finalReport?.finalAssessment}</p>
                         <div className="bg-gray-700 p-4 rounded-lg">
-                            <h4 className="font-bold mb-2">下一步建议</h4>
+                            <h4 className="font-bold mb-2">{t('nextSteps')}</h4>
                             <p>{finalReport?.nextSteps}</p>
                         </div>
                     </div>
@@ -335,7 +317,7 @@ const BehavioralInterview = () => {
                         onClick={() => window.location.reload()}
                         className="w-full bg-blue-600 hover:bg-blue-700"
                     >
-                        重新开始
+                        {t('startNewInterview')}
                     </Button>
                 </Card>
             </div>
@@ -347,7 +329,7 @@ const BehavioralInterview = () => {
     return (
         <div className="max-w-6xl mx-auto p-6">
             <div className="flex justify-between items-center mb-6">
-                <h1 className="text-3xl font-bold">行为面试</h1>
+                <h1 className="text-3xl font-bold">{t('behavioralInterviewSimulation')}</h1>
                 <div className="flex items-center gap-4">
                     <div className="flex items-center gap-2 bg-gray-700 px-4 py-2 rounded-lg">
                         <Clock className="w-5 h-5" />
@@ -358,7 +340,6 @@ const BehavioralInterview = () => {
                     </Button>
                     <Button onClick={endInterview} variant="destructive" size="sm">
                         <Square className="w-4 h-4" />
-                        结束
                     </Button>
                 </div>
             </div>
@@ -367,7 +348,7 @@ const BehavioralInterview = () => {
                 {/* 问题区域 */}
                 <Card className="bg-gray-800 p-6">
                     <div className="flex justify-between items-start mb-4">
-                        <h2 className="text-xl font-bold">问题 {currentQuestionIndex + 1} / {interviewData?.questions.length}</h2>
+                        <h2 className="text-xl font-bold">{t('currentQuestion')}</h2>
                         <span className="bg-blue-600 px-2 py-1 rounded text-sm">{currentQuestion?.category}</span>
                     </div>
                     
@@ -402,7 +383,7 @@ const BehavioralInterview = () => {
                 {/* 回答区域 */}
                 <div className="space-y-6">
                     <Card className="bg-gray-800 p-6">
-                        <h2 className="text-xl font-bold mb-4">你的回答</h2>
+                        <h2 className="text-xl font-bold mb-4">{t('yourResponse')}</h2>
                         <div className="space-y-4">
                             <div className="flex gap-2 mb-4">
                                 <Button 
@@ -412,7 +393,7 @@ const BehavioralInterview = () => {
                                     className="flex items-center gap-2"
                                 >
                                     {isRecording ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
-                                    {isRecording ? '停止录音' : '开始录音'}
+                                    {isRecording ? t('stopRecording') : t('startRecording')}
                                 </Button>
                                 {transcript && (
                                     <Button 
@@ -420,17 +401,17 @@ const BehavioralInterview = () => {
                                         variant="outline"
                                         size="sm"
                                     >
-                                        使用录音
+                                        {t('useRecording')}
                                     </Button>
                                 )}
                             </div>
                             
                             <div>
-                                <label className="block text-sm font-medium mb-2">回答内容</label>
+                                <label className="block text-sm font-medium mb-2">{t('responseContent')}</label>
                                 <Textarea
                                     value={response}
                                     onChange={(e) => setResponse(e.target.value)}
-                                    placeholder="请按照 STAR 框架结构回答这个问题..."
+                                    placeholder={t('responsePlaceholder')}
                                     className="min-h-[300px]"
                                 />
                             </div>
@@ -439,7 +420,7 @@ const BehavioralInterview = () => {
                                 onClick={submitResponse}
                                 className="w-full bg-green-600 hover:bg-green-700"
                             >
-                                提交回答
+                                {t('submitResponse')}
                             </Button>
                         </div>
                     </Card>
@@ -447,7 +428,7 @@ const BehavioralInterview = () => {
                     {/* 反馈区域 */}
                     {feedback && (
                         <Card className="bg-gray-800 p-6">
-                            <h2 className="text-xl font-bold mb-4">AI 反馈</h2>
+                            <h2 className="text-xl font-bold mb-4">{t('interviewFeedback')}</h2>
                             <div className="space-y-4">
                                 <div className="text-center">
                                     <div className={`text-3xl font-bold ${getScoreColor(feedback.overallScore)}`}>
@@ -456,57 +437,28 @@ const BehavioralInterview = () => {
                                 </div>
                                 
                                 <div className="grid grid-cols-2 gap-4">
-                                    <div className="flex items-center gap-2">
-                                        {getFeedbackIcon(feedback.communication)}
-                                        <span>沟通: {feedback.communication}</span>
-                                    </div>
-                                    <div className="flex items-center gap-2">
-                                        {getFeedbackIcon(feedback.specificity)}
-                                        <span>具体性: {feedback.specificity}</span>
-                                    </div>
-                                    <div className="flex items-center gap-2">
-                                        {getFeedbackIcon(feedback.problemSolving)}
-                                        <span>问题解决: {feedback.problemSolving}</span>
-                                    </div>
-                                    <div className="flex items-center gap-2">
-                                        {getFeedbackIcon(feedback.leadership)}
-                                        <span>领导力: {feedback.leadership}</span>
-                                    </div>
+                                    {Object.entries(feedback.ratings).map(([category, rating]) => (
+                                        <div key={category} className="flex items-center justify-between p-3 bg-gray-700 rounded-md">
+                                            <span className="text-sm">{t(category)}</span>
+                                            <div className="flex items-center gap-2">
+                                                {getFeedbackIcon(rating)}
+                                                <span className="text-sm font-medium">{t(rating)}</span>
+                                            </div>
+                                        </div>
+                                    ))}
                                 </div>
                                 
                                 <div>
-                                    <h4 className="font-bold mb-2">STAR 分析</h4>
-                                    <div className="grid grid-cols-2 gap-4">
-                                        <div>
-                                            <strong>Situation:</strong> {feedback.starAnalysis.situation.score}/100
-                                            <p className="text-sm text-gray-300">{feedback.starAnalysis.situation.feedback}</p>
-                                        </div>
-                                        <div>
-                                            <strong>Task:</strong> {feedback.starAnalysis.task.score}/100
-                                            <p className="text-sm text-gray-300">{feedback.starAnalysis.task.feedback}</p>
-                                        </div>
-                                        <div>
-                                            <strong>Action:</strong> {feedback.starAnalysis.action.score}/100
-                                            <p className="text-sm text-gray-300">{feedback.starAnalysis.action.feedback}</p>
-                                        </div>
-                                        <div>
-                                            <strong>Result:</strong> {feedback.starAnalysis.result.score}/100
-                                            <p className="text-sm text-gray-300">{feedback.starAnalysis.result.feedback}</p>
-                                        </div>
-                                    </div>
-                                </div>
-                                
-                                <div>
-                                    <h4 className="font-bold mb-2">详细反馈</h4>
-                                    <p className="text-gray-300">{feedback.detailedFeedback}</p>
+                                    <h4 className="font-bold mb-2">{t('comments')}</h4>
+                                    <p className="text-gray-300">{feedback.comments}</p>
                                 </div>
                                 
                                 {feedback.suggestions && feedback.suggestions.length > 0 && (
                                     <div>
-                                        <h4 className="font-bold mb-2">建议</h4>
+                                        <h4 className="font-bold mb-2">{t('suggestions')}</h4>
                                         <ul className="space-y-1">
                                             {feedback.suggestions.map((suggestion, index) => (
-                                                <li key={index} className="text-sm">• {suggestion}</li>
+                                                <li key={index} className="text-sm text-gray-300">• {suggestion}</li>
                                             ))}
                                         </ul>
                                     </div>
@@ -514,7 +466,7 @@ const BehavioralInterview = () => {
                                 
                                 {feedback.nextQuestion && (
                                     <div className="bg-blue-900/20 p-3 rounded">
-                                        <h4 className="font-bold mb-2">下一题提示</h4>
+                                        <h4 className="font-bold mb-2">{t('nextQuestionHint')}</h4>
                                         <p className="text-sm">{feedback.nextQuestion}</p>
                                     </div>
                                 )}

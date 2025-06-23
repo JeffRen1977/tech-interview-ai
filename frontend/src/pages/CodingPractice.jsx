@@ -7,9 +7,14 @@ import MonacoEditor from '../components/ui/MonacoEditor';
 import QuestionFilterPanel from '../components/QuestionFilterPanel';
 import { BookCopy, Flame, HelpCircle, Play, Send, Check, X, AlertTriangle, Save, BookOpen, Filter } from 'lucide-react';
 import { apiRequest } from '../api.js';
+import { useLanguage } from '../contexts/LanguageContext';
+import { getText } from '../utils/translations';
 
 // --- 主组件：算法练习页面 ---
 const CodingPractice = () => {
+    const { language } = useLanguage();
+    const t = (key) => getText(key, language);
+    
     console.log("CodingPractice component rendering...");
     
     // Simple error boundary
@@ -20,10 +25,10 @@ const CodingPractice = () => {
         return (
             <div className="flex h-full items-center justify-center bg-gray-900">
                 <div className="text-center">
-                    <h2 className="text-xl font-bold text-red-400 mb-4">组件加载失败</h2>
+                    <h2 className="text-xl font-bold text-red-400 mb-4">{t('componentLoadFailed')}</h2>
                     <p className="text-gray-400 mb-4">{errorMessage}</p>
                     <Button onClick={() => window.location.reload()}>
-                        重新加载页面
+                        {t('reloadPage')}
                     </Button>
                 </div>
             </div>
@@ -36,7 +41,7 @@ const CodingPractice = () => {
     const [feedback, setFeedback] = useState(null);
     const [isLoading, setIsLoading] = useState({ list: true, execution: false, submission: false });
     const [error, setError] = useState(null);
-    const [language, setLanguage] = useState('python');
+    const [programmingLanguage, setProgrammingLanguage] = useState('python');
     
     // New state for filtering and learning history
     const [filters, setFilters] = useState({
@@ -90,11 +95,11 @@ const CodingPractice = () => {
             } else {
                 setProblems([]);
                 setSelectedProblem(null);
-                setError('没有找到符合条件的题目。');
+                setError(t('noQuestionsFound'));
             }
         } catch (err) {
             console.error("Error loading filtered questions:", err);
-            setError('无法加载题目列表，请稍后重试。');
+            setError(t('cannotLoadQuestions'));
         } finally {
             setIsLoading(prev => ({ ...prev, list: false }));
         }
@@ -122,7 +127,7 @@ const CodingPractice = () => {
                 questionId: selectedProblem.id,
                 feedback,
                 userCode,
-                language,
+                language: programmingLanguage,
                 completedAt: new Date().toISOString()
             };
             
@@ -175,7 +180,7 @@ const CodingPractice = () => {
             }
         };
         
-        setUserCode(getInitialCode(language));
+        setUserCode(getInitialCode(programmingLanguage));
     };
     
     // 执行代码（模拟编译和运行测试用例）
@@ -190,7 +195,7 @@ const CodingPractice = () => {
             });
             setFeedback({ type: 'execution', ...result });
         } catch (error) {
-            setFeedback({ type: 'execution', success: false, message: `执行出错: ${error.message}` });
+            setFeedback({ type: 'execution', success: false, message: `${t('executionError')} ${error.message}` });
         } finally {
             setIsLoading(prev => ({ ...prev, execution: false }));
         }
@@ -199,48 +204,24 @@ const CodingPractice = () => {
     // 提交代码以获取AI分析
     const handleSubmitCode = async () => {
         if (!selectedProblem) return;
-        
-        console.log("=== SUBMISSION START ===");
-        console.log("Selected problem:", selectedProblem);
-        console.log("User code:", userCode);
-        console.log("Language:", language);
-        
         setIsLoading(prev => ({ ...prev, submission: true, execution: false }));
         setFeedback(null);
         try {
-            const requestBody = {
-                question: selectedProblem,
+            const result = await apiRequest('/code/submit', 'POST', { 
                 userCode: userCode,
-                language: language,
-            };
-            
-            console.log("Sending request to backend...");
-            const result = await apiRequest('/code/submit', 'POST', requestBody);
-            console.log("Backend response:", result);
-            
-            if (!result) {
-                throw new Error("Backend returned empty response");
-            }
-            
-            const feedbackData = { type: 'submission', ...result };
-            console.log("Setting feedback data:", feedbackData);
-            setFeedback(feedbackData);
-            console.log("Feedback state should now be updated");
-            
+                questionId: selectedProblem.id,
+                language: programmingLanguage
+            });
+            setFeedback({ type: 'submission', ...result });
         } catch (error) {
-             console.error("Submission API call failed:", error);
-             setFeedback({ type: 'submission', error: `AI分析失败: ${error.message}` });
+            setFeedback({ type: 'submission', error: error.message });
         } finally {
             setIsLoading(prev => ({ ...prev, submission: false }));
-            console.log("=== SUBMISSION END ===");
         }
     };
 
-    // Handle language change
     const handleLanguageChange = (newLanguage) => {
-        setLanguage(newLanguage);
-        
-        // Update code template for the new language
+        setProgrammingLanguage(newLanguage);
         if (selectedProblem) {
             const getInitialCode = (lang) => {
                 switch (lang) {
@@ -254,149 +235,155 @@ const CodingPractice = () => {
                         return selectedProblem.initialCode || `# 在此输入您的代码`;
                 }
             };
-            
             setUserCode(getInitialCode(newLanguage));
         }
     };
 
-    try {
-        return (
-            <div className="flex h-full gap-8">
-                {console.log("Rendering CodingPractice component")}
-                <LeftSidebar 
-                    problems={problems} 
-                    isLoading={isLoading.list} 
-                    error={error} 
-                    selectedProblem={selectedProblem} 
-                    onSelectProblem={handleSelectProblem} 
-                    showFilters={showFilters} 
-                    onToggleFilters={() => setShowFilters(!showFilters)} 
-                    filters={filters} 
-                    onFiltersChange={handleFiltersChange} 
-                    learningHistory={learningHistory} 
-                />
-                <MainContentPanel 
-                    problem={selectedProblem} 
-                    userCode={userCode}
-                    setUserCode={setUserCode}
-                    feedback={feedback}
-                    isLoading={isLoading}
-                    onExecute={handleExecute}
-                    onSubmit={handleSubmitCode}
-                    language={language}
-                    setLanguage={handleLanguageChange}
-                    isSaved={isSaved}
-                    onSave={saveToLearningHistory}
-                    onUnsave={removeFromLearningHistory}
-                />
-            </div>
-        );
-    } catch (error) {
-        console.error("Error rendering CodingPractice:", error);
-        setHasError(true);
-        setErrorMessage("渲染失败: " + error.message);
-        return null;
-    }
+    return (
+        <div className="h-full bg-gray-900 text-white">
+            <ResizablePanelGroup direction="horizontal" className="h-full">
+                <ResizablePanel defaultSize={40} minSize={25} maxSize={50}>
+                    <LeftSidebar 
+                        problems={problems}
+                        isLoading={isLoading.list}
+                        error={error}
+                        selectedProblem={selectedProblem}
+                        onSelectProblem={handleSelectProblem}
+                        showFilters={showFilters}
+                        onToggleFilters={() => setShowFilters(!showFilters)}
+                        filters={filters}
+                        onFiltersChange={handleFiltersChange}
+                        learningHistory={learningHistory}
+                    />
+                </ResizablePanel>
+                <ResizableHandle />
+                <ResizablePanel defaultSize={70}>
+                    <MainContentPanel 
+                        problem={selectedProblem}
+                        userCode={userCode}
+                        setUserCode={setUserCode}
+                        feedback={feedback}
+                        isLoading={isLoading}
+                        onExecute={handleExecute}
+                        onSubmit={handleSubmitCode}
+                        language={programmingLanguage}
+                        setLanguage={handleLanguageChange}
+                        isSaved={isSaved}
+                        onSave={saveToLearningHistory}
+                        onUnsave={removeFromLearningHistory}
+                    />
+                </ResizablePanel>
+            </ResizablePanelGroup>
+        </div>
+    );
 };
 
 
 // --- 子组件：左侧导航与筛选 ---
-const LeftSidebar = ({ problems, isLoading, error, selectedProblem, onSelectProblem, showFilters, onToggleFilters, filters, onFiltersChange, learningHistory }) => (
-    <nav className="w-1/3 max-w-sm flex-shrink-0 flex flex-col gap-6">
-        {/* Filter Panel */}
-        {showFilters && (
-            <QuestionFilterPanel 
-                onFiltersChange={onFiltersChange}
-                onReset={() => onFiltersChange({
-                    difficulty: '',
-                    algorithms: [],
-                    dataStructures: [],
-                    companies: []
-                })}
-            />
-        )}
-        
-        {/* Problems List */}
-        <Card className="flex-1 bg-gray-800 border-gray-700 flex flex-col">
-             <CardHeader>
-                <CardTitle className="text-lg flex items-center justify-between">
-                    <span>编程题库</span>
-                    <Button
-                        onClick={onToggleFilters}
-                        variant="outline"
-                        size="sm"
-                        className="text-xs"
-                    >
-                        <Filter size={14} className="mr-1" />
-                        {showFilters ? '隐藏筛选' : '显示筛选'}
-                    </Button>
-                </CardTitle>
-            </CardHeader>
-            <CardContent className="flex-1 overflow-y-auto space-y-2">
-                {isLoading && <p className="text-gray-400 p-3">加载中...</p>}
-                {error && <p className="text-red-400 p-3">{error}</p>}
-                {!isLoading && !error && problems.length === 0 && (
-                    <p className="text-gray-400 p-3 text-center">没有找到符合条件的题目</p>
-                )}
-                {!isLoading && !error && problems.map(p => (
-                    <div 
-                        key={p.id} 
-                        onClick={() => onSelectProblem(p)}
-                        className={`p-3 rounded-md cursor-pointer text-sm transition-colors ${selectedProblem?.id === p.id ? 'bg-indigo-600 text-white font-semibold' : 'bg-gray-700 hover:bg-gray-600'}`}
-                    >
-                        <div className="flex justify-between items-start">
-                            <span className="flex-1">{p.title}</span>
-                            {learningHistory.find(h => h.questionId === p.id) && (
-                                <BookOpen size={14} className="text-green-400 ml-2 flex-shrink-0" />
-                            )}
-                        </div>
-                        <div className="text-xs text-gray-400 mt-1">
-                            {p.difficulty} • {p.algorithms?.slice(0, 2).join(', ')}
-                        </div>
-                    </div>
-                 ))}
-            </CardContent>
-        </Card>
-        
-        {/* Learning History */}
-        <Card className="bg-gray-800 border-gray-700">
-            <CardHeader>
-                <CardTitle className="text-lg flex items-center">
-                    <BookOpen size={18} className="mr-2" />
-                    学习历史
-                </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-2">
-                {learningHistory.length === 0 ? (
-                    <p className="text-gray-400 text-sm text-center py-4">暂无学习记录</p>
-                ) : (
-                    learningHistory.slice(0, 5).map(history => (
-                        <div key={history.id} className="p-2 bg-gray-700 rounded text-xs">
-                            <div className="text-gray-300">{history.questionId}</div>
-                            <div className="text-gray-500">
-                                {new Date(history.completedAt).toLocaleDateString()}
+const LeftSidebar = ({ problems, isLoading, error, selectedProblem, onSelectProblem, showFilters, onToggleFilters, filters, onFiltersChange, learningHistory }) => {
+    const { language } = useLanguage();
+    const t = (key) => getText(key, language);
+    
+    return (
+        <nav className="w-1/3 max-w-sm flex-shrink-0 flex flex-col gap-6">
+            {/* Filter Panel */}
+            {showFilters && (
+                <QuestionFilterPanel 
+                    onFiltersChange={onFiltersChange}
+                    onReset={() => onFiltersChange({
+                        difficulty: '',
+                        algorithms: [],
+                        dataStructures: [],
+                        companies: []
+                    })}
+                />
+            )}
+            
+            {/* Problems List */}
+            <Card className="flex-1 bg-gray-800 border-gray-700 flex flex-col">
+                 <CardHeader>
+                    <CardTitle className="text-lg flex items-center justify-between">
+                        <span>{t('programmingQuestionBank')}</span>
+                        <Button
+                            onClick={onToggleFilters}
+                            variant="outline"
+                            size="sm"
+                            className="text-xs"
+                        >
+                            <Filter size={14} className="mr-1" />
+                            {showFilters ? t('hideFilters') : t('showFilters')}
+                        </Button>
+                    </CardTitle>
+                </CardHeader>
+                <CardContent className="flex-1 overflow-y-auto space-y-2">
+                    {isLoading && <p className="text-gray-400 p-3">{t('loading')}</p>}
+                    {error && <p className="text-red-400 p-3">{error}</p>}
+                    {!isLoading && !error && problems.length === 0 && (
+                        <p className="text-gray-400 p-3 text-center">{t('noQuestionsMatch')}</p>
+                    )}
+                    {!isLoading && !error && problems.map(p => (
+                        <div 
+                            key={p.id} 
+                            onClick={() => onSelectProblem(p)}
+                            className={`p-3 rounded-md cursor-pointer text-sm transition-colors ${selectedProblem?.id === p.id ? 'bg-indigo-600 text-white font-semibold' : 'bg-gray-700 hover:bg-gray-600'}`}
+                        >
+                            <div className="flex justify-between items-start">
+                                <span className="flex-1">{p.title}</span>
+                                {learningHistory.find(h => h.questionId === p.id) && (
+                                    <BookOpen size={14} className="text-green-400 ml-2 flex-shrink-0" />
+                                )}
+                            </div>
+                            <div className="text-xs text-gray-400 mt-1">
+                                {p.difficulty} • {p.algorithms?.slice(0, 2).join(', ')}
                             </div>
                         </div>
-                    ))
-                )}
-                {learningHistory.length > 5 && (
-                    <p className="text-gray-400 text-xs text-center">
-                        还有 {learningHistory.length - 5} 条记录...
-                    </p>
-                )}
-            </CardContent>
-        </Card>
-    </nav>
-);
+                     ))}
+                </CardContent>
+            </Card>
+            
+            {/* Learning History */}
+            <Card className="bg-gray-800 border-gray-700">
+                <CardHeader>
+                    <CardTitle className="text-lg flex items-center">
+                        <BookOpen size={18} className="mr-2" />
+                        {t('learningHistory')}
+                    </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-2">
+                    {learningHistory.length === 0 ? (
+                        <p className="text-gray-400 text-sm text-center py-4">{t('noLearningRecords')}</p>
+                    ) : (
+                        learningHistory.slice(0, 5).map(history => (
+                            <div key={history.id} className="p-2 bg-gray-700 rounded text-xs">
+                                <div className="text-gray-300">{history.questionId}</div>
+                                <div className="text-gray-500">
+                                    {new Date(history.completedAt).toLocaleDateString()}
+                                </div>
+                            </div>
+                        ))
+                    )}
+                    {learningHistory.length > 5 && (
+                        <p className="text-gray-400 text-xs text-center">
+                            {t('moreRecords').replace('{count}', learningHistory.length - 5)}
+                        </p>
+                    )}
+                </CardContent>
+            </Card>
+        </nav>
+    );
+};
 
 
 // --- 子组件：右侧主内容区 ---
 const MainContentPanel = ({ problem, userCode, setUserCode, feedback, isLoading, onExecute, onSubmit, language, setLanguage, isSaved, onSave, onUnsave }) => {
+    const { language: appLanguage } = useLanguage();
+    const t = (key) => getText(key, appLanguage);
+    
     if (!problem) {
         return (
             <main className="flex-1">
                 <div className="h-full flex items-center justify-center bg-gray-800 rounded-lg">
-                    <p className="text-gray-400">请从左侧选择一个问题开始练习。</p>
+                    <p className="text-gray-400">{t('pleaseSelectProblem')}</p>
                 </div>
             </main>
         );
@@ -410,7 +397,7 @@ const MainContentPanel = ({ problem, userCode, setUserCode, feedback, isLoading,
                     <h2 className="text-2xl font-bold mb-4">{problem.title}</h2>
                     <div className="prose prose-invert max-w-none text-gray-300 whitespace-pre-wrap">
                         <p>{problem.description}</p>
-                        <h3 className="font-semibold mt-4 mb-2">例子:</h3>
+                        <h3 className="font-semibold mt-4 mb-2">{t('example')}</h3>
                         <pre className="bg-gray-900 p-4 rounded-md mt-2">{problem.example?.replace(/\\n/g, '\n')}</pre>
                     </div>
                 </div>
@@ -426,10 +413,10 @@ const MainContentPanel = ({ problem, userCode, setUserCode, feedback, isLoading,
                         </Select>
                         <div>
                             <Button onClick={onExecute} disabled={isLoading.execution || isLoading.submission} className="bg-gray-600 hover:bg-gray-500 mr-2">
-                               {isLoading.execution ? <i className="fas fa-spinner fa-spin"/> : <Play size={16} />}<span className="ml-2">执行</span>
+                               {isLoading.execution ? <i className="fas fa-spinner fa-spin"/> : <Play size={16} />}<span className="ml-2">{t('execute')}</span>
                             </Button>
                             <Button onClick={onSubmit} disabled={isLoading.execution || isLoading.submission} className="bg-green-600 hover:bg-green-500">
-                                {isLoading.submission ? <i className="fas fa-spinner fa-spin"/> : <Send size={16} />}<span className="ml-2">提交</span>
+                                {isLoading.submission ? <i className="fas fa-spinner fa-spin"/> : <Send size={16} />}<span className="ml-2">{t('submit')}</span>
                             </Button>
                         </div>
                     </div>
@@ -460,12 +447,15 @@ const MainContentPanel = ({ problem, userCode, setUserCode, feedback, isLoading,
 
 // --- 子组件：AI反馈面板 ---
 const FeedbackPanel = ({ feedback, isLoading, isSaved, onSave, onUnsave }) => {
+    const { language } = useLanguage();
+    const t = (key) => getText(key, language);
+    
     if (isLoading) {
         return (
              <div className="bg-gray-900 border-t-2 border-indigo-500 p-6 h-full overflow-y-auto flex items-center justify-center">
                  <div className="text-center">
                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-400 mx-auto mb-3"></div>
-                     <p className="text-gray-400 text-sm">正在分析您的代码，请稍候...</p>
+                     <p className="text-gray-400 text-sm">{t('analyzingCode')}</p>
                  </div>
              </div>
         );
@@ -476,7 +466,7 @@ const FeedbackPanel = ({ feedback, isLoading, isSaved, onSave, onUnsave }) => {
             <div className="bg-gray-900 border-t-2 border-indigo-500 p-6 h-full overflow-y-auto flex items-center justify-center">
                 <div className="text-center text-gray-500">
                     <div className="text-4xl mb-3">💡</div>
-                    <p className="text-sm">点击"提交"按钮获取AI代码分析</p>
+                    <p className="text-sm">{t('clickSubmitForAnalysis')}</p>
                 </div>
             </div>
         );
@@ -489,7 +479,7 @@ const FeedbackPanel = ({ feedback, isLoading, isSaved, onSave, onUnsave }) => {
                 <div className="flex items-center justify-between">
                     <h3 className="font-bold text-lg text-white flex items-center">
                         <span className="mr-2">📊</span>
-                        代码分析结果
+                        {t('codeAnalysisResults')}
                     </h3>
                     {feedback && feedback.type === 'submission' && !feedback.error && (
                         <Button
@@ -501,12 +491,12 @@ const FeedbackPanel = ({ feedback, isLoading, isSaved, onSave, onUnsave }) => {
                             {isSaved ? (
                                 <>
                                     <BookOpen size={14} className="mr-1" />
-                                    已保存
+                                    {t('saved')}
                                 </>
                             ) : (
                                 <>
                                     <Save size={14} className="mr-1" />
-                                    保存到学习历史
+                                    {t('saveToLearningHistory')}
                                 </>
                             )}
                         </Button>
@@ -533,7 +523,7 @@ const FeedbackPanel = ({ feedback, isLoading, isSaved, onSave, onUnsave }) => {
                         <div className="bg-red-900/20 border border-red-500/30 p-4 rounded-lg">
                             <div className="flex items-center mb-2">
                                 <AlertTriangle size={18} className="mr-2 text-red-400"/>
-                                <span className="font-semibold text-red-400">分析失败</span>
+                                <span className="font-semibold text-red-400">{t('analysisFailed')}</span>
                             </div>
                             <p className="text-red-300 text-sm">{feedback.error}</p>
                         </div>
@@ -543,11 +533,11 @@ const FeedbackPanel = ({ feedback, isLoading, isSaved, onSave, onUnsave }) => {
                             <div className="bg-gray-800 rounded-lg p-4">
                                 <h4 className="font-semibold text-gray-200 mb-3 flex items-center">
                                     <span className="mr-2">✅</span>
-                                    测试结果
+                                    {t('testResults')}
                                 </h4>
                                 <div className="grid grid-cols-1 gap-3">
                                     <div className="flex justify-between items-center p-3 bg-gray-700 rounded-md">
-                                        <span className="text-gray-300 text-sm">通过率</span>
+                                        <span className="text-gray-300 text-sm">{t('passRate')}</span>
                                         <span className={`font-bold ${feedback.testResults?.passed ? 'text-green-400' : 'text-yellow-400'}`}>
                                             {feedback.testResults?.summary || 'N/A'}
                                         </span>
@@ -559,17 +549,17 @@ const FeedbackPanel = ({ feedback, isLoading, isSaved, onSave, onUnsave }) => {
                             <div className="bg-gray-800 rounded-lg p-4">
                                 <h4 className="font-semibold text-gray-200 mb-3 flex items-center">
                                     <span className="mr-2">⚡</span>
-                                    复杂度分析
+                                    {t('complexityAnalysis')}
                                 </h4>
                                 <div className="grid grid-cols-2 gap-3">
                                     <div className="p-3 bg-gray-700 rounded-md">
-                                        <div className="text-gray-400 text-xs mb-1">时间复杂度</div>
+                                        <div className="text-gray-400 text-xs mb-1">{t('timeComplexity')}</div>
                                         <div className="font-mono text-sm text-blue-400">
                                             {feedback.complexity?.time || 'N/A'}
                                         </div>
                                     </div>
                                     <div className="p-3 bg-gray-700 rounded-md">
-                                        <div className="text-gray-400 text-xs mb-1">空间复杂度</div>
+                                        <div className="text-gray-400 text-xs mb-1">{t('spaceComplexity')}</div>
                                         <div className="font-mono text-sm text-purple-400">
                                             {feedback.complexity?.space || 'N/A'}
                                         </div>
@@ -581,7 +571,7 @@ const FeedbackPanel = ({ feedback, isLoading, isSaved, onSave, onUnsave }) => {
                             <div className="bg-gray-800 rounded-lg p-4">
                                 <h4 className="font-semibold text-gray-200 mb-3 flex items-center">
                                     <span className="mr-2">🤖</span>
-                                    AI 代码评审
+                                    {t('aiCodeReview')}
                                 </h4>
                                 <div className="bg-gray-700 rounded-md p-4">
                                     <div className="text-gray-300 text-sm leading-relaxed whitespace-pre-wrap">
