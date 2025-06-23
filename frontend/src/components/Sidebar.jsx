@@ -13,7 +13,6 @@ const Sidebar = ({ activeView, setAppView, onLogout }) => {
     { id: 'mock-interview', icon: <Mic />, label: t('mockInterview') },
     { id: 'user-history', icon: <Clock />, label: t('userHistory') },
     { id: 'resume-optimizer', icon: <FileText />, label: t('resumeOptimizer') },
-    { id: 'company-prep', icon: <Building />, label: t('companyPrep') },
     { id: 'learn-feedback', icon: <History />, label: t('learnFeedback') },
     { id: 'coach-agent', icon: <UserCog />, label: t('coachAgent') },
     { id: 'admin', icon: <Shield />, label: t('admin') },

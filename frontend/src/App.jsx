@@ -44,7 +44,6 @@ const AppContent = () => {
         {activeView === 'resume-optimizer' && <ResumeOptimizer />}
         {activeView === 'admin' && <Admin />}
         {activeView === 'user-history' && <UserHistory />}
-        {activeView === 'company-prep' && <Placeholder title={t('companyPrep')} />}
         {activeView === 'coach-agent' && <CoachAgent />}
         {activeView === 'behavioral-practice' && <Placeholder title={t('behavioralPractice')} />}
         {activeView === 'learn-feedback' && <LearnAndFeedback />}
