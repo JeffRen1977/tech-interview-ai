@@ -59,3 +59,13 @@ export const resumeAPI = {
         });
     }
 };
+
+// Wrong Question Book API
+export const wrongQuestionAPI = {
+  getWrongQuestions: async () => {
+    return await apiRequest('/wrong-questions', 'GET');
+  },
+  getAIFeedback: async (id) => {
+    return await apiRequest(`/wrong-questions/${id}/ai-feedback`, 'POST');
+  }
+};
