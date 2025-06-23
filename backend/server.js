@@ -8,6 +8,7 @@ const authRoutes = require('./routes/authRoutes');
 const questionRoutes = require('./routes/questionRoutes');
 const codeRoutes = require('./routes/codeRoutes');
 const resumeRoutes = require('./routes/resumeRoutes');
+const wrongQuestionRoutes = require('./routes/wrongQuestionRoutes');
 
 // --- 初始化 ---
 const app = express();
@@ -26,6 +27,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/questions', questionRoutes);
 app.use('/api/code', codeRoutes); 
 app.use('/api/resume', resumeRoutes);
+app.use('/api/wrong-questions', wrongQuestionRoutes);
 
 // --- 启动服务器 ---
 const PORT = process.env.PORT || 3000;

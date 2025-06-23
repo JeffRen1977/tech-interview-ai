@@ -1,0 +1,94 @@
+const fetch = require('node-fetch');
+require('dotenv').config();
+
+// Mock user wrong questions (replace with DB in production)
+const mockWrongQuestions = [
+  {
+    id: '1',
+    question: 'What is the output of 1 + "2" in JavaScript?',
+    userAnswer: '3',
+    correctAnswer: '"12"',
+    type: 'JavaScript',
+    knowledgePoint: 'Type Coercion',
+    timestamp: Date.now() - 86400000
+  },
+  {
+    id: '2',
+    question: 'What is the time complexity of binary search?',
+    userAnswer: 'O(n)',
+    correctAnswer: 'O(log n)',
+    type: 'Algorithms',
+    knowledgePoint: 'Complexity',
+    timestamp: Date.now() - 43200000
+  }
+];
+
+// GET /api/wrong-questions
+const getWrongQuestions = async (req, res) => {
+  // In production, filter by userId from auth
+  res.json({ success: true, questions: mockWrongQuestions });
+};
+
+// POST /api/wrong-questions/:id/ai-feedback
+const getAIExplanationAndRedoPlan = async (req, res) => {
+  const { id } = req.params;
+  const questionObj = mockWrongQuestions.find(q => q.id === id);
+  if (!questionObj) {
+    return res.status(404).json({ error: 'Question not found' });
+  }
+  const { question, userAnswer, correctAnswer, type, knowledgePoint } = questionObj;
+
+  const prompt = `
+You are an interview coach. For the following question the user got wrong, provide:
+1. A clear, concise explanation of the correct answer (as if teaching a student).
+2. A step-by-step redo plan for the user to master this knowledge point.
+
+Question: ${question}
+User's Answer: ${userAnswer}
+Correct Answer: ${correctAnswer}
+Type: ${type}
+Knowledge Point: ${knowledgePoint}
+
+Format your response as JSON:
+{
+  "explanation": "...",
+  "redoPlan": ["step 1", "step 2", ...]
+}
+`;
+
+  try {
+    const geminiApiKey = process.env.GEMINI_API_KEY;
+    const geminiApiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiApiKey}`;
+    const response = await fetch(geminiApiUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contents: [{ parts: [{ text: prompt }] }]
+      })
+    });
+    const data = await response.json();
+    if (data.candidates && data.candidates[0]) {
+      let text = data.candidates[0].content.parts[0].text;
+      // Clean markdown code block if present
+      if (text.startsWith('```json')) text = text.substring(7, text.length - 3).trim();
+      else if (text.startsWith('```')) text = text.substring(3, text.length - 3).trim();
+      let ai;
+      try {
+        ai = JSON.parse(text);
+      } catch (e) {
+        ai = { explanation: text, redoPlan: [] };
+      }
+      res.json({ success: true, ...ai });
+    } else {
+      res.status(500).json({ error: 'AI feedback failed' });
+    }
+  } catch (error) {
+    console.error('AI feedback error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+module.exports = {
+  getWrongQuestions,
+  getAIExplanationAndRedoPlan
+}; 
