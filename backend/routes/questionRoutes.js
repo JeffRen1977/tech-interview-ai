@@ -12,7 +12,13 @@ const {
     startBehavioralInterview,
     submitBehavioralResponse,
     getBehavioralFeedback,
-    endBehavioralInterview
+    endBehavioralInterview,
+    startSystemDesignInterview,
+    submitSystemDesignSolution,
+    getSystemDesignFeedback,
+    endSystemDesignInterview,
+    transcribeAudio,
+    getUserHistory
 } = require('../controllers/questionController');
 
 // 路由: /api/questions/generate-coding
@@ -52,5 +58,24 @@ router.post('/behavioral-interview/feedback', getBehavioralFeedback);
 
 // 结束行为面试
 router.post('/behavioral-interview/end', endBehavioralInterview);
+
+// 新增: 系统设计面试相关路由
+// 开始系统设计面试
+router.post('/system-design-interview/start', startSystemDesignInterview);
+
+// 提交系统设计解答
+router.post('/system-design-interview/submit', submitSystemDesignSolution);
+
+// 获取系统设计反馈
+router.post('/system-design-interview/feedback', getSystemDesignFeedback);
+
+// 结束系统设计面试
+router.post('/system-design-interview/end', endSystemDesignInterview);
+
+// 音频转录
+router.post('/transcribe-audio', transcribeAudio);
+
+// 用户历史记录
+router.get('/user-history', getUserHistory);
 
 module.exports = router;

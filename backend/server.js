@@ -1,5 +1,6 @@
 const express = require('express');
 const cors = require('cors');
+const fileUpload = require('express-fileupload');
 require('dotenv').config();
 
 // 引入路由模块
@@ -11,7 +12,11 @@ const codeRoutes = require('./routes/codeRoutes');
 const app = express();
 app.use(cors());
 app.use(express.json());
-
+app.use(fileUpload({
+    limits: { fileSize: 50 * 1024 * 1024 }, // 50MB limit
+    abortOnLimit: true,
+    createParentPath: true
+}));
 
 // --- API 路由挂载 ---
 // 所有 /api/auth 开头的请求都由 authRoutes 处理

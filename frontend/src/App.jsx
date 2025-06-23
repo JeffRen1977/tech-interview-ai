@@ -8,6 +8,7 @@ import Admin from './pages/Admin';
 import Placeholder from './components/Placeholder';
 import Sidebar from './components/Sidebar';
 import MainContent from './components/MainContent';
+import UserHistory from './components/UserHistory';
 
 export default function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -36,6 +37,7 @@ export default function App() {
         {activeView === 'mock-interview' && <MockInterview />}
         {activeView === 'resume-optimizer' && <ResumeOptimizer />}
         {activeView === 'admin' && <Admin />}
+        {activeView === 'user-history' && <UserHistory />}
         {activeView === 'company-prep' && <Placeholder title="公司面试定制化准备" />}
         {activeView === 'feedback-center' && <Placeholder title="学习与反馈闭环" />}
         {activeView === 'coach-agent' && <Placeholder title="AI 个性化教练 (Agent)" />}

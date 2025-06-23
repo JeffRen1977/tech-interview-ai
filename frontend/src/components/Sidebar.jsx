@@ -1,11 +1,12 @@
 import React from 'react';
-import { LayoutDashboard, Code, Mic, FileText, Building, History, UserCog, BrainCircuit, Shield } from 'lucide-react';
+import { LayoutDashboard, Code, Mic, FileText, Building, History, UserCog, BrainCircuit, Shield, Clock } from 'lucide-react';
 
 const Sidebar = ({ activeView, setAppView, onLogout }) => {
   const navItems = [
     { id: 'dashboard', icon: <LayoutDashboard />, label: '仪表盘' },
     { id: 'coding-practice', icon: <Code />, label: '算法练习' },
     { id: 'mock-interview', icon: <Mic />, label: 'AI 模拟面试' },
+    { id: 'user-history', icon: <Clock />, label: '面试历史' },
     { id: 'resume-optimizer', icon: <FileText />, label: '简历与职位匹配' },
     { id: 'company-prep', icon: <Building />, label: '公司面试准备' },
     { id: 'feedback-center', icon: <History />, label: '复盘与反馈' },

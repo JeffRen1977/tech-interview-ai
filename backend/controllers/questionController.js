@@ -631,3 +631,352 @@ exports.endBehavioralInterview = async (req, res) => {
         res.status(500).json({ message: `Failed to end interview: ${error.message}` });
     }
 };
+
+// --- 系统设计面试逻辑 ---
+exports.startSystemDesignInterview = async (req, res) => {
+    const { topic, difficulty, language } = req.body;
+    
+    const prompt = `
+        Act as an expert system design interviewer specializing in AI/ML systems. Generate a comprehensive system design interview question.
+        
+        Topic: ${topic || 'machine-learning'}
+        Difficulty: ${difficulty || 'medium'}
+        Language: ${language || 'chinese'}
+        
+        Focus on modern AI/ML system design challenges including:
+        - Machine Learning Infrastructure
+        - Computer Vision Systems
+        - Natural Language Processing
+        - Reinforcement Learning
+        - Deep Learning Systems
+        - AI Infrastructure
+        - Recommendation Systems
+        - Autonomous Systems
+        
+        Provide the output in a single, clean JSON object format:
+        {
+          "questionId": "unique-id",
+          "title": "Question title",
+          "description": "Detailed problem description",
+          "requirements": [
+            "Requirement 1",
+            "Requirement 2",
+            "Requirement 3"
+          ],
+          "constraints": "System constraints and limitations",
+          "expectedComponents": [
+            "Component 1",
+            "Component 2",
+            "Component 3"
+          ],
+          "hints": [
+            "Hint 1",
+            "Hint 2"
+          ],
+          "evaluationCriteria": {
+            "systemDesign": "System architecture and design quality",
+            "technicalDepth": "Technical knowledge and depth",
+            "communication": "Clarity of explanation",
+            "innovation": "Innovative thinking and approach",
+            "scalability": "Scalability considerations",
+            "reliability": "Reliability and fault tolerance"
+          },
+          "difficulty": "${difficulty || 'medium'}",
+          "topic": "${topic || 'machine-learning'}",
+          "estimatedTime": 60,
+          "category": "ai-ml-system-design"
+        }
+    `;
+
+    try {
+        const geminiData = await callGeminiAPI(prompt);
+        const jsonText = extractJson(geminiData.candidates[0].content.parts[0].text);
+        const questionData = JSON.parse(jsonText);
+        
+        // 创建面试会话
+        const sessionId = `system_design_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+        const sessionData = {
+            sessionId,
+            questionData,
+            startTime: new Date(),
+            status: 'active',
+            voiceInputs: [],
+            whiteboardData: [],
+            feedback: [],
+            timeSpent: 0
+        };
+        
+        await db.collection('system-design-interviews').doc(sessionId).set(sessionData);
+        
+        res.status(200).json({ 
+            sessionId,
+            questionData,
+            message: 'System design interview started successfully'
+        });
+    } catch (error) {
+        console.error("Error starting system design interview:", error);
+        res.status(500).json({ message: `Failed to start interview: ${error.message}` });
+    }
+};
+
+exports.submitSystemDesignSolution = async (req, res) => {
+    const { sessionId, voiceInput, whiteboardData, timeSpent } = req.body;
+    
+    if (!sessionId) {
+        return res.status(400).json({ message: 'Session ID is required' });
+    }
+    
+    if (!voiceInput && (!whiteboardData || whiteboardData.length === 0)) {
+        return res.status(400).json({ message: 'Voice input or whiteboard data is required' });
+    }
+    
+    try {
+        const sessionRef = db.collection('system-design-interviews').doc(sessionId);
+        const sessionDoc = await sessionRef.get();
+        
+        if (!sessionDoc.exists) {
+            return res.status(404).json({ message: 'Interview session not found' });
+        }
+        
+        const sessionData = sessionDoc.data();
+        const questionData = sessionData.questionData;
+        
+        // 分析用户解答
+        const analysisPrompt = `
+            Act as an expert system design interviewer evaluating a candidate's solution for an AI/ML system design problem.
+            
+            Question: ${questionData.title}
+            Description: ${questionData.description}
+            Requirements: ${questionData.requirements?.join(', ')}
+            Constraints: ${questionData.constraints}
+            
+            Candidate's Voice Input: ${voiceInput || 'No voice input provided'}
+            Whiteboard Data: ${whiteboardData ? JSON.stringify(whiteboardData) : 'No whiteboard data provided'}
+            Time Spent: ${timeSpent || 0} seconds
+            
+            Evaluate the candidate's system design approach and provide comprehensive feedback in JSON format:
+            {
+              "systemDesign": "excellent/good/fair/poor",
+              "technicalDepth": "excellent/good/fair/poor",
+              "communication": "excellent/good/fair/poor",
+              "innovation": "excellent/good/fair/poor",
+              "scalability": "excellent/good/fair/poor",
+              "reliability": "excellent/good/fair/poor",
+              "score": 85,
+              "detailedFeedback": "Comprehensive feedback on the system design approach",
+              "strengths": ["Strength 1", "Strength 2"],
+              "weaknesses": ["Weakness 1", "Weakness 2"],
+              "suggestions": ["Suggestion 1", "Suggestion 2"],
+              "architectureAnalysis": "Analysis of the proposed architecture",
+              "technicalAnalysis": "Analysis of technical decisions",
+              "improvementAreas": ["Area 1", "Area 2"]
+            }
+        `;
+        
+        const geminiData = await callGeminiAPI(analysisPrompt);
+        const jsonText = extractJson(geminiData.candidates[0].content.parts[0].text);
+        const feedback = JSON.parse(jsonText);
+        
+        // 保存解答和反馈
+        const solutionData = {
+            voiceInput,
+            whiteboardData,
+            timeSpent,
+            feedback,
+            timestamp: new Date()
+        };
+        
+        await sessionRef.update({
+            voiceInputs: admin.firestore.FieldValue.arrayUnion(voiceInput),
+            whiteboardData: admin.firestore.FieldValue.arrayUnion(whiteboardData || []),
+            feedback: admin.firestore.FieldValue.arrayUnion(feedback),
+            timeSpent: timeSpent || 0
+        });
+        
+        res.status(200).json({ 
+            feedback,
+            message: 'Solution submitted and evaluated successfully'
+        });
+    } catch (error) {
+        console.error("Error submitting system design solution:", error);
+        res.status(500).json({ message: `Failed to submit solution: ${error.message}` });
+    }
+};
+
+exports.getSystemDesignFeedback = async (req, res) => {
+    const { sessionId } = req.body;
+    
+    if (!sessionId) {
+        return res.status(400).json({ message: 'Session ID is required' });
+    }
+    
+    try {
+        const sessionRef = db.collection('system-design-interviews').doc(sessionId);
+        const sessionDoc = await sessionRef.get();
+        
+        if (!sessionDoc.exists) {
+            return res.status(404).json({ message: 'Interview session not found' });
+        }
+        
+        const sessionData = sessionDoc.data();
+        const latestFeedback = sessionData.feedback[sessionData.feedback.length - 1];
+        
+        if (!latestFeedback) {
+            return res.status(404).json({ message: 'No feedback available for this session' });
+        }
+        
+        res.status(200).json({ feedback: latestFeedback });
+    } catch (error) {
+        console.error("Error getting system design feedback:", error);
+        res.status(500).json({ message: `Failed to get feedback: ${error.message}` });
+    }
+};
+
+exports.endSystemDesignInterview = async (req, res) => {
+    const { sessionId } = req.body;
+    
+    if (!sessionId) {
+        return res.status(400).json({ message: 'Session ID is required' });
+    }
+    
+    try {
+        const sessionRef = db.collection('system-design-interviews').doc(sessionId);
+        const sessionDoc = await sessionRef.get();
+        
+        if (!sessionDoc.exists) {
+            return res.status(404).json({ message: 'Interview session not found' });
+        }
+        
+        const sessionData = sessionDoc.data();
+        
+        // 生成最终评估报告
+        const finalReportPrompt = `
+            Act as an expert system design interviewer providing a comprehensive final assessment for an AI/ML system design interview.
+            
+            Interview Session Data:
+            - Question: ${sessionData.questionData.title}
+            - Topic: ${sessionData.questionData.topic}
+            - Difficulty: ${sessionData.questionData.difficulty}
+            - Time Spent: ${sessionData.timeSpent} seconds
+            - Number of submissions: ${sessionData.feedback.length}
+            
+            Provide a comprehensive final system design assessment in JSON format:
+            {
+              "overallScore": 85,
+              "categoryScores": {
+                "systemDesign": 85,
+                "technicalDepth": 80,
+                "communication": 90,
+                "innovation": 85,
+                "scalability": 80,
+                "reliability": 85
+              },
+              "strengths": ["Strength 1", "Strength 2", "Strength 3"],
+              "areasForImprovement": ["Area 1", "Area 2", "Area 3"],
+              "recommendations": ["Recommendation 1", "Recommendation 2"],
+              "finalAssessment": "Overall assessment of the candidate's system design capabilities",
+              "nextSteps": "Suggested next steps for improvement",
+              "hiringRecommendation": "strong_yes/yes/maybe/no",
+              "technicalEvaluation": "Detailed technical evaluation",
+              "architectureEvaluation": "Detailed architecture evaluation"
+            }
+        `;
+        
+        const geminiData = await callGeminiAPI(finalReportPrompt);
+        const jsonText = extractJson(geminiData.candidates[0].content.parts[0].text);
+        const finalReport = JSON.parse(jsonText);
+        
+        // 保存到用户历史
+        const userHistoryData = {
+            sessionId,
+            interviewType: 'system-design',
+            questionData: sessionData.questionData,
+            finalReport,
+            startTime: sessionData.startTime,
+            endTime: new Date(),
+            timeSpent: sessionData.timeSpent,
+            topic: sessionData.questionData.topic,
+            difficulty: sessionData.questionData.difficulty
+        };
+        
+        // 更新会话状态
+        await sessionRef.update({
+            status: 'completed',
+            endTime: new Date(),
+            finalReport
+        });
+        
+        // 保存到用户历史记录
+        await db.collection('user-interview-history').add(userHistoryData);
+        
+        res.status(200).json({ 
+            finalReport,
+            message: 'System design interview completed successfully'
+        });
+    } catch (error) {
+        console.error("Error ending system design interview:", error);
+        res.status(500).json({ message: `Failed to end interview: ${error.message}` });
+    }
+};
+
+// --- 音频转录功能 ---
+exports.transcribeAudio = async (req, res) => {
+    if (!req.files || !req.files.audio) {
+        return res.status(400).json({ message: 'Audio file is required' });
+    }
+    
+    const audioFile = req.files.audio;
+    
+    try {
+        // 这里应该集成实际的语音识别API，如Google Speech-to-Text, Azure Speech Services等
+        // 为了演示，我们使用一个模拟的转录结果
+        
+        const transcriptionPrompt = `
+            This is a placeholder for audio transcription. In a real implementation, you would:
+            1. Send the audio file to a speech-to-text service
+            2. Get the transcription result
+            3. Return the transcribed text
+            
+            For now, we'll simulate a transcription result.
+        `;
+        
+        // 模拟转录结果
+        const mockTranscription = "这是一个模拟的语音转录结果。在实际实现中，这里应该是真实的语音识别结果。";
+        
+        res.status(200).json({ 
+            transcription: mockTranscription,
+            confidence: 0.95,
+            message: 'Audio transcribed successfully'
+        });
+    } catch (error) {
+        console.error("Error transcribing audio:", error);
+        res.status(500).json({ message: `Failed to transcribe audio: ${error.message}` });
+    }
+};
+
+// --- 用户历史记录 ---
+exports.getUserHistory = async (req, res) => {
+    try {
+        // 从用户历史记录集合中获取数据
+        const historySnapshot = await db.collection('user-interview-history')
+            .orderBy('startTime', 'desc')
+            .limit(50) // 限制返回最近50条记录
+            .get();
+        
+        const history = [];
+        historySnapshot.forEach(doc => {
+            history.push({
+                id: doc.id,
+                ...doc.data()
+            });
+        });
+        
+        res.status(200).json({ 
+            history,
+            message: 'User history retrieved successfully'
+        });
+    } catch (error) {
+        console.error("Error getting user history:", error);
+        res.status(500).json({ message: `Failed to get user history: ${error.message}` });
+    }
+};
