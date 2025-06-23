@@ -407,9 +407,9 @@ const MainContentPanel = ({ problem, userCode, setUserCode, feedback, isLoading,
                     {/* Toolbar */}
                     <div className="bg-gray-700 p-2 flex justify-between items-center flex-shrink-0">
                         <Select value={language} onChange={(e) => setLanguage(e.target.value)} className="w-32">
-                            <option value="python">Python</option>
-                            <option value="cpp">C++</option>
-                            <option value="java">Java</option>
+                            <option value="python">{t('python')}</option>
+                            <option value="cpp">{t('cpp')}</option>
+                            <option value="java">{t('java')}</option>
                         </Select>
                         <div>
                             <Button onClick={onExecute} disabled={isLoading.execution || isLoading.submission} className="bg-gray-600 hover:bg-gray-500 mr-2">
@@ -539,7 +539,7 @@ const FeedbackPanel = ({ feedback, isLoading, isSaved, onSave, onUnsave }) => {
                                     <div className="flex justify-between items-center p-3 bg-gray-700 rounded-md">
                                         <span className="text-gray-300 text-sm">{t('passRate')}</span>
                                         <span className={`font-bold ${feedback.testResults?.passed ? 'text-green-400' : 'text-yellow-400'}`}>
-                                            {feedback.testResults?.summary || 'N/A'}
+                                            {feedback.testResults?.summary || t('noData')}
                                         </span>
                                     </div>
                                 </div>
@@ -555,13 +555,13 @@ const FeedbackPanel = ({ feedback, isLoading, isSaved, onSave, onUnsave }) => {
                                     <div className="p-3 bg-gray-700 rounded-md">
                                         <div className="text-gray-400 text-xs mb-1">{t('timeComplexity')}</div>
                                         <div className="font-mono text-sm text-blue-400">
-                                            {feedback.complexity?.time || 'N/A'}
+                                            {feedback.complexity?.time || t('noData')}
                                         </div>
                                     </div>
                                     <div className="p-3 bg-gray-700 rounded-md">
                                         <div className="text-gray-400 text-xs mb-1">{t('spaceComplexity')}</div>
                                         <div className="font-mono text-sm text-purple-400">
-                                            {feedback.complexity?.space || 'N/A'}
+                                            {feedback.complexity?.space || t('noData')}
                                         </div>
                                     </div>
                                 </div>

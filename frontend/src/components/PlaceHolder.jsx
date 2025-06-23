@@ -10,7 +10,7 @@ const Placeholder = ({ title }) => {
     <div>
       <h1 className="text-4xl font-bold">{title}</h1>
       <p className="mt-4 text-gray-500">
-        {language === 'zh' ? '此功能正在开发中...' : 'This feature is under development...'}
+        {t('featureUnderDevelopment')}
       </p>
     </div>
   );

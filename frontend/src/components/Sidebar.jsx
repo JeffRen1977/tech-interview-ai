@@ -38,7 +38,7 @@ const Sidebar = ({ activeView, setAppView, onLogout }) => {
         </ul>
       </div>
       <div className="p-4 bg-gray-700 rounded-lg">
-        <p className="font-semibold text-sm">Jianfeng Ren</p>
+        <p className="font-semibold text-sm">{t('userName')}</p>
         <button onClick={onLogout} className="text-xs text-indigo-400 hover:underline">{t('logout')}</button>
       </div>
     </nav>
