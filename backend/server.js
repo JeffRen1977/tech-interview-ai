@@ -7,6 +7,7 @@ require('dotenv').config();
 const authRoutes = require('./routes/authRoutes');
 const questionRoutes = require('./routes/questionRoutes');
 const codeRoutes = require('./routes/codeRoutes');
+const resumeRoutes = require('./routes/resumeRoutes');
 
 // --- 初始化 ---
 const app = express();
@@ -24,6 +25,7 @@ app.use('/api/auth', authRoutes);
 // 所有 /api/questions 开头的请求都由 questionRoutes 处理
 app.use('/api/questions', questionRoutes);
 app.use('/api/code', codeRoutes); 
+app.use('/api/resume', resumeRoutes);
 
 // --- 启动服务器 ---
 const PORT = process.env.PORT || 3000;

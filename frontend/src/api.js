@@ -29,3 +29,33 @@ export async function apiRequest(endpoint, method, body) {
         throw error;
     }
 }
+
+// Resume API functions
+export const resumeAPI = {
+    // Analyze resume and provide optimization suggestions
+    analyzeResume: async (resumeText, jobDescription = '') => {
+        return await apiRequest('/resume/analyze', 'POST', {
+            resumeText,
+            jobDescription
+        });
+    },
+
+    // Assess JD matching and calculate matching degree
+    assessJDMatching: async (resumeText, jobDescription) => {
+        return await apiRequest('/resume/match', 'POST', {
+            resumeText,
+            jobDescription
+        });
+    },
+
+    // Generate customized cover letter
+    generateCoverLetter: async (resumeText, jobDescription, companyName, positionTitle, companyCulture = '') => {
+        return await apiRequest('/resume/cover-letter', 'POST', {
+            resumeText,
+            jobDescription,
+            companyName,
+            positionTitle,
+            companyCulture
+        });
+    }
+};
