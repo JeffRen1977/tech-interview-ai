@@ -143,6 +143,8 @@ export const translations = {
     spaceComplexity: '空间复杂度',
     aiCodeReview: 'AI 代码评审',
     executionError: '执行出错:',
+    selectQuestion: '选择题目',
+    chooseQuestion: '请选择题目',
     
     // UserHistory
     interviewHistory: '面试历史',
@@ -563,6 +565,8 @@ export const translations = {
     spaceComplexity: 'Space Complexity',
     aiCodeReview: 'AI Code Review',
     executionError: 'Execution error:',
+    selectQuestion: 'Select Question',
+    chooseQuestion: 'Choose Question',
     
     // UserHistory
     interviewHistory: 'Interview History',

@@ -242,7 +242,7 @@ const CodingPractice = () => {
     return (
         <div className="h-full bg-gray-900 text-white">
             <ResizablePanelGroup direction="horizontal" className="h-full">
-                <ResizablePanel defaultSize={40} minSize={25} maxSize={50}>
+                <ResizablePanel defaultSize={25} minSize={20} maxSize={35}>
                     <LeftSidebar 
                         problems={problems}
                         isLoading={isLoading.list}
@@ -257,7 +257,7 @@ const CodingPractice = () => {
                     />
                 </ResizablePanel>
                 <ResizableHandle />
-                <ResizablePanel defaultSize={70}>
+                <ResizablePanel defaultSize={75}>
                     <MainContentPanel 
                         problem={selectedProblem}
                         userCode={userCode}
@@ -285,7 +285,7 @@ const LeftSidebar = ({ problems, isLoading, error, selectedProblem, onSelectProb
     const t = (key) => getText(key, language);
     
     return (
-        <nav className="w-1/3 max-w-sm flex-shrink-0 flex flex-col gap-6">
+        <nav className="w-full flex-shrink-0 flex flex-col gap-4 p-4">
             {/* Filter Panel */}
             {showFilters && (
                 <QuestionFilterPanel 
@@ -299,10 +299,10 @@ const LeftSidebar = ({ problems, isLoading, error, selectedProblem, onSelectProb
                 />
             )}
             
-            {/* Problems List */}
+            {/* Problems List - Now using dropdown */}
             <Card className="flex-1 bg-gray-800 border-gray-700 flex flex-col">
-                 <CardHeader>
-                    <CardTitle className="text-lg flex items-center justify-between">
+                 <CardHeader className="pb-3">
+                    <CardTitle className="text-base flex items-center justify-between">
                         <span>{t('programmingQuestionBank')}</span>
                         <Button
                             onClick={onToggleFilters}
@@ -310,51 +310,77 @@ const LeftSidebar = ({ problems, isLoading, error, selectedProblem, onSelectProb
                             size="sm"
                             className="text-xs"
                         >
-                            <Filter size={14} className="mr-1" />
+                            <Filter size={12} className="mr-1" />
                             {showFilters ? t('hideFilters') : t('showFilters')}
                         </Button>
                     </CardTitle>
                 </CardHeader>
-                <CardContent className="flex-1 overflow-y-auto space-y-2">
-                    {isLoading && <p className="text-gray-400 p-3">{t('loading')}</p>}
-                    {error && <p className="text-red-400 p-3">{error}</p>}
+                <CardContent className="flex-1 space-y-3 p-4">
+                    {isLoading && <p className="text-gray-400 p-2">{t('loading')}</p>}
+                    {error && <p className="text-red-400 p-2">{error}</p>}
                     {!isLoading && !error && problems.length === 0 && (
-                        <p className="text-gray-400 p-3 text-center">{t('noQuestionsMatch')}</p>
+                        <p className="text-gray-400 p-2 text-center">{t('noQuestionsMatch')}</p>
                     )}
-                    {!isLoading && !error && problems.map(p => (
-                        <div 
-                            key={p.id} 
-                            onClick={() => onSelectProblem(p)}
-                            className={`p-3 rounded-md cursor-pointer text-sm transition-colors ${selectedProblem?.id === p.id ? 'bg-indigo-600 text-white font-semibold' : 'bg-gray-700 hover:bg-gray-600'}`}
-                        >
-                            <div className="flex justify-between items-start">
-                                <span className="flex-1">{p.title}</span>
-                                {learningHistory.find(h => h.questionId === p.id) && (
-                                    <BookOpen size={14} className="text-green-400 ml-2 flex-shrink-0" />
-                                )}
-                            </div>
-                            <div className="text-xs text-gray-400 mt-1">
-                                {p.difficulty} • {p.algorithms?.slice(0, 2).join(', ')}
-                            </div>
+                    {!isLoading && !error && problems.length > 0 && (
+                        <div className="space-y-2">
+                            <label className="block text-sm font-medium text-gray-300">
+                                {t('selectQuestion')}
+                            </label>
+                            <Select 
+                                value={selectedProblem?.id || ''} 
+                                onChange={(e) => {
+                                    const selected = problems.find(p => p.id === e.target.value);
+                                    if (selected) onSelectProblem(selected);
+                                }}
+                                className="w-full"
+                            >
+                                <option value="">{t('chooseQuestion')}</option>
+                                {problems.map(p => (
+                                    <option key={p.id} value={p.id}>
+                                        {p.title} ({p.difficulty})
+                                    </option>
+                                ))}
+                            </Select>
+                            
+                            {/* Selected question details */}
+                            {selectedProblem && (
+                                <div className="p-2 bg-gray-700 rounded-md">
+                                    <div className="text-sm font-medium text-gray-200 mb-1">
+                                        {selectedProblem.title}
+                                    </div>
+                                    <div className="text-xs text-gray-400 space-y-1">
+                                        <div>{t('difficulty')}: {selectedProblem.difficulty}</div>
+                                        {selectedProblem.algorithms?.length > 0 && (
+                                            <div>{t('algorithms')}: {selectedProblem.algorithms.slice(0, 2).join(', ')}</div>
+                                        )}
+                                        {learningHistory.find(h => h.questionId === selectedProblem.id) && (
+                                            <div className="flex items-center text-green-400">
+                                                <BookOpen size={12} className="mr-1" />
+                                                {t('saved')}
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            )}
                         </div>
-                     ))}
+                    )}
                 </CardContent>
             </Card>
             
             {/* Learning History */}
             <Card className="bg-gray-800 border-gray-700">
-                <CardHeader>
-                    <CardTitle className="text-lg flex items-center">
-                        <BookOpen size={18} className="mr-2" />
+                <CardHeader className="pb-2">
+                    <CardTitle className="text-base flex items-center">
+                        <BookOpen size={16} className="mr-2" />
                         {t('learningHistory')}
                     </CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-2">
+                <CardContent className="space-y-1 p-3">
                     {learningHistory.length === 0 ? (
-                        <p className="text-gray-400 text-sm text-center py-4">{t('noLearningRecords')}</p>
+                        <p className="text-gray-400 text-xs text-center py-2">{t('noLearningRecords')}</p>
                     ) : (
-                        learningHistory.slice(0, 5).map(history => (
-                            <div key={history.id} className="p-2 bg-gray-700 rounded text-xs">
+                        learningHistory.slice(0, 3).map(history => (
+                            <div key={history.id} className="p-1 bg-gray-700 rounded text-xs">
                                 <div className="text-gray-300">{history.questionId}</div>
                                 <div className="text-gray-500">
                                     {new Date(history.completedAt).toLocaleDateString()}
@@ -362,9 +388,9 @@ const LeftSidebar = ({ problems, isLoading, error, selectedProblem, onSelectProb
                             </div>
                         ))
                     )}
-                    {learningHistory.length > 5 && (
+                    {learningHistory.length > 3 && (
                         <p className="text-gray-400 text-xs text-center">
-                            {t('moreRecords').replace('{count}', learningHistory.length - 5)}
+                            {t('moreRecords').replace('{count}', learningHistory.length - 3)}
                         </p>
                     )}
                 </CardContent>
