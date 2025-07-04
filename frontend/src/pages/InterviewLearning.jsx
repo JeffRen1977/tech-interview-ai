@@ -9,6 +9,7 @@ import { BookCopy, Flame, HelpCircle, Play, Send, Check, X, AlertTriangle, Save,
 import { apiRequest } from '../api.js';
 import { useLanguage } from '../contexts/LanguageContext';
 import { getText } from '../utils/translations';
+import ReactMarkdown from 'react-markdown';
 
 // --- 主组件：面试练习页面 ---
 const InterviewLearning = () => {
@@ -442,11 +443,11 @@ const SystemDesignPractice = () => {
                                 console.log('系统设计题目难度:', question.difficulty);
                                 let diff = (question.difficulty || '').toLowerCase();
                                 let colorClass =
-                                    diff === 'easy'
+                                    diff === 'easy' || diff === '入门'
                                         ? 'bg-green-600 text-white'
-                                        : diff === 'medium'
+                                        : diff === 'medium' || diff === '中等'
                                         ? 'bg-yellow-500 text-gray-900'
-                                        : diff === 'hard'
+                                        : diff === 'hard' || diff === '困难'
                                         ? 'bg-red-600 text-white'
                                         : 'bg-gray-500 text-white';
                                 return (
@@ -503,8 +504,9 @@ const SystemDesignPractice = () => {
                                 {selectedQuestion.answer && (
                                     <div>
                                         <h4 className="text-lg font-medium mb-2">{t('detailedAnswer')}</h4>
-                                        <div className="bg-gray-900 p-4 rounded-lg">
-                                            <pre className="text-gray-300 whitespace-pre-wrap text-sm">{selectedQuestion.answer}</pre>
+                                        <div className="bg-gray-900 p-4 rounded-lg text-gray-300 text-sm">
+                                            {console.log('系统设计答案内容', selectedQuestion.answer)}
+                                            <ReactMarkdown>{selectedQuestion.answer}</ReactMarkdown>
                                         </div>
                                     </div>
                                 )}
