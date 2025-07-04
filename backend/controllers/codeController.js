@@ -2,6 +2,28 @@
 let fetch;
 const { db } = require('../config/firebase');
 
+// 初始化 fetch
+(async () => {
+    try {
+        const nodeFetch = await import('node-fetch');
+        fetch = nodeFetch.default;
+    } catch (error) {
+        console.error('Failed to load node-fetch:', error);
+    }
+})();
+
+// 确保fetch在模块加载时就初始化
+setTimeout(async () => {
+    if (!fetch) {
+        try {
+            const nodeFetch = await import('node-fetch');
+            fetch = nodeFetch.default;
+        } catch (error) {
+            console.error('Failed to load node-fetch in timeout:', error);
+        }
+    }
+}, 1000);
+
 // 帮助函数: 从可能包含Markdown的文本中稳健地提取JSON对象
 function extractJson(text) {
     // 寻找第一个 '{' 和最后一个 '}' 来定位JSON对象的边界
@@ -50,8 +72,13 @@ exports.executeCode = async (req, res) => {
 exports.submitCodeForAnalysis = async (req, res) => {
     // 确保 fetch 已经加载
     if (!fetch) {
-        const nodeFetch = await import('node-fetch');
-        fetch = nodeFetch.default;
+        try {
+            const nodeFetch = await import('node-fetch');
+            fetch = nodeFetch.default;
+        } catch (error) {
+            console.error('Failed to load node-fetch:', error);
+            return res.status(500).json({ message: "Failed to initialize fetch library." });
+        }
     }
 
     const { question, userCode, language } = req.body;
@@ -147,7 +174,16 @@ exports.getUserLearningHistory = async (req, res) => {
 // 保存问题到用户学习历史
 exports.saveToLearningHistory = async (req, res) => {
     const { questionId, feedback, userCode, language, completedAt } = req.body;
-    const userId = req.user.userId; // 从认证中间件获取用户ID
+    const userId = req.user.email; // 用邮箱作为userId
+    
+    console.log("Saving to learning history with data:", {
+        userId,
+        questionId,
+        feedback: feedback ? Object.keys(feedback) : 'no feedback',
+        userCodeLength: userCode ? userCode.length : 0,
+        language,
+        completedAt
+    });
     
     if (!questionId) {
         return res.status(400).json({ message: "Question ID is required." });
@@ -161,25 +197,61 @@ exports.saveToLearningHistory = async (req, res) => {
         }
         
         const questionData = questionDoc.data();
+        console.log("Question data keys:", Object.keys(questionData));
         
+        // 清理数据，移除 undefined 值并确保所有字段都有有效值
+        const cleanQuestionData = {
+            title: questionData.title || '',
+            description: questionData.description || '',
+            difficulty: questionData.difficulty || 'medium',
+            topic: questionData.topic || 'programming',
+            algorithms: Array.isArray(questionData.algorithms) ? questionData.algorithms : [],
+            dataStructures: Array.isArray(questionData.dataStructures) ? questionData.dataStructures : []
+        };
+
+        // 确保feedback是一个有效的对象
+        let cleanFeedback = {};
+        if (feedback && typeof feedback === 'object') {
+            // 只保留有效的字段
+            if (feedback.complexity && typeof feedback.complexity === 'object') {
+                cleanFeedback.complexity = {
+                    time: feedback.complexity.time || '',
+                    space: feedback.complexity.space || ''
+                };
+            }
+            if (feedback.aiAnalysis && typeof feedback.aiAnalysis === 'string') {
+                cleanFeedback.aiAnalysis = feedback.aiAnalysis;
+            }
+            if (feedback.testResults && typeof feedback.testResults === 'object') {
+                cleanFeedback.testResults = {
+                    passed: Boolean(feedback.testResults.passed),
+                    summary: feedback.testResults.summary || ''
+                };
+            }
+        }
+
         const historyData = {
             userId,
             questionId,
-            questionData: {
-                title: questionData.title,
-                description: questionData.description,
-                difficulty: questionData.difficulty,
-                topic: questionData.topic || 'programming',
-                algorithms: questionData.algorithms || [],
-                dataStructures: questionData.dataStructures || []
-            },
-            userCode,
-            language,
-            feedback,
+            questionData: cleanQuestionData,
+            userCode: userCode || '',
+            language: language || 'javascript',
+            feedback: cleanFeedback,
             completedAt: completedAt ? new Date(completedAt) : new Date(),
             savedAt: new Date(),
             interviewType: 'coding'
         };
+
+        console.log("Final history data structure:", {
+            userId: historyData.userId,
+            questionId: historyData.questionId,
+            questionDataKeys: Object.keys(historyData.questionData),
+            userCodeLength: historyData.userCode.length,
+            feedbackKeys: Object.keys(historyData.feedback),
+            completedAt: historyData.completedAt,
+            savedAt: historyData.savedAt,
+            interviewType: historyData.interviewType
+        });
 
         const docRef = await db.collection('user-learning-history').add(historyData);
         res.status(200).json({ 

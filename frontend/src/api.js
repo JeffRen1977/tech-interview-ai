@@ -208,3 +208,53 @@ export const mockInterviewAPI = {
     });
   }
 };
+
+// Programming Practice API
+export const programmingAPI = {
+  // 获取编程题
+  getQuestions: async (filters = {}) => {
+    const queryParams = new URLSearchParams(filters).toString();
+    return await apiRequest(`/questions/coding?${queryParams}`, 'GET');
+  },
+  
+  // 获取过滤后的编程题
+  getFilteredQuestions: async (filters = {}) => {
+    const queryParams = new URLSearchParams(filters).toString();
+    return await apiRequest(`/questions/coding/filtered?${queryParams}`, 'GET');
+  },
+  
+  // 获取过滤选项
+  getFilterOptions: async () => {
+    return await apiRequest('/questions/coding/filter-options', 'GET');
+  },
+  
+  // 提交代码进行AI分析
+  submitForAnalysis: async (question, userCode, language) => {
+    return await apiRequest('/code/submit', 'POST', {
+      question,
+      userCode,
+      language
+    });
+  },
+  
+  // 保存到学习历史
+  saveToLearningHistory: async (questionId, feedback, userCode, language, completedAt) => {
+    return await apiRequest('/code/learning-history', 'POST', {
+      questionId,
+      feedback,
+      userCode,
+      language,
+      completedAt
+    });
+  },
+  
+  // 获取用户学习历史
+  getLearningHistory: async (userId) => {
+    return await apiRequest(`/code/learning-history/${userId}`, 'GET');
+  },
+  
+  // 从学习历史中移除
+  removeFromLearningHistory: async (historyId) => {
+    return await apiRequest(`/code/learning-history/${historyId}`, 'DELETE');
+  }
+};

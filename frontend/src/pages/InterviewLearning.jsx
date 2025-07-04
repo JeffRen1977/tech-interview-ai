@@ -163,30 +163,49 @@ const ProgrammingPractice = () => {
         setIsLoading(prev => ({ ...prev, submission: true }));
         setFeedback(null);
         try {
-            // 首先进行AI分析
+            // 只做AI分析，不自动保存到数据库
             const analysisResult = await apiRequest('/code/submit', 'POST', {
                 question: selectedProblem,
                 userCode: userCode,
                 language: programmingLanguage
             });
             
-            // 然后保存到学习历史
+            setFeedback({ 
+                type: 'submission', 
+                ...analysisResult,
+                saved: false // 标记为未保存
+            });
+        } catch (error) {
+            setFeedback({ type: 'submission', success: false, message: `${t('submissionError')} ${error.message}` });
+        } finally {
+            setIsLoading(prev => ({ ...prev, submission: false }));
+        }
+    };
+
+    // 新增：手动保存到学习历史
+    const handleSaveToHistory = async () => {
+        if (!selectedProblem || !feedback) return;
+        setIsLoading(prev => ({ ...prev, submission: true }));
+        try {
             const saveResult = await apiRequest('/code/learning-history', 'POST', {
                 questionId: selectedProblem.id,
                 userCode: userCode,
                 language: programmingLanguage,
-                feedback: analysisResult,
+                feedback: feedback,
                 completedAt: new Date().toISOString()
             });
             
-            setFeedback({ 
-                type: 'submission', 
-                ...analysisResult,
-                saved: true,
-                saveMessage: saveResult.message
-            });
+            setFeedback(prev => ({ 
+                ...prev, 
+                saved: true, 
+                saveMessage: saveResult.message 
+            }));
         } catch (error) {
-            setFeedback({ type: 'submission', success: false, message: `${t('submissionError')} ${error.message}` });
+            setFeedback(prev => ({ 
+                ...prev, 
+                saved: false, 
+                saveMessage: `${t('saveToHistoryError')} ${error.message}` 
+            }));
         } finally {
             setIsLoading(prev => ({ ...prev, submission: false }));
         }
@@ -339,7 +358,43 @@ const ProgrammingPractice = () => {
                                             <h4 className="font-semibold mb-2">
                                                 {feedback.type === 'execution' ? t('executionResult') : t('submissionResult')}
                                             </h4>
-                                            <pre className="text-sm whitespace-pre-wrap">{feedback.message}</pre>
+                                            {feedback.type === 'submission' && feedback.aiAnalysis && (
+                                                <div className="mb-3">
+                                                    <h5 className="font-medium text-blue-400 mb-1">{t('aiAnalysis')}</h5>
+                                                    <div className="text-sm text-gray-300 whitespace-pre-line bg-gray-800 p-3 rounded">
+                                                        {feedback.aiAnalysis}
+                                                    </div>
+                                                </div>
+                                            )}
+                                            {feedback.message && (
+                                                <pre className="text-sm whitespace-pre-wrap">{feedback.message}</pre>
+                                            )}
+                                            
+                                            {/* 显示保存状态和保存按钮 */}
+                                            {feedback.type === 'submission' && (
+                                                <div className="mt-4">
+                                                    {feedback.saved ? (
+                                                        <div className="text-green-400 text-sm flex items-center">
+                                                            <Check size={16} className="mr-2" />
+                                                            {feedback.saveMessage || t('savedToLearningHistory')}
+                                                        </div>
+                                                    ) : (
+                                                        <div className="flex items-center gap-2">
+                                                            <Button
+                                                                onClick={handleSaveToHistory}
+                                                                disabled={isLoading.submission}
+                                                                className="bg-green-600 hover:bg-green-700 text-sm"
+                                                            >
+                                                                <Save size={16} className="mr-2" />
+                                                                {t('saveToLearningHistory')}
+                                                            </Button>
+                                                            {feedback.saveMessage && (
+                                                                <span className="text-red-400 text-sm">{feedback.saveMessage}</span>
+                                                            )}
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            )}
                                         </div>
                                     )}
                                 </div>

@@ -3,7 +3,7 @@ import { Card } from './ui/card';
 import { Button } from './ui/button';
 import { Select } from './ui/select';
 import { Textarea } from './ui/textarea';
-import { apiRequest } from '../api';
+import { apiRequest, programmingAPI } from '../api';
 import { useLanguage } from '../contexts/LanguageContext';
 import { getText } from '../utils/translations';
 import { Play, Pause, Square, Clock, Lightbulb, CheckCircle, AlertCircle } from 'lucide-react';
@@ -21,12 +21,15 @@ const CodingInterview = ({ mockInterviewData, onBackToSetup }) => {
     const [timeLimit, setTimeLimit] = useState(20 * 60); // 默认20分钟
     const [isTimerRunning, setIsTimerRunning] = useState(false);
     const [feedback, setFeedback] = useState(null);
+    const [aiAnalysis, setAiAnalysis] = useState(null);
     const [showHints, setShowHints] = useState(false);
     const [difficulty, setDifficulty] = useState('medium');
     const [programmingLanguage, setProgrammingLanguage] = useState('any');
     const [topic, setTopic] = useState('algorithms');
     const [finalReport, setFinalReport] = useState(null);
     const [localMockInterviewData, setLocalMockInterviewData] = useState(null);
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [showSaveDialog, setShowSaveDialog] = useState(false);
     
     const timerRef = useRef(null);
     const startTimeRef = useRef(null);
@@ -122,19 +125,60 @@ const CodingInterview = ({ mockInterviewData, onBackToSetup }) => {
             return;
         }
 
+        setIsSubmitting(true);
         try {
-            const response = await apiRequest('/questions/coding-interview/submit', 'POST', {
-                sessionId,
-                solution,
-                approach,
-                timeSpent
+            console.log('Submitting solution for analysis...', {
+                questionData: questionData ? { id: questionData.id, title: questionData.title } : null,
+                solutionLength: solution.length,
+                language: programmingLanguage === 'any' ? 'javascript' : programmingLanguage
             });
             
-            setFeedback(response.feedback);
+            // 只做AI分析，不保存到数据库
+            const analysisResponse = await programmingAPI.submitForAnalysis(
+                questionData,
+                solution,
+                programmingLanguage === 'any' ? 'javascript' : programmingLanguage
+            );
+            
+            console.log('AI Analysis response received:', analysisResponse);
+            setAiAnalysis(analysisResponse);
+            setShowSaveDialog(true);
         } catch (error) {
             console.error('Failed to submit solution:', error);
             alert(`${t('failedToSubmitSolution')} ${error.message}`);
+        } finally {
+            setIsSubmitting(false);
         }
+    };
+
+    const saveToLearningHistory = async () => {
+        try {
+            console.log('Saving to learning history...', {
+                questionId: questionData.id,
+                aiAnalysis: aiAnalysis ? Object.keys(aiAnalysis) : null,
+                solutionLength: solution.length,
+                language: programmingLanguage === 'any' ? 'javascript' : programmingLanguage
+            });
+            
+            await programmingAPI.saveToLearningHistory(
+                questionData.id,
+                aiAnalysis,
+                solution,
+                programmingLanguage === 'any' ? 'javascript' : programmingLanguage,
+                new Date().toISOString()
+            );
+            
+            setShowSaveDialog(false);
+            alert(t('savedToLearningHistory'));
+        } catch (error) {
+            console.error('Failed to save to learning history:', error);
+            alert(`${t('failedToSaveToHistory')} ${error.message}`);
+        }
+    };
+
+    const skipSaving = () => {
+        setShowSaveDialog(false);
+        // 不要清空aiAnalysis，这样分析结果会一直显示
     };
 
     const endInterview = async () => {
@@ -340,8 +384,12 @@ const CodingInterview = ({ mockInterviewData, onBackToSetup }) => {
                                 />
                             </div>
                             <div className="mt-4 flex gap-2">
-                                <Button onClick={submitSolution} className="bg-green-600 hover:bg-green-700">
-                                    {t('submitSolution')}
+                                <Button 
+                                    onClick={submitSolution} 
+                                    className="bg-green-600 hover:bg-green-700"
+                                    disabled={isSubmitting}
+                                >
+                                    {isSubmitting ? t('analyzing') : t('submitForAnalysis')}
                                 </Button>
                                 {showHints && (
                                     <Button variant="outline" onClick={() => setShowHints(false)}>
@@ -354,37 +402,85 @@ const CodingInterview = ({ mockInterviewData, onBackToSetup }) => {
                     </Card>
                 </div>
 
-                {/* Feedback */}
+                {/* AI Analysis and Save Dialog */}
                 <div>
                     <Card className="bg-gray-800 h-full">
                         <div className="p-6">
-                            <h2 className="text-xl font-bold mb-4">{t('interviewFeedback')}</h2>
-                            {feedback ? (
+                            <h2 className="text-xl font-bold mb-4">{t('aiAnalysis')}</h2>
+                            {isSubmitting ? (
+                                <div className="text-center text-gray-400 py-8">
+                                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto mb-4"></div>
+                                    <p>{t('analyzingCode')}</p>
+                                </div>
+                            ) : aiAnalysis ? (
                                 <div className="space-y-4">
-                                    {feedback.ratings && (
-                                        <div className="grid grid-cols-2 gap-4">
-                                            {Object.entries(feedback.ratings).map(([category, rating]) => (
-                                                <div key={category} className="flex items-center justify-between p-3 bg-gray-700 rounded-md">
-                                                    <span className="text-sm">{t(category)}</span>
-                                                    <div className="flex items-center gap-2">
-                                                        {getFeedbackIcon(rating)}
-                                                        <span className="text-sm font-medium">{t(rating)}</span>
-                                                    </div>
-                                                </div>
-                                            ))}
+                                    {/* 测试结果 */}
+                                    {aiAnalysis.testResults && (
+                                        <div className="bg-gray-700 p-4 rounded-lg">
+                                            <h3 className="font-semibold mb-2">{t('testResults')}</h3>
+                                            <div className="flex items-center gap-2">
+                                                <span className={`text-sm font-medium ${aiAnalysis.testResults.passed ? 'text-green-500' : 'text-yellow-500'}`}>
+                                                    {aiAnalysis.testResults.passed ? '✓' : '⚠'}
+                                                </span>
+                                                <span className="text-sm">{aiAnalysis.testResults.summary}</span>
+                                            </div>
                                         </div>
                                     )}
-                                    {feedback.comments && (
-                                        <div className="mt-4">
-                                            <h3 className="font-semibold mb-2">{t('comments')}</h3>
-                                            <p className="text-gray-300 text-sm">{feedback.comments}</p>
+                                    
+                                    {/* 复杂度分析 */}
+                                    {aiAnalysis.complexity && (
+                                        <div className="bg-gray-700 p-4 rounded-lg">
+                                            <h3 className="font-semibold mb-2">{t('complexityAnalysis')}</h3>
+                                            <div className="grid grid-cols-2 gap-2 text-sm">
+                                                <div>
+                                                    <span className="text-gray-400">{t('timeComplexity')}: </span>
+                                                    <span className="font-mono">{aiAnalysis.complexity.time}</span>
+                                                </div>
+                                                <div>
+                                                    <span className="text-gray-400">{t('spaceComplexity')}: </span>
+                                                    <span className="font-mono">{aiAnalysis.complexity.space}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )}
+                                    
+                                    {/* AI分析 */}
+                                    {aiAnalysis.aiAnalysis && (
+                                        <div className="bg-gray-700 p-4 rounded-lg">
+                                            <h3 className="font-semibold mb-2">{t('aiReview')}</h3>
+                                            <div className="text-sm text-gray-300 whitespace-pre-line">
+                                                {aiAnalysis.aiAnalysis}
+                                            </div>
+                                        </div>
+                                    )}
+                                    
+                                    {/* 保存对话框 */}
+                                    {showSaveDialog && (
+                                        <div className="bg-blue-900/20 border border-blue-500/30 p-4 rounded-lg">
+                                            <h3 className="font-semibold mb-2 text-blue-400">{t('saveToLearningHistory')}</h3>
+                                            <p className="text-sm text-gray-300 mb-4">{t('saveAnalysisDescription')}</p>
+                                            <div className="flex gap-2">
+                                                <Button 
+                                                    onClick={saveToLearningHistory}
+                                                    className="bg-green-600 hover:bg-green-700 text-sm"
+                                                >
+                                                    {t('saveAnalysis')}
+                                                </Button>
+                                                <Button 
+                                                    onClick={skipSaving}
+                                                    variant="outline"
+                                                    className="text-sm"
+                                                >
+                                                    {t('skipSaving')}
+                                                </Button>
+                                            </div>
                                         </div>
                                     )}
                                 </div>
                             ) : (
                                 <div className="text-center text-gray-400 py-8">
                                     <Lightbulb className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                                    <p>{t('submitSolutionForFeedback')}</p>
+                                    <p>{t('submitSolutionForAnalysis')}</p>
                                 </div>
                             )}
                         </div>
