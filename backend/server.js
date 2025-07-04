@@ -10,6 +10,8 @@ const codeRoutes = require('./routes/codeRoutes');
 const resumeRoutes = require('./routes/resumeRoutes');
 const wrongQuestionRoutes = require('./routes/wrongQuestionRoutes');
 const coachAgentRoutes = require('./routes/coachAgentRoutes');
+const systemDesignRoutes = require('./routes/systemDesignRoutes');
+const behavioralRoutes = require('./routes/behavioralRoutes');
 
 // --- 初始化 ---
 const app = express();
@@ -30,6 +32,8 @@ app.use('/api/code', codeRoutes);
 app.use('/api/resume', resumeRoutes);
 app.use('/api/wrong-questions', wrongQuestionRoutes);
 app.use('/api/coach-agent', coachAgentRoutes);
+app.use('/api/system-design', systemDesignRoutes);
+app.use('/api/behavioral', behavioralRoutes);
 
 // --- 启动服务器 ---
 const PORT = process.env.PORT || 3000;

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import HomePage from './pages/HomePage';
 import LoginRegister from './pages/LoginRegister';
 import Dashboard from './pages/Dashboard';
-import CodingPractice from './pages/CodingPractice';
+import InterviewLearning from './pages/InterviewLearning';
 import MockInterview from './pages/MockInterview';
 import ResumeOptimizer from './pages/ResumeOptimizer';
 import Admin from './pages/Admin';
@@ -106,7 +106,7 @@ const AppContent = () => {
       />
       <MainContent>
         {activeView === 'dashboard' && <Dashboard />}
-        {activeView === 'coding-practice' && <CodingPractice />}
+        {activeView === 'coding-practice' && <InterviewLearning />}
         {activeView === 'mock-interview' && <MockInterview />}
         {activeView === 'resume-optimizer' && <ResumeOptimizer />}
         {activeView === 'admin' && user?.role === 'admin' && <Admin />}

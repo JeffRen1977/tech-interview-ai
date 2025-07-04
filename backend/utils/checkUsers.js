@@ -1,4 +1,4 @@
-const { auth, db } = require('./config/firebase');
+const { auth, db } = require('../config/firebase');
 
 async function checkUsers() {
     try {

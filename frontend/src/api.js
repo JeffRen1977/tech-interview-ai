@@ -129,3 +129,38 @@ export const wrongQuestionAPI = {
     return await apiRequest(`/wrong-questions/${id}/ai-feedback`, 'POST');
   }
 };
+
+// System Design API
+export const systemDesignAPI = {
+  getAllQuestions: async () => {
+    return await apiRequest('/system-design/questions', 'GET');
+  },
+  getFilteredQuestions: async (filters) => {
+    const queryParams = new URLSearchParams(filters).toString();
+    return await apiRequest(`/system-design/questions/filtered?${queryParams}`, 'GET');
+  },
+  getQuestionById: async (id) => {
+    return await apiRequest(`/system-design/questions/${id}`, 'GET');
+  }
+};
+
+// Behavioral API
+export const behavioralAPI = {
+  getAllQuestions: async () => {
+    return await apiRequest('/behavioral/questions', 'GET');
+  },
+  getFilteredQuestions: async (filters) => {
+    const queryParams = new URLSearchParams(filters).toString();
+    return await apiRequest(`/behavioral/questions/filtered?${queryParams}`, 'GET');
+  },
+  getQuestionById: async (id) => {
+    return await apiRequest(`/behavioral/questions/${id}`, 'GET');
+  },
+  analyzeAnswer: async (questionId, userAnswer, question) => {
+    return await apiRequest('/behavioral/analyze', 'POST', {
+      questionId,
+      userAnswer,
+      question
+    });
+  }
+};

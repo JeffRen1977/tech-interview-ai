@@ -58,11 +58,19 @@ async function loadSystemDesignQuestions() {
           description: question.description,
           design_steps: question.design_steps,
           answer: question.answer,
-          tags: question.tags,
-          reference: question.reference,
           createdAt: question.createdAt ? new Date(question.createdAt) : new Date(),
           updatedAt: new Date()
         };
+        
+        // Only add tags if it exists and is not undefined
+        if (question.tags !== undefined && question.tags !== null) {
+          docData.tags = question.tags;
+        }
+        
+        // Only add reference if it exists and is not undefined
+        if (question.reference !== undefined && question.reference !== null) {
+          docData.reference = question.reference;
+        }
         
         // Add to batch
         promises.push(collectionRef.doc(docId).set(docData));

@@ -9,7 +9,7 @@ const Sidebar = ({ activeView, setAppView, onLogout, user, isAdmin }) => {
 
   const navItems = [
     { id: 'dashboard', icon: <LayoutDashboard />, label: t('dashboard') },
-    { id: 'coding-practice', icon: <Code />, label: t('codingPractice') },
+    { id: 'coding-practice', icon: <Code />, label: t('interviewLearning') },
     { id: 'mock-interview', icon: <Mic />, label: t('mockInterview') },
     { id: 'user-history', icon: <Clock />, label: t('userHistory') },
     { id: 'resume-optimizer', icon: <FileText />, label: t('resumeOptimizer') },
