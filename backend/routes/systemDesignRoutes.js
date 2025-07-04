@@ -15,4 +15,7 @@ router.get('/questions/:id', systemDesignController.getQuestionById);
 // 保存到学习历史 - 需要用户登录
 router.post('/learning-history', verifyToken, systemDesignController.saveToLearningHistory);
 
+// 分析系统设计解答（用于模拟面试）- 需要用户登录
+router.post('/analyze', verifyToken, systemDesignController.analyzeSystemDesignSolution);
+
 module.exports = router; 

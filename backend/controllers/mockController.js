@@ -225,3 +225,104 @@ exports.getAIBehavioralQuestions = async (req, res) => {
     res.status(500).json({ error: 'Failed to fetch AI behavioral questions', details: err.message });
   }
 }; 
+
+// 保存模拟面试结果到用户面试历史
+exports.saveMockInterviewResult = async (req, res) => {
+  try {
+    const { 
+      questionId, 
+      questionData, 
+      userSolution, 
+      feedback, 
+      interviewType, 
+      timeSpent = 0,
+      completedAt 
+    } = req.body;
+    
+    const userId = req.user.email; // 使用email作为用户标识符
+    const userEmail = req.user.email;
+    
+    if (!questionId || !questionData || !userSolution || !feedback || !interviewType) {
+      return res.status(400).json({ message: "Missing required fields" });
+    }
+
+    // 清理questionData，移除undefined值
+    const cleanQuestionData = {};
+    if (questionData && typeof questionData === 'object') {
+      Object.keys(questionData).forEach(key => {
+        if (questionData[key] !== undefined) {
+          cleanQuestionData[key] = questionData[key];
+        }
+      });
+    }
+
+    // 清理feedback，移除undefined值
+    let cleanFeedback = {};
+    if (feedback && typeof feedback === 'object') {
+      Object.keys(feedback).forEach(key => {
+        if (feedback[key] !== undefined) {
+          if (key === 'complexity' && typeof feedback[key] === 'object') {
+            cleanFeedback[key] = {
+              time: feedback[key].time || '',
+              space: feedback[key].space || ''
+            };
+          } else if (key === 'testResults' && typeof feedback[key] === 'object') {
+            cleanFeedback[key] = {
+              passed: Boolean(feedback[key].passed),
+              summary: feedback[key].summary || ''
+            };
+          } else {
+            cleanFeedback[key] = feedback[key];
+          }
+        }
+      });
+    }
+
+    const interviewHistoryData = {
+      sessionId: `mock_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      interviewType: interviewType,
+      userEmail: userEmail,
+      questionData: cleanQuestionData,
+      userSolutions: [{
+        solution: userSolution,
+        feedback: cleanFeedback,
+        timeSpent: timeSpent,
+        timestamp: new Date()
+      }],
+      feedback: [cleanFeedback],
+      startTime: completedAt ? new Date(completedAt) : new Date(),
+      endTime: new Date(),
+      timeSpent: timeSpent,
+      topic: cleanQuestionData.topic || cleanQuestionData.category || 'general',
+      difficulty: cleanQuestionData.difficulty || 'medium',
+      finalReport: {
+        overallScore: cleanFeedback.score || 0,
+        strengths: cleanFeedback.strengths || [],
+        areasForImprovement: cleanFeedback.areasForImprovement || [],
+        recommendations: cleanFeedback.recommendations || [],
+        finalAssessment: cleanFeedback.aiAnalysis || cleanFeedback.message || '',
+        hiringRecommendation: 'mock_interview'
+      }
+    };
+
+    console.log('Saving mock interview result to user-interview-history:', {
+      sessionId: interviewHistoryData.sessionId,
+      interviewType: interviewHistoryData.interviewType,
+      questionDataKeys: Object.keys(interviewHistoryData.questionData),
+      userSolutionLength: typeof userSolution === 'string' ? userSolution.length : 'object',
+      feedbackKeys: Object.keys(interviewHistoryData.feedback[0]),
+      timeSpent: interviewHistoryData.timeSpent
+    });
+
+    const docRef = await db.collection('user-interview-history').add(interviewHistoryData);
+    
+    res.status(200).json({ 
+      message: "Mock interview result saved to interview history successfully.",
+      historyId: docRef.id,
+      sessionId: interviewHistoryData.sessionId
+    });
+  } catch (error) {
+    console.error("Error saving mock interview result:", error);
+    res.status(500).json({ message: "Failed to save mock interview result." });
+  }
+}; 
