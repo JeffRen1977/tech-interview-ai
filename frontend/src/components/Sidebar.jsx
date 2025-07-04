@@ -11,10 +11,10 @@ const Sidebar = ({ activeView, setAppView, onLogout, user, isAdmin }) => {
     { id: 'dashboard', icon: <LayoutDashboard />, label: t('dashboard') },
     { id: 'coding-practice', icon: <Code />, label: t('interviewLearning') },
     { id: 'mock-interview', icon: <Mic />, label: t('mockInterview') },
-    { id: 'user-history', icon: <Clock />, label: t('userHistory') },
     { id: 'resume-optimizer', icon: <FileText />, label: t('resumeOptimizer') },
     { id: 'learn-feedback', icon: <History />, label: t('learnFeedback') },
     { id: 'coach-agent', icon: <UserCog />, label: t('coachAgent') },
+    { id: 'user-history', icon: <Clock />, label: t('userHistory') },
   ];
 
   // 只有管理员才能看到Admin菜单
