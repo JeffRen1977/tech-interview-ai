@@ -11,7 +11,7 @@ import {
     Mic, MicOff, Save, Undo, Redo, Download, Upload, Volume2, VolumeX
 } from 'lucide-react';
 
-const SystemDesignInterview = () => {
+const SystemDesignInterview = ({ mockInterviewData, onBackToSetup }) => {
     const { language } = useLanguage();
     const t = (key) => getText(key, language);
     
@@ -29,12 +29,14 @@ const SystemDesignInterview = () => {
     const [transcribedText, setTranscribedText] = useState('');
     const [feedback, setFeedback] = useState(null);
     const [timeSpent, setTimeSpent] = useState(0);
+    const [timeLimit, setTimeLimit] = useState(40 * 60); // 默认40分钟
     const [isTimerRunning, setIsTimerRunning] = useState(false);
     const [finalReport, setFinalReport] = useState(null);
     const [showHints, setShowHints] = useState(false);
     const [topic, setTopic] = useState('machine-learning');
     const [difficulty, setDifficulty] = useState('medium');
     const [interviewLanguage, setInterviewLanguage] = useState('chinese');
+    const [localMockInterviewData, setLocalMockInterviewData] = useState(null);
     
     const canvasRef = useRef(null);
     const contextRef = useRef(null);
@@ -43,11 +45,31 @@ const SystemDesignInterview = () => {
     const timerRef = useRef(null);
     const startTimeRef = useRef(null);
 
+    // 处理模拟面试数据
+    useEffect(() => {
+        if (mockInterviewData) {
+            // 系统设计题目固定40分钟
+            setTimeLimit(40 * 60);
+            
+            // 直接开始模拟面试
+            startMockInterview(mockInterviewData);
+        }
+    }, [mockInterviewData]);
+
     // Timer effect
     useEffect(() => {
         if (isTimerRunning) {
             timerRef.current = setInterval(() => {
-                setTimeSpent(prev => prev + 1);
+                setTimeSpent(prev => {
+                    const newTime = prev + 1;
+                    // 检查是否超时
+                    if (newTime >= timeLimit) {
+                        setIsTimerRunning(false);
+                        endInterview();
+                        return timeLimit;
+                    }
+                    return newTime;
+                });
             }, 1000);
         } else {
             if (timerRef.current) {
@@ -60,7 +82,7 @@ const SystemDesignInterview = () => {
                 clearInterval(timerRef.current);
             }
         };
-    }, [isTimerRunning]);
+    }, [isTimerRunning, timeLimit]);
 
     // Canvas setup
     useEffect(() => {
@@ -84,6 +106,13 @@ const SystemDesignInterview = () => {
         const mins = Math.floor(seconds / 60);
         const secs = seconds % 60;
         return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    };
+
+    const startMockInterview = (data) => {
+        setQuestionData(data.question);
+        setInterviewState('active');
+        setIsTimerRunning(true);
+        startTimeRef.current = Date.now();
     };
 
     const startInterview = async () => {
@@ -376,6 +405,16 @@ const SystemDesignInterview = () => {
         <div className="max-w-7xl mx-auto p-6">
             <div className="flex justify-between items-center mb-6">
                 <div className="flex items-center gap-4">
+                    {onBackToSetup && (
+                        <Button 
+                            onClick={onBackToSetup}
+                            variant="outline"
+                            size="sm"
+                            className="flex items-center gap-2"
+                        >
+                            ← {t('backToSetup')}
+                        </Button>
+                    )}
                     <h1 className="text-3xl font-bold">{questionData?.title}</h1>
                     {questionData?.difficulty && (
                         (() => {

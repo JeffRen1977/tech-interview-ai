@@ -8,7 +8,7 @@ import { useLanguage } from '../contexts/LanguageContext';
 import { getText } from '../utils/translations';
 import { Play, Pause, Square, Clock, Mic, MicOff, CheckCircle, AlertCircle, Star } from 'lucide-react';
 
-const BehavioralInterview = () => {
+const BehavioralInterview = ({ mockInterviewData, onBackToSetup }) => {
     const { language } = useLanguage();
     const t = (key) => getText(key, language);
     
@@ -17,12 +17,13 @@ const BehavioralInterview = () => {
     const [interviewData, setInterviewData] = useState(null);
     const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
     const [response, setResponse] = useState('');
-    const [timeRemaining, setTimeRemaining] = useState(45 * 60); // 45 minutes
+    const [timeRemaining, setTimeRemaining] = useState(5 * 60); // 默认5分钟
     const [isTimerRunning, setIsTimerRunning] = useState(false);
     const [feedback, setFeedback] = useState(null);
     const [finalReport, setFinalReport] = useState(null);
     const [isRecording, setIsRecording] = useState(false);
     const [transcript, setTranscript] = useState('');
+    const [localMockInterviewData, setLocalMockInterviewData] = useState(null);
     
     // Interview setup state
     const [role, setRole] = useState('Software Engineer');
@@ -56,6 +57,17 @@ const BehavioralInterview = () => {
         }
     }, [language]);
 
+    // 处理模拟面试数据
+    useEffect(() => {
+        if (mockInterviewData) {
+            // 行为面试题目固定5分钟
+            setTimeRemaining(5 * 60);
+            
+            // 直接开始模拟面试
+            startMockInterview(mockInterviewData);
+        }
+    }, [mockInterviewData]);
+
     // Timer effect
     useEffect(() => {
         if (isTimerRunning) {
@@ -86,6 +98,28 @@ const BehavioralInterview = () => {
         const mins = Math.floor(seconds / 60);
         const secs = seconds % 60;
         return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    };
+
+    const startMockInterview = (data) => {
+        // 确保数据结构正确
+        const question = data.question;
+        const formattedQuestion = {
+            id: question.id || question.title,
+            question: question.question || question.description || question.prompt,
+            category: question.category || 'Behavioral',
+            starFramework: question.starFramework || {
+                situation: '描述你面临的具体情况或挑战',
+                task: '解释你的责任和需要完成的任务',
+                action: '详细说明你采取的具体行动和步骤',
+                result: '分享结果和你学到的经验教训'
+            }
+        };
+        
+        setInterviewData({
+            questions: [formattedQuestion]
+        });
+        setInterviewState('active');
+        setIsTimerRunning(true);
     };
 
     const startInterview = async () => {
@@ -326,10 +360,34 @@ const BehavioralInterview = () => {
 
     const currentQuestion = interviewData?.questions[currentQuestionIndex];
 
+    // 安全检查：如果没有当前问题，显示加载状态
+    if (!currentQuestion) {
+        return (
+            <div className="max-w-6xl mx-auto p-6">
+                <div className="text-center py-8">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto mb-4"></div>
+                    <p className="text-gray-400">{t('loading')}</p>
+                </div>
+            </div>
+        );
+    }
+
     return (
         <div className="max-w-6xl mx-auto p-6">
             <div className="flex justify-between items-center mb-6">
-                <h1 className="text-3xl font-bold">{t('behavioralInterviewSimulation')}</h1>
+                <div className="flex items-center gap-4">
+                    {onBackToSetup && (
+                        <Button 
+                            onClick={onBackToSetup}
+                            variant="outline"
+                            size="sm"
+                            className="flex items-center gap-2"
+                        >
+                            ← {t('backToSetup')}
+                        </Button>
+                    )}
+                    <h1 className="text-3xl font-bold">{t('behavioralInterviewSimulation')}</h1>
+                </div>
                 <div className="flex items-center gap-4">
                     <div className="flex items-center gap-2 bg-gray-700 px-4 py-2 rounded-lg">
                         <Clock className="w-5 h-5" />

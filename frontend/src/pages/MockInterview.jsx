@@ -6,6 +6,9 @@ import { Select } from '../components/ui/select';
 import { apiRequest } from '../api';
 import { useLanguage } from '../contexts/LanguageContext';
 import { getText } from '../utils/translations';
+import CodingInterview from '../components/CodingInterview';
+import SystemDesignInterview from '../components/SystemDesignInterview';
+import BehavioralInterview from '../components/BehavioralInterview';
 
 const MockInterview = () => {
     const { language } = useLanguage();
@@ -20,6 +23,8 @@ const MockInterview = () => {
     const [isLoading, setIsLoading] = useState(false);
     const [isGenerating, setIsGenerating] = useState(false);
     const [error, setError] = useState('');
+    const [interviewState, setInterviewState] = useState('setup'); // setup, coding, system-design, behavioral
+    const [interviewData, setInterviewData] = useState(null);
 
     // 加载题库题目
     const loadDatabaseQuestions = async () => {
@@ -107,8 +112,31 @@ const MockInterview = () => {
             setError(t('pleaseSelectQuestion'));
             return;
         }
-        // 这里可以跳转到具体的面试组件或开始面试流程
-        console.log('开始面试:', selectedQuestion);
+        
+        // 准备面试数据
+        const data = {
+            question: selectedQuestion,
+            type: questionType,
+            source: questionSource,
+            difficulty: difficulty
+        };
+        
+        setInterviewData(data);
+        
+        // 根据题目类型切换到相应的面试组件
+        switch (questionType) {
+            case 'coding':
+                setInterviewState('coding');
+                break;
+            case 'system-design':
+                setInterviewState('system-design');
+                break;
+            case 'behavioral':
+                setInterviewState('behavioral');
+                break;
+            default:
+                console.error('Unknown question type:', questionType);
+        }
     };
 
     // 放弃当前题目
@@ -121,6 +149,13 @@ const MockInterview = () => {
     // 重新生成题目
     const regenerateQuestion = () => {
         generateAIQuestion();
+    };
+
+    // 返回设置页面
+    const backToSetup = () => {
+        setInterviewState('setup');
+        setInterviewData(null);
+        setSelectedQuestion(null);
     };
 
     // 渲染题目列表
@@ -359,6 +394,19 @@ const MockInterview = () => {
             </div>
         );
     };
+
+    // 根据面试状态渲染不同的内容
+    if (interviewState === 'coding') {
+        return <CodingInterview mockInterviewData={interviewData} onBackToSetup={backToSetup} />;
+    }
+    
+    if (interviewState === 'system-design') {
+        return <SystemDesignInterview mockInterviewData={interviewData} onBackToSetup={backToSetup} />;
+    }
+    
+    if (interviewState === 'behavioral') {
+        return <BehavioralInterview mockInterviewData={interviewData} onBackToSetup={backToSetup} />;
+    }
 
     return (
         <div className="max-w-6xl mx-auto p-6">

@@ -8,7 +8,7 @@ import { useLanguage } from '../contexts/LanguageContext';
 import { getText } from '../utils/translations';
 import { Play, Pause, Square, Clock, Lightbulb, CheckCircle, AlertCircle } from 'lucide-react';
 
-const CodingInterview = () => {
+const CodingInterview = ({ mockInterviewData, onBackToSetup }) => {
     const { language } = useLanguage();
     const t = (key) => getText(key, language);
     
@@ -18,6 +18,7 @@ const CodingInterview = () => {
     const [solution, setSolution] = useState('');
     const [approach, setApproach] = useState('');
     const [timeSpent, setTimeSpent] = useState(0);
+    const [timeLimit, setTimeLimit] = useState(20 * 60); // 默认20分钟
     const [isTimerRunning, setIsTimerRunning] = useState(false);
     const [feedback, setFeedback] = useState(null);
     const [showHints, setShowHints] = useState(false);
@@ -25,15 +26,50 @@ const CodingInterview = () => {
     const [programmingLanguage, setProgrammingLanguage] = useState('any');
     const [topic, setTopic] = useState('algorithms');
     const [finalReport, setFinalReport] = useState(null);
+    const [localMockInterviewData, setLocalMockInterviewData] = useState(null);
     
     const timerRef = useRef(null);
     const startTimeRef = useRef(null);
+
+    // 处理模拟面试数据
+    useEffect(() => {
+        if (mockInterviewData) {
+            // 根据难度设置时间限制
+            let limit;
+            switch (mockInterviewData.difficulty) {
+                case 'easy':
+                    limit = 10 * 60; // 10分钟
+                    break;
+                case 'medium':
+                    limit = 20 * 60; // 20分钟
+                    break;
+                case 'hard':
+                    limit = 35 * 60; // 35分钟
+                    break;
+                default:
+                    limit = 20 * 60; // 默认20分钟
+            }
+            setTimeLimit(limit);
+            
+            // 直接开始模拟面试
+            startMockInterview(mockInterviewData);
+        }
+    }, [mockInterviewData]);
 
     // Timer effect
     useEffect(() => {
         if (isTimerRunning) {
             timerRef.current = setInterval(() => {
-                setTimeSpent(prev => prev + 1);
+                setTimeSpent(prev => {
+                    const newTime = prev + 1;
+                    // 检查是否超时
+                    if (newTime >= timeLimit) {
+                        setIsTimerRunning(false);
+                        endInterview();
+                        return timeLimit;
+                    }
+                    return newTime;
+                });
             }, 1000);
         } else {
             if (timerRef.current) {
@@ -46,12 +82,19 @@ const CodingInterview = () => {
                 clearInterval(timerRef.current);
             }
         };
-    }, [isTimerRunning]);
+    }, [isTimerRunning, timeLimit]);
 
     const formatTime = (seconds) => {
         const mins = Math.floor(seconds / 60);
         const secs = seconds % 60;
         return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    };
+
+    const startMockInterview = (data) => {
+        setQuestionData(data.question);
+        setInterviewState('active');
+        setIsTimerRunning(true);
+        startTimeRef.current = Date.now();
     };
 
     const startInterview = async () => {
@@ -236,11 +279,18 @@ const CodingInterview = () => {
     return (
         <div className="max-w-6xl mx-auto p-6">
             <div className="flex justify-between items-center mb-6">
-                <h1 className="text-3xl font-bold">{questionData?.title}</h1>
+                <div className="flex items-center gap-4">
+                    {onBackToSetup && (
+                        <Button onClick={onBackToSetup} variant="outline" size="sm">
+                            ← {t('backToSetup')}
+                        </Button>
+                    )}
+                    <h1 className="text-3xl font-bold">{questionData?.title}</h1>
+                </div>
                 <div className="flex items-center gap-4">
                     <div className="flex items-center gap-2">
                         <Clock className="w-5 h-5" />
-                        <span className="font-mono">{formatTime(timeSpent)}</span>
+                        <span className="font-mono">{formatTime(timeSpent)} / {formatTime(timeLimit)}</span>
                     </div>
                     <Button onClick={toggleTimer} variant="outline" size="sm">
                         {isTimerRunning ? <Pause size={16} /> : <Play size={16} />}

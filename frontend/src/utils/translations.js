@@ -29,6 +29,7 @@ export const translations = {
     behavioralPractice: '行为面试训练',
     learnFeedback: '学习与反馈',
     logout: '退出登录',
+    backToSetup: '返回设置',
     
     // Dashboard
     dashboardTitle: '仪表板',
@@ -534,6 +535,7 @@ export const translations = {
     behavioralPractice: 'Behavioral Practice',
     learnFeedback: 'Learn & Feedback',
     logout: 'Logout',
+    backToSetup: 'Back to Setup',
     
     // Dashboard
     dashboardTitle: 'Dashboard',
