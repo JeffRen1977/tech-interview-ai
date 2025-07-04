@@ -1,5 +1,11 @@
-const fetch = require('node-fetch');
 const { admin, db } = require('../config/firebase');
+
+// 使用动态导入来支持 node-fetch v3
+let fetch;
+(async () => {
+    const nodeFetch = await import('node-fetch');
+    fetch = nodeFetch.default;
+})();
 
 // 帮助函数: 从Gemini响应中提取纯净的JSON
 function extractJson(text) {
@@ -13,25 +19,37 @@ function extractJson(text) {
 
 // 帮助函数: 调用Gemini API
 async function callGeminiAPI(prompt) {
+    // 确保 fetch 已经加载
+    if (!fetch) {
+        const nodeFetch = await import('node-fetch');
+        fetch = nodeFetch.default;
+    }
+    
     const geminiApiKey = process.env.GEMINI_API_KEY;
     if (!geminiApiKey) {
-        throw new Error('Gemini API key is not configured on the server.');
+        throw new Error('Gemini API key is not configured. Please set GEMINI_API_KEY in your .env file or environment variables.');
     }
+    
     const geminiApiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${geminiApiKey}`;
     
-    const response = await fetch(geminiApiUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ contents: [{ role: "user", parts: [{ text: prompt }] }] })
-    });
+    try {
+        const response = await fetch(geminiApiUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ contents: [{ role: "user", parts: [{ text: prompt }] }] })
+        });
 
-    if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(`Gemini API request failed with status ${response.status}: ${errorText}`);
+        if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(`Gemini API request failed with status ${response.status}: ${errorText}`);
+        }
+
+        const data = await response.json();
+        return data;
+    } catch (error) {
+        console.error('Gemini API Error:', error);
+        throw error;
     }
-
-    const data = await response.json();
-    return data;
 }
 
 // --- 编程题逻辑 ---

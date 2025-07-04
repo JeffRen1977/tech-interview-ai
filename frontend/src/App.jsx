@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import HomePage from './pages/HomePage';
+import LoginRegister from './pages/LoginRegister';
 import Dashboard from './pages/Dashboard';
 import CodingPractice from './pages/CodingPractice';
 import MockInterview from './pages/MockInterview';
@@ -13,36 +14,102 @@ import LearnAndFeedback from './pages/LearnAndFeedback';
 import CoachAgent from './pages/CoachAgent';
 import { LanguageProvider, useLanguage } from './contexts/LanguageContext';
 import { getText } from './utils/translations';
+import { authAPI, clearAuth } from './api';
 
 const AppContent = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [user, setUser] = useState(null);
   const [activeView, setActiveView] = useState('dashboard');
+  const [showLogin, setShowLogin] = useState(false); // 控制登录注册弹窗
   const { language } = useLanguage();
   const t = (key) => getText(key, language);
 
-  const handleLogin = () => {
+  // 检查用户登录状态
+  useEffect(() => {
+    const checkAuthStatus = async () => {
+      const token = localStorage.getItem('token');
+      const savedUser = localStorage.getItem('user');
+      if (token && savedUser) {
+        try {
+          const response = await authAPI.getCurrentUser();
+          setUser(response.user);
+          setIsLoggedIn(true);
+        } catch (error) {
+          clearAuth();
+          setIsLoggedIn(false);
+          setUser(null);
+        }
+      }
+      setIsLoading(false);
+    };
+    checkAuthStatus();
+  }, []);
+
+  const handleLoginSuccess = (userData) => {
+    console.log('DEBUG: handleLoginSuccess called with userData:', userData);
+    setUser(userData);
     setIsLoggedIn(true);
-    // You might want to fetch user data here
+    setActiveView('dashboard');
+    setShowLogin(false);
+    console.log('DEBUG: Login state updated - isLoggedIn: true, user:', userData);
   };
 
   const handleLogout = () => {
+    console.log('DEBUG: handleLogout called');
+    clearAuth();
+    setUser(null);
     setIsLoggedIn(false);
-    setActiveView('dashboard'); // Reset to default view on logout
+    setActiveView('dashboard');
   };
 
-  if (!isLoggedIn) {
-    return <HomePage onLogin={handleLogin} />;
+  // 显示加载状态
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-400 mx-auto mb-4"></div>
+          <p className="text-gray-400">{t('loading')}</p>
+        </div>
+      </div>
+    );
   }
 
+  // 未登录时，显示首页和登录注册弹窗
+  if (!isLoggedIn) {
+    console.log('DEBUG: User not logged in, showing HomePage');
+    console.log('DEBUG: showLogin state:', showLogin);
+    return (
+      <>
+        <HomePage onLogin={() => {
+          console.log('DEBUG: onLogin callback triggered, setting showLogin to true');
+          setShowLogin(true);
+        }} />
+        {showLogin && (
+          <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 1000 }}>
+            <LoginRegister onLoginSuccess={handleLoginSuccess} />
+          </div>
+        )}
+      </>
+    );
+  }
+
+  // 已登录用户的主界面
   return (
     <div className="flex h-screen w-full bg-gray-900 text-white">
-      <Sidebar activeView={activeView} setAppView={setActiveView} onLogout={handleLogout} />
+      <Sidebar 
+        activeView={activeView} 
+        setAppView={setActiveView} 
+        onLogout={handleLogout}
+        user={user}
+        isAdmin={user?.role === 'admin'}
+      />
       <MainContent>
         {activeView === 'dashboard' && <Dashboard />}
         {activeView === 'coding-practice' && <CodingPractice />}
         {activeView === 'mock-interview' && <MockInterview />}
         {activeView === 'resume-optimizer' && <ResumeOptimizer />}
-        {activeView === 'admin' && <Admin />}
+        {activeView === 'admin' && user?.role === 'admin' && <Admin />}
         {activeView === 'user-history' && <UserHistory />}
         {activeView === 'coach-agent' && <CoachAgent />}
         {activeView === 'behavioral-practice' && <Placeholder title={t('behavioralPractice')} />}

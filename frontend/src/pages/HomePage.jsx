@@ -17,6 +17,17 @@ const HomePage = ({ onLogin }) => {
   const { language, toggleLanguage, isChinese } = useLanguage();
   const t = (key) => getText(key, language);
 
+  const handleLoginClick = () => {
+    console.log('DEBUG: Login button clicked!');
+    console.log('DEBUG: onLogin prop:', onLogin);
+    if (onLogin) {
+      console.log('DEBUG: Calling onLogin function');
+      onLogin();
+    } else {
+      console.log('DEBUG: onLogin prop is not provided');
+    }
+  };
+
   return (
     <div className="flex flex-col min-h-screen bg-gray-900 text-white">
       <header className="w-full px-8 py-4 flex justify-between items-center fixed top-0 left-0 bg-gray-900/80 backdrop-blur-sm z-10">
@@ -34,7 +45,7 @@ const HomePage = ({ onLogin }) => {
             {isChinese ? 'EN' : '中文'}
           </Button>
         </nav>
-        <Button onClick={onLogin} className="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2">
+        <Button onClick={handleLoginClick} className="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2">
           {t('loginRegister')}
         </Button>
       </header>
@@ -44,7 +55,7 @@ const HomePage = ({ onLogin }) => {
           <h1 className="text-5xl md:text-7xl font-extrabold mb-4 leading-tight">{t('heroTitle')}</h1>
           <p className="text-lg md:text-xl text-gray-400 mb-8">{t('heroSubtitle')}</p>
           <div className="flex justify-center space-x-4">
-            <Button onClick={onLogin} className="bg-indigo-600 hover:bg-indigo-500 text-white px-8 py-3 text-lg">
+            <Button onClick={handleLoginClick} className="bg-indigo-600 hover:bg-indigo-500 text-white px-8 py-3 text-lg">
               {t('startPreparing')}
             </Button>
           </div>

@@ -1,13 +1,46 @@
+// 获取token的辅助函数
+const getToken = () => {
+    return localStorage.getItem('token');
+};
+
+// 检查token是否有效
+const isTokenValid = () => {
+    const token = getToken();
+    if (!token) return false;
+    
+    try {
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        return payload.exp * 1000 > Date.now();
+    } catch (error) {
+        return false;
+    }
+};
+
+// 清除认证信息
+export const clearAuth = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+};
+
 export async function apiRequest(endpoint, method, body) {
     const url = `http://localhost:3000/api${endpoint}`;
     console.log(`DEBUG: Making API request to ${url}`);
     console.log(`DEBUG: Method: ${method}`);
     console.log(`DEBUG: Body:`, body);
     
+    // 准备请求头
+    const headers = { 'Content-Type': 'application/json' };
+    
+    // 如果是需要认证的请求，添加token
+    const token = getToken();
+    if (token && isTokenValid()) {
+        headers['Authorization'] = `Bearer ${token}`;
+    }
+    
     try {
         const response = await fetch(url, {
             method: method,
-            headers: { 'Content-Type': 'application/json' },
+            headers: headers,
             body: body ? JSON.stringify(body) : null,
         });
         
@@ -18,6 +51,12 @@ export async function apiRequest(endpoint, method, body) {
         console.log(`DEBUG: Response data:`, data);
         
         if (!response.ok) {
+            // 如果是401错误，清除认证信息
+            if (response.status === 401) {
+                clearAuth();
+                // 重定向到登录页面
+                window.location.reload();
+            }
             // 如果请求失败，抛出一个包含后端错误信息的错误
             throw new Error(data.message || 'An unknown error occurred');
         }
@@ -29,6 +68,27 @@ export async function apiRequest(endpoint, method, body) {
         throw error;
     }
 }
+
+// 认证相关的API函数
+export const authAPI = {
+    // 获取当前用户信息
+    getCurrentUser: async () => {
+        return await apiRequest('/auth/me', 'GET');
+    },
+    
+    // 更新用户资料
+    updateProfile: async (profileData) => {
+        return await apiRequest('/auth/profile', 'PUT', profileData);
+    },
+    
+    // 修改密码
+    changePassword: async (currentPassword, newPassword) => {
+        return await apiRequest('/auth/change-password', 'PUT', {
+            currentPassword,
+            newPassword
+        });
+    }
+};
 
 // Resume API functions
 export const resumeAPI = {

@@ -1,39 +1,21 @@
 const express = require('express');
 const router = express.Router();
 const { 
-    getCodingQuestions, 
+    getFilteredCodingQuestions, 
     executeCode, 
-    submitCodeForAnalysis,
-    getUserLearningHistory,
+    submitCodeForAnalysis, 
     saveToLearningHistory,
-    removeFromLearningHistory,
-    getFilteredCodingQuestions,
-    getFilterOptions
+    getUserLearningHistory
 } = require('../controllers/codeController');
+const { verifyToken } = require('../controllers/authController');
 
-// GET /api/code/questions
-router.get('/questions', getCodingQuestions);
-
-// GET /api/code/questions/filtered
+// 获取筛选后的编程题目 - 公开访问
 router.get('/questions/filtered', getFilteredCodingQuestions);
 
-// GET /api/code/filter-options
-router.get('/filter-options', getFilterOptions);
-
-// POST /api/code/execute
-router.post('/execute', executeCode);
-
-// POST /api/code/submit
-router.post('/submit', submitCodeForAnalysis);
-
-// Learning history routes
-// GET /api/code/learning-history/:userId
-router.get('/learning-history/:userId', getUserLearningHistory);
-
-// POST /api/code/learning-history
-router.post('/learning-history', saveToLearningHistory);
-
-// DELETE /api/code/learning-history/:historyId
-router.delete('/learning-history/:historyId', removeFromLearningHistory);
+// 需要用户登录的路由
+router.post('/execute', verifyToken, executeCode);
+router.post('/submit', verifyToken, submitCodeForAnalysis);
+router.post('/learning-history', verifyToken, saveToLearningHistory);
+router.get('/learning-history/:userId', verifyToken, getUserLearningHistory);
 
 module.exports = router;

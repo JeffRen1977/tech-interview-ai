@@ -1,14 +1,15 @@
 const express = require('express');
 const router = express.Router();
-const { analyzeResume, assessJDMatching, generateCoverLetter } = require('../controllers/resumeController');
+const { 
+    analyzeResume, 
+    assessJDMatching, 
+    generateCoverLetter 
+} = require('../controllers/resumeController');
+const { verifyToken } = require('../controllers/authController');
 
-// Resume Analyzer - Analyze resume and provide optimization suggestions
-router.post('/analyze', analyzeResume);
-
-// JD Matching Assessment - Analyze job description and calculate matching degree
-router.post('/match', assessJDMatching);
-
-// Cover Letter Generator - Generate customized cover letters
-router.post('/cover-letter', generateCoverLetter);
+// 简历优化功能 - 需要用户登录
+router.post('/analyze', verifyToken, analyzeResume);
+router.post('/jd-matching', verifyToken, assessJDMatching);
+router.post('/cover-letter', verifyToken, generateCoverLetter);
 
 module.exports = router; 

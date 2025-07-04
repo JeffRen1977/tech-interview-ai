@@ -2,7 +2,7 @@ const { db } = require('../config/firebase');
 const fetch = require('node-fetch');
 
 // POST /api/coach-agent/profile
-const saveUserProfile = async (req, res) => {
+const saveProfile = async (req, res) => {
   const { userId, targetCompanies, techStacks, language, availableTime, preferences } = req.body;
   if (!userId) return res.status(400).json({ error: 'userId is required' });
   try {
@@ -21,7 +21,7 @@ const saveUserProfile = async (req, res) => {
 };
 
 // GET /api/coach-agent/profile?userId=xxx
-const getUserProfile = async (req, res) => {
+const getProfile = async (req, res) => {
   const userId = req.query.userId;
   if (!userId) return res.status(400).json({ error: 'userId is required' });
   try {
@@ -144,4 +144,4 @@ AI:`;
   }
 };
 
-module.exports = { saveUserProfile, getUserProfile, getDailyPlan, goalChat }; 
+module.exports = { saveProfile, getProfile, getDailyPlan, goalChat }; 

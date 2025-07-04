@@ -1,11 +1,21 @@
 const express = require('express');
 const router = express.Router();
-const { registerUser, loginUser } = require('../controllers/authController');
+const { 
+    registerUser, 
+    loginUser, 
+    getCurrentUser, 
+    updateProfile, 
+    changePassword,
+    verifyToken 
+} = require('../controllers/authController');
 
-// 路由: /api/auth/register
+// 公开路由
 router.post('/register', registerUser);
-
-// 路由: /api/auth/login
 router.post('/login', loginUser);
+
+// 需要认证的路由
+router.get('/me', verifyToken, getCurrentUser);
+router.put('/profile', verifyToken, updateProfile);
+router.put('/change-password', verifyToken, changePassword);
 
 module.exports = router;
