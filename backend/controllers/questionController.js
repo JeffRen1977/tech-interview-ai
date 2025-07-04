@@ -262,6 +262,24 @@ exports.submitCodingSolution = async (req, res) => {
             feedback: admin.firestore.FieldValue.arrayUnion(feedback)
         });
         
+        // 保存到用户学习历史
+        const learningHistoryData = {
+            userId: req.user.userId,
+            questionId: sessionId,
+            questionData: questionData,
+            userSolution: solution,
+            approach: approach || '',
+            feedback: feedback,
+            language: questionData.language || 'any',
+            timeSpent: timeSpent || 0,
+            completedAt: new Date(),
+            savedAt: new Date(),
+            interviewType: 'coding',
+            sessionId: sessionId
+        };
+        
+        await db.collection('user-learning-history').add(learningHistoryData);
+        
         res.status(200).json({ 
             feedback,
             message: 'Solution submitted and evaluated successfully'
@@ -553,6 +571,27 @@ exports.submitBehavioralResponse = async (req, res) => {
             feedback: admin.firestore.FieldValue.arrayUnion(feedback),
             currentQuestionIndex: admin.firestore.FieldValue.increment(1)
         });
+        
+        // 保存到用户学习历史
+        const learningHistoryData = {
+            userId: req.user.userId,
+            questionId: questionId,
+            questionData: {
+                question: currentQuestion.question,
+                category: currentQuestion.category,
+                starFramework: currentQuestion.starFramework,
+                sessionId: sessionId
+            },
+            userResponse: response,
+            responseType: responseType || 'text',
+            feedback: feedback,
+            completedAt: new Date(),
+            savedAt: new Date(),
+            interviewType: 'behavioral',
+            sessionId: sessionId
+        };
+        
+        await db.collection('user-learning-history').add(learningHistoryData);
         
         res.status(200).json({ 
             feedback,
@@ -853,6 +892,25 @@ exports.submitSystemDesignSolution = async (req, res) => {
             feedback: admin.firestore.FieldValue.arrayUnion(feedback),
             timeSpent: timeSpent || 0
         });
+        
+        // 保存到用户学习历史
+        const learningHistoryData = {
+            userId: req.user.userId,
+            questionId: sessionId,
+            questionData: questionData,
+            userSolution: {
+                voiceInput: voiceInput || '',
+                whiteboardData: whiteboardData || []
+            },
+            feedback: feedback,
+            timeSpent: timeSpent || 0,
+            completedAt: new Date(),
+            savedAt: new Date(),
+            interviewType: 'system-design',
+            sessionId: sessionId
+        };
+        
+        await db.collection('user-learning-history').add(learningHistoryData);
         
         res.status(200).json({ 
             feedback,
