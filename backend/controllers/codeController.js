@@ -1,4 +1,5 @@
-const fetch = require('node-fetch');
+// 使用动态导入来支持 node-fetch v3
+let fetch;
 const { db } = require('../config/firebase');
 
 // 帮助函数: 从可能包含Markdown的文本中稳健地提取JSON对象
@@ -47,6 +48,12 @@ exports.executeCode = async (req, res) => {
 
 // 提交代码以供AI分析
 exports.submitCodeForAnalysis = async (req, res) => {
+    // 确保 fetch 已经加载
+    if (!fetch) {
+        const nodeFetch = await import('node-fetch');
+        fetch = nodeFetch.default;
+    }
+
     const { question, userCode, language } = req.body;
     if (!question || !userCode || !language) {
         return res.status(400).json({ message: "Missing required fields for code submission." });
