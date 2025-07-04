@@ -192,6 +192,14 @@ const EditableCodingForm = ({ initialData, onSaveSuccess }) => {
     const t = (key) => getText(key, language);
     const [isSaving, setIsSaving] = useState(false);
     
+    // 安全字符串处理函数
+    const safeString = (value) => {
+        if (typeof value === 'string') {
+            return value.replace(/\\n/g, '\n');
+        }
+        return value ? String(value) : '';
+    };
+    
     const handleSave = async (e) => {
         e.preventDefault();
         setIsSaving(true);
@@ -257,7 +265,7 @@ const EditableCodingForm = ({ initialData, onSaveSuccess }) => {
                     </div>
                     <div>
                         <label htmlFor="edit-example" className="block mb-2 font-medium text-gray-400">{t('example')}</label>
-                        <Textarea name="edit-example" id="edit-example" className="h-20" defaultValue={initialData.example.replace(/\\n/g, '\n')} />
+                        <Textarea name="edit-example" id="edit-example" className="h-20" defaultValue={safeString(initialData.example)} />
                     </div>
                 </CardContent>
             </Card>
@@ -268,11 +276,11 @@ const EditableCodingForm = ({ initialData, onSaveSuccess }) => {
                 <CardContent className="space-y-4">
                     <div>
                         <label htmlFor="edit-solution" className="block mb-2 font-medium text-gray-400">{t('solution')}</label>
-                        <Textarea name="edit-solution" id="edit-solution" className="h-48" defaultValue={initialData.solution.replace(/\\n/g, '\n')} />
+                        <Textarea name="edit-solution" id="edit-solution" className="h-48" defaultValue={safeString(initialData.solution)} />
                     </div>
                     <div>
                         <label htmlFor="edit-test-cases" className="block mb-2 font-medium text-gray-400">{t('testCases')}</label>
-                        <Textarea name="edit-test-cases" id="edit-test-cases" className="h-40" defaultValue={initialData.testCases.replace(/\\n/g, '\n')} />
+                        <Textarea name="edit-test-cases" id="edit-test-cases" className="h-40" defaultValue={safeString(initialData.testCases)} />
                     </div>
                     <div>
                         <label htmlFor="edit-explanation" className="block mb-2 font-medium text-gray-400">{t('explanation')}</label>
@@ -310,6 +318,14 @@ const EditableSystemForm = ({ initialData, onSaveSuccess }) => {
     const { language } = useLanguage();
     const t = (key) => getText(key, language);
     const [isSaving, setIsSaving] = useState(false);
+
+    // 安全字符串处理函数
+    const safeString = (value) => {
+        if (typeof value === 'string') {
+            return value.replace(/\\n/g, '\n');
+        }
+        return value ? String(value) : '';
+    };
 
     const handleSave = async (e) => {
         e.preventDefault();
@@ -365,7 +381,7 @@ const EditableSystemForm = ({ initialData, onSaveSuccess }) => {
                 <CardContent>
                     <div>
                         <label htmlFor="edit-answer" className="block mb-2 font-medium text-gray-400">{t('detailedAnswer')}</label>
-                        <Textarea name="edit-answer" id="edit-answer" className="h-96" defaultValue={initialData.detailedAnswer.replace(/\\n/g, '\n')} />
+                        <Textarea name="edit-answer" id="edit-answer" className="h-96" defaultValue={safeString(initialData.detailedAnswer)} />
                     </div>
                 </CardContent>
             </Card>
