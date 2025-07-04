@@ -12,7 +12,7 @@ const MockInterview = () => {
     const t = (key) => getText(key, language);
     
     // 状态管理
-    const [questionType, setQuestionType] = useState('coding'); // coding, system-design
+    const [questionType, setQuestionType] = useState('coding'); // coding, system-design, behavioral
     const [questionSource, setQuestionSource] = useState('database'); // database, ai
     const [difficulty, setDifficulty] = useState('medium'); // easy, medium, hard
     const [questions, setQuestions] = useState([]);
@@ -26,7 +26,20 @@ const MockInterview = () => {
         setIsLoading(true);
         setError('');
         try {
-            const endpoint = questionType === 'coding' ? '/mock/coding-questions' : '/mock/system-design-questions';
+            let endpoint;
+            switch (questionType) {
+                case 'coding':
+                    endpoint = '/mock/coding-questions';
+                    break;
+                case 'system-design':
+                    endpoint = '/mock/system-design-questions';
+                    break;
+                case 'behavioral':
+                    endpoint = '/mock/behavioral-questions';
+                    break;
+                default:
+                    endpoint = '/mock/coding-questions';
+            }
             const params = difficulty !== 'all' ? `?difficulty=${difficulty}` : '';
             const data = await apiRequest(`${endpoint}${params}`, 'GET');
             
@@ -162,7 +175,7 @@ const MockInterview = () => {
                             )}
                         </div>
                         <p className="text-sm mt-1 line-clamp-2">
-                            {question.description || question.prompt}
+                            {question.description || question.prompt || question.question}
                         </p>
                     </div>
                 ))}
@@ -211,6 +224,20 @@ const MockInterview = () => {
                     </div>
                 )}
 
+                {selectedQuestion.sampleAnswer && (
+                    <div className="bg-gray-800 p-4 rounded-lg">
+                        <h4 className="font-medium mb-2">{t('sampleAnswer')}</h4>
+                        <p className="text-gray-300">{selectedQuestion.sampleAnswer}</p>
+                    </div>
+                )}
+
+                {selectedQuestion.detailedAnswer && (
+                    <div className="bg-gray-800 p-4 rounded-lg">
+                        <h4 className="font-medium mb-2">{t('detailedAnswer')}</h4>
+                        <p className="text-gray-300">{selectedQuestion.detailedAnswer}</p>
+                    </div>
+                )}
+
                 <Button 
                     onClick={startInterview}
                     className="w-full bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700"
@@ -239,6 +266,7 @@ const MockInterview = () => {
                         >
                             <option value="coding">{t('codingQuestion')}</option>
                             <option value="system-design">{t('systemDesignQuestion')}</option>
+                            <option value="behavioral">{t('behavioralQuestion')}</option>
                         </Select>
                     </div>
 

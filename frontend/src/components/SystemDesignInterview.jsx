@@ -382,11 +382,11 @@ const SystemDesignInterview = () => {
                             console.log('系统设计面试题目难度:', questionData.difficulty);
                             let diff = (questionData.difficulty || '').toLowerCase();
                             let colorClass =
-                                diff === 'easy'
+                                diff === 'easy' || diff === '入门'
                                     ? 'bg-green-600 text-white'
-                                    : diff === 'medium'
+                                    : diff === 'medium' || diff === '中等'
                                     ? 'bg-yellow-500 text-gray-900'
-                                    : diff === 'hard'
+                                    : diff === 'hard' || diff === '困难'
                                     ? 'bg-red-600 text-white'
                                     : 'bg-gray-500 text-white';
                             return (

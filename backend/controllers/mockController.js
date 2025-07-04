@@ -1,5 +1,5 @@
 const { db } = require('../config/firebase');
-const { generateCodingQuestion, generateSystemDesignQuestion } = require('../utils/geminiService');
+const { generateCodingQuestion, generateSystemDesignQuestion, generateBehavioralQuestion } = require('../utils/geminiService');
 
 // 获取编程题
 exports.getCodingQuestions = async (req, res) => {
@@ -33,18 +33,36 @@ exports.getSystemDesignQuestions = async (req, res) => {
   }
 };
 
+// 获取行为面试题
+exports.getBehavioralQuestions = async (req, res) => {
+  try {
+    const { difficulty } = req.query;
+    let ref = db.collection('behavioral-questions');
+    if (difficulty) {
+      ref = ref.where('difficulty', '==', difficulty);
+    }
+    const snapshot = await ref.get();
+    const questions = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    res.json({ questions });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to fetch behavioral questions', details: err.message });
+  }
+};
+
 // AI生成题目
 exports.generateQuestion = async (req, res) => {
   try {
     const { type, difficulty } = req.body;
-    if (!type || !['coding', 'system-design'].includes(type)) {
+    if (!type || !['coding', 'system-design', 'behavioral'].includes(type)) {
       return res.status(400).json({ error: 'Invalid type' });
     }
     let question;
     if (type === 'coding') {
       question = await generateCodingQuestion(difficulty);
-    } else {
+    } else if (type === 'system-design') {
       question = await generateSystemDesignQuestion(difficulty);
+    } else if (type === 'behavioral') {
+      question = await generateBehavioralQuestion(difficulty);
     }
     res.json({ question });
   } catch (err) {

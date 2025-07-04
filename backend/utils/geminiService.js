@@ -70,4 +70,23 @@ exports.generateSystemDesignQuestion = async function(difficulty = 'medium') {
     const jsonText = extractJson(geminiData.candidates[0].content.parts[0].text);
     const questionData = JSON.parse(jsonText);
     return questionData;
+};
+
+exports.generateBehavioralQuestion = async function(difficulty = 'medium') {
+    const prompt = `
+        Act as an expert behavioral interviewer. Generate a new behavioral interview question for a candidate.
+        Difficulty: ${difficulty}
+        Please provide the output in a single, clean JSON object format:
+        {
+          "title": "...",
+          "prompt": "...",
+          "category": "...",
+          "sampleAnswer": "...",
+          "difficulty": "${difficulty}"
+        }
+    `;
+    const geminiData = await callGeminiAPI(prompt);
+    const jsonText = extractJson(geminiData.candidates[0].content.parts[0].text);
+    const questionData = JSON.parse(jsonText);
+    return questionData;
 }; 
