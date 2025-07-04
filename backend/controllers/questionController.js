@@ -342,12 +342,30 @@ exports.endCodingInterview = async (req, res) => {
         const jsonText = extractJson(geminiData.candidates[0].content.parts[0].text);
         const finalReport = JSON.parse(jsonText);
         
+        // 保存到用户历史
+        const userHistoryData = {
+            sessionId,
+            interviewType: 'coding',
+            questionData: sessionData.questionData,
+            finalReport,
+            startTime: sessionData.startTime,
+            endTime: new Date(),
+            timeSpent: sessionData.timeSpent || 0,
+            topic: sessionData.questionData.topic || 'programming',
+            difficulty: sessionData.questionData.difficulty || 'medium',
+            userSolutions: sessionData.userSolutions || [],
+            feedback: sessionData.feedback || []
+        };
+        
         // 更新会话状态
         await sessionRef.update({
             status: 'completed',
             endTime: new Date(),
             finalReport
         });
+        
+        // 保存到用户历史记录
+        await db.collection('user-interview-history').add(userHistoryData);
         
         res.status(200).json({ 
             finalReport,
@@ -633,12 +651,37 @@ exports.endBehavioralInterview = async (req, res) => {
         const jsonText = extractJson(geminiData.candidates[0].content.parts[0].text);
         const finalReport = JSON.parse(jsonText);
         
+        // 保存到用户历史
+        const userHistoryData = {
+            sessionId,
+            interviewType: 'behavioral',
+            questionData: {
+                title: `Behavioral Interview - ${sessionData.interviewData.role} at ${sessionData.interviewData.company}`,
+                description: `Behavioral interview for ${sessionData.interviewData.level} ${sessionData.interviewData.role} position`,
+                role: sessionData.interviewData.role,
+                level: sessionData.interviewData.level,
+                company: sessionData.interviewData.company,
+                questions: sessionData.interviewData.questions || []
+            },
+            finalReport,
+            startTime: sessionData.startTime,
+            endTime: new Date(),
+            timeSpent: (45 * 60) - (sessionData.timeRemaining || 0), // 计算实际花费时间
+            topic: 'behavioral',
+            difficulty: 'medium',
+            responses: sessionData.responses || [],
+            feedback: sessionData.feedback || []
+        };
+        
         // 更新会话状态
         await sessionRef.update({
             status: 'completed',
             endTime: new Date(),
             finalReport
         });
+        
+        // 保存到用户历史记录
+        await db.collection('user-interview-history').add(userHistoryData);
         
         res.status(200).json({ 
             finalReport,
@@ -914,7 +957,10 @@ exports.endSystemDesignInterview = async (req, res) => {
             endTime: new Date(),
             timeSpent: sessionData.timeSpent,
             topic: sessionData.questionData.topic,
-            difficulty: sessionData.questionData.difficulty
+            difficulty: sessionData.questionData.difficulty,
+            voiceInputs: sessionData.voiceInputs || [],
+            whiteboardData: sessionData.whiteboardData || [],
+            feedback: sessionData.feedback || []
         };
         
         // 更新会话状态
