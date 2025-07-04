@@ -6,7 +6,16 @@ function extractJson(text) {
     if (firstBrace === -1 || lastBrace === -1) {
         throw new Error("Could not find a valid JSON object in the API response.");
     }
-    return text.substring(firstBrace, lastBrace + 1);
+    
+    let jsonText = text.substring(firstBrace, lastBrace + 1);
+    
+    // 清理JSON字符串中的控制字符
+    jsonText = jsonText.replace(/[\x00-\x1F\x7F-\x9F]/g, '');
+    
+    // 处理可能的转义字符问题
+    jsonText = jsonText.replace(/\n/g, '\\n').replace(/\r/g, '\\r').replace(/\t/g, '\\t');
+    
+    return jsonText;
 }
 
 async function callGeminiAPI(prompt) {

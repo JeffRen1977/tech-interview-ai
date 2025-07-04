@@ -63,20 +63,28 @@ const MockInterview = () => {
     const generateAIQuestion = async () => {
         setIsGenerating(true);
         setError('');
+        console.log('开始AI生成题目:', { questionType, difficulty });
         try {
-            const data = await apiRequest('/mock/ai-generate', 'POST', {
+            const requestData = {
                 type: questionType,
                 difficulty: difficulty
-            });
+            };
+            console.log('发送AI生成请求:', requestData);
+            
+            const data = await apiRequest('/mock/ai-generate', 'POST', requestData);
+            console.log('AI生成响应:', data);
             
             if (data.question) {
+                console.log('成功生成题目:', data.question.title);
                 setQuestions([data.question]);
                 setSelectedQuestion(data.question);
             } else {
+                console.error('AI生成响应中没有question字段:', data);
                 setError(t('failedToGenerateQuestion'));
             }
         } catch (err) {
             console.error('AI生成题目失败:', err);
+            console.error('错误详情:', err.message);
             setError(t('failedToGenerateQuestion'));
         } finally {
             setIsGenerating(false);
