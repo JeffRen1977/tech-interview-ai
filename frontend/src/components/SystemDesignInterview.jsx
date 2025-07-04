@@ -375,7 +375,28 @@ const SystemDesignInterview = () => {
     return (
         <div className="max-w-7xl mx-auto p-6">
             <div className="flex justify-between items-center mb-6">
-                <h1 className="text-3xl font-bold">{questionData?.title}</h1>
+                <div className="flex items-center gap-4">
+                    <h1 className="text-3xl font-bold">{questionData?.title}</h1>
+                    {questionData?.difficulty && (
+                        (() => {
+                            console.log('系统设计面试题目难度:', questionData.difficulty);
+                            let diff = (questionData.difficulty || '').toLowerCase();
+                            let colorClass =
+                                diff === 'easy'
+                                    ? 'bg-green-600 text-white'
+                                    : diff === 'medium'
+                                    ? 'bg-yellow-500 text-gray-900'
+                                    : diff === 'hard'
+                                    ? 'bg-red-600 text-white'
+                                    : 'bg-gray-500 text-white';
+                            return (
+                                <span className={`px-3 py-1 rounded-full text-sm font-bold ${colorClass}`}>
+                                    {questionData.difficulty}
+                                </span>
+                            );
+                        })()
+                    )}
+                </div>
                 <div className="flex items-center gap-4">
                     <div className="flex items-center gap-2">
                         <Clock className="w-5 h-5" />

@@ -227,27 +227,36 @@ const ProgrammingPractice = () => {
                         <div className="text-red-400 text-center p-4">{error}</div>
                     ) : (
                         <div className="space-y-2 max-h-96 overflow-y-auto">
-                            {problems.map((problem) => (
-                                <div
-                                    key={problem.id}
-                                    onClick={() => handleSelectProblem(problem)}
-                                    className={`p-3 rounded-lg cursor-pointer transition-colors ${
-                                        selectedProblem?.id === problem.id
-                                            ? 'bg-indigo-600 text-white'
-                                            : 'bg-gray-700 hover:bg-gray-600'
-                                    }`}
-                                >
-                                    <div className="flex items-center justify-between">
-                                        <span className="font-medium">{problem.title}</span>
-                                        <span className={`px-2 py-1 rounded text-xs ${
-                                            problem.difficulty === 'easy' ? 'bg-green-600' :
-                                            problem.difficulty === 'medium' ? 'bg-yellow-600' : 'bg-red-600'
-                                        }`}>
-                                            {problem.difficulty}
-                                        </span>
+                            {problems.map((problem) => {
+                                console.log('题目难度:', problem.difficulty);
+                                let diff = (problem.difficulty || '').toLowerCase();
+                                let colorClass =
+                                    diff === 'easy'
+                                        ? 'bg-green-600 text-white'
+                                        : diff === 'medium'
+                                        ? 'bg-yellow-500 text-gray-900'
+                                        : diff === 'hard'
+                                        ? 'bg-red-600 text-white'
+                                        : 'bg-gray-500 text-white';
+                                return (
+                                    <div
+                                        key={problem.id}
+                                        onClick={() => handleSelectProblem(problem)}
+                                        className={`p-3 rounded-lg cursor-pointer transition-colors ${
+                                            selectedProblem?.id === problem.id
+                                                ? 'bg-indigo-600 text-white'
+                                                : 'bg-gray-700 hover:bg-gray-600'
+                                        }`}
+                                    >
+                                        <div className="flex items-center justify-between">
+                                            <span className="font-medium">{problem.title}</span>
+                                            <span className={`px-2 py-1 rounded text-xs font-bold ${colorClass}`}>
+                                                {problem.difficulty || 'unknown'}
+                                            </span>
+                                        </div>
                                     </div>
-                                </div>
-                            ))}
+                                );
+                            })}
                         </div>
                     )}
                 </div>
@@ -429,28 +438,37 @@ const SystemDesignPractice = () => {
                         <div className="text-red-400 text-center p-4">{error}</div>
                     ) : (
                         <div className="space-y-2 max-h-96 overflow-y-auto">
-                            {questions.map((question) => (
-                                <div
-                                    key={question.id}
-                                    onClick={() => setSelectedQuestion(question)}
-                                    className={`p-3 rounded-lg cursor-pointer transition-colors ${
-                                        selectedQuestion?.id === question.id
-                                            ? 'bg-indigo-600 text-white'
-                                            : 'bg-gray-700 hover:bg-gray-600'
-                                    }`}
-                                >
-                                    <div className="flex items-center justify-between">
-                                        <span className="font-medium">{question.title}</span>
-                                        <span className={`px-2 py-1 rounded text-xs ${
-                                            question.difficulty === 'easy' ? 'bg-green-600' :
-                                            question.difficulty === 'medium' ? 'bg-yellow-600' : 'bg-red-600'
-                                        }`}>
-                                            {question.difficulty}
-                                        </span>
+                            {questions.map((question) => {
+                                console.log('系统设计题目难度:', question.difficulty);
+                                let diff = (question.difficulty || '').toLowerCase();
+                                let colorClass =
+                                    diff === 'easy'
+                                        ? 'bg-green-600 text-white'
+                                        : diff === 'medium'
+                                        ? 'bg-yellow-500 text-gray-900'
+                                        : diff === 'hard'
+                                        ? 'bg-red-600 text-white'
+                                        : 'bg-gray-500 text-white';
+                                return (
+                                    <div
+                                        key={question.id}
+                                        onClick={() => setSelectedQuestion(question)}
+                                        className={`p-3 rounded-lg cursor-pointer transition-colors ${
+                                            selectedQuestion?.id === question.id
+                                                ? 'bg-indigo-600 text-white'
+                                                : 'bg-gray-700 hover:bg-gray-600'
+                                        }`}
+                                    >
+                                        <div className="flex items-center justify-between">
+                                            <span className="font-medium">{question.title}</span>
+                                            <span className={`px-2 py-1 rounded text-xs font-bold ${colorClass}`}>
+                                                {question.difficulty || 'unknown'}
+                                            </span>
+                                        </div>
+                                        <p className="text-sm text-gray-300 mt-1">{question.category}</p>
                                     </div>
-                                    <p className="text-sm text-gray-300 mt-1">{question.category}</p>
-                                </div>
-                            ))}
+                                );
+                            })}
                         </div>
                     )}
                 </div>
