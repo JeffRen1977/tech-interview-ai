@@ -549,10 +549,13 @@ const BehavioralPractice = () => {
             const queryParams = new URLSearchParams({
                 ...(filters.category && { category: filters.category })
             });
-            
-            const data = await apiRequest(`/behavioral/questions/filtered?${queryParams}`, 'GET');
-            
+            const url = `/behavioral/questions/filtered?${queryParams}`;
+            console.log('行为题请求URL:', url);
+            const data = await apiRequest(url, 'GET');
+            console.log('行为题返回数据:', data);
             if (data.questions && data.questions.length > 0) {
+                console.log('第一个行为题目详情:', data.questions[0]);
+                console.log('题目字段:', Object.keys(data.questions[0]));
                 setQuestions(data.questions);
                 if (!selectedQuestion || !data.questions.find(q => q.id === selectedQuestion.id)) {
                     setSelectedQuestion(data.questions[0]);
@@ -640,22 +643,26 @@ const BehavioralPractice = () => {
                         <div className="text-red-400 text-center p-4">{error}</div>
                     ) : (
                         <div className="space-y-2 max-h-96 overflow-y-auto">
-                            {questions.map((question) => (
-                                <div
-                                    key={question.id}
-                                    onClick={() => handleSelectQuestion(question)}
-                                    className={`p-3 rounded-lg cursor-pointer transition-colors ${
-                                        selectedQuestion?.id === question.id
-                                            ? 'bg-indigo-600 text-white'
-                                            : 'bg-gray-700 hover:bg-gray-600'
-                                    }`}
-                                >
-                                    <div className="flex items-center justify-between">
-                                        <span className="font-medium">{question.category}</span>
+                            {console.log('渲染行为题目列表，题目数量:', questions.length)}
+                            {questions.map((question, index) => {
+                                console.log(`渲染第${index + 1}个题目:`, question);
+                                return (
+                                    <div
+                                        key={question.id}
+                                        onClick={() => handleSelectQuestion(question)}
+                                        className={`p-3 rounded-lg cursor-pointer transition-colors ${
+                                            selectedQuestion?.id === question.id
+                                                ? 'bg-indigo-600 text-white'
+                                                : 'bg-gray-700 hover:bg-gray-600'
+                                        }`}
+                                    >
+                                        <div className="flex items-center justify-between">
+                                            <span className="font-medium">{question.title}</span>
+                                        </div>
+                                        <p className="text-sm text-gray-300 mt-1 line-clamp-2">{question.prompt}</p>
                                     </div>
-                                    <p className="text-sm text-gray-300 mt-1 line-clamp-2">{question.question}</p>
-                                </div>
-                            ))}
+                                );
+                            })}
                         </div>
                     )}
                 </div>
@@ -670,7 +677,7 @@ const BehavioralPractice = () => {
                         <div className="h-full flex flex-col">
                             <div className="mb-4">
                                 <h3 className="text-xl font-semibold mb-2">{t('question')}</h3>
-                                <p className="text-gray-300 mb-4">{selectedQuestion.question}</p>
+                                <p className="text-gray-300 mb-4">{selectedQuestion.prompt}</p>
                                 
                                 {selectedQuestion.sampleAnswer && (
                                     <div className="mb-4">
