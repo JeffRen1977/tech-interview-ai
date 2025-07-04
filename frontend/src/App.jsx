@@ -112,7 +112,7 @@ const AppContent = () => {
         {activeView === 'admin' && user?.role === 'admin' && <Admin />}
         {activeView === 'user-history' && <UserHistory />}
         {activeView === 'coach-agent' && <CoachAgent />}
-        {activeView === 'behavioral-practice' && <Placeholder title={t('behavioralPractice')} />}
+
         {activeView === 'learn-feedback' && <LearnAndFeedback />}
       </MainContent>
     </div>
