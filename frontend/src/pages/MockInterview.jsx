@@ -65,14 +65,15 @@ const MockInterview = () => {
     };
 
     // AI生成题目
-    const generateAIQuestion = async () => {
+    const generateAIQuestion = async (saveToDatabase = false) => {
         setIsGenerating(true);
         setError('');
-        console.log('开始AI生成题目:', { questionType, difficulty });
+        console.log('开始AI生成题目:', { questionType, difficulty, saveToDatabase });
         try {
             const requestData = {
                 type: questionType,
-                difficulty: difficulty
+                difficulty: difficulty,
+                saveToDatabase: saveToDatabase
             };
             console.log('发送AI生成请求:', requestData);
             
@@ -81,6 +82,9 @@ const MockInterview = () => {
             
             if (data.question) {
                 console.log('成功生成题目:', data.question.title);
+                if (data.question.savedToDatabase) {
+                    console.log('题目已保存到数据库:', data.question.collectionName);
+                }
                 setQuestions([data.question]);
                 setSelectedQuestion(data.question);
             } else {
@@ -148,7 +152,7 @@ const MockInterview = () => {
 
     // 重新生成题目
     const regenerateQuestion = () => {
-        generateAIQuestion();
+        generateAIQuestion(false); // 重新生成时不保存到数据库
     };
 
     // 返回设置页面
@@ -162,24 +166,48 @@ const MockInterview = () => {
     const renderQuestionList = () => {
         if (questionSource === 'ai') {
             return (
-                <div className="text-center py-8">
-                    <Button 
-                        onClick={generateAIQuestion} 
-                        disabled={isGenerating}
-                        className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
-                    >
-                        {isGenerating ? (
-                            <>
-                                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                                {t('generating')}
-                            </>
-                        ) : (
-                            <>
-                                <Sparkles className="w-4 h-4 mr-2" />
-                                {t('generateQuestion')}
-                            </>
-                        )}
-                    </Button>
+                <div className="text-center py-8 space-y-4">
+                    <div className="space-y-3">
+                        <Button 
+                            onClick={() => generateAIQuestion(false)} 
+                            disabled={isGenerating}
+                            className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
+                        >
+                            {isGenerating ? (
+                                <>
+                                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                                    {t('generating')}
+                                </>
+                            ) : (
+                                <>
+                                    <Sparkles className="w-4 h-4 mr-2" />
+                                    {t('generateQuestion')}
+                                </>
+                            )}
+                        </Button>
+                        
+                        <Button 
+                            onClick={() => generateAIQuestion(true)} 
+                            disabled={isGenerating}
+                            className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700"
+                        >
+                            {isGenerating ? (
+                                <>
+                                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                                    {t('generating')}
+                                </>
+                            ) : (
+                                <>
+                                    <Database className="w-4 h-4 mr-2" />
+                                    {t('generateAndSave')}
+                                </>
+                            )}
+                        </Button>
+                    </div>
+                    
+                    <p className="text-sm text-gray-400">
+                        {t('generateAndSaveHint')}
+                    </p>
                 </div>
             );
         }
@@ -534,24 +562,48 @@ const MockInterview = () => {
                                 </div>
                             </div>
                         ) : (
-                            <div className="text-center py-8">
-                                <Button 
-                                    onClick={generateAIQuestion} 
-                                    disabled={isGenerating}
-                                    className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
-                                >
-                                    {isGenerating ? (
-                                        <>
-                                            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                                            {t('generating')}
-                                        </>
-                                    ) : (
-                                        <>
-                                            <Sparkles className="w-4 h-4 mr-2" />
-                                            {t('generateQuestion')}
-                                        </>
-                                    )}
-                                </Button>
+                            <div className="text-center py-8 space-y-4">
+                                <div className="space-y-3">
+                                    <Button 
+                                        onClick={() => generateAIQuestion(false)} 
+                                        disabled={isGenerating}
+                                        className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
+                                    >
+                                        {isGenerating ? (
+                                            <>
+                                                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                                                {t('generating')}
+                                            </>
+                                        ) : (
+                                            <>
+                                                <Sparkles className="w-4 h-4 mr-2" />
+                                                {t('generateQuestion')}
+                                            </>
+                                        )}
+                                    </Button>
+                                    
+                                    <Button 
+                                        onClick={() => generateAIQuestion(true)} 
+                                        disabled={isGenerating}
+                                        className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700"
+                                    >
+                                        {isGenerating ? (
+                                            <>
+                                                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                                                {t('generating')}
+                                            </>
+                                        ) : (
+                                            <>
+                                                <Database className="w-4 h-4 mr-2" />
+                                                {t('generateAndSave')}
+                                            </>
+                                        )}
+                                    </Button>
+                                </div>
+                                
+                                <p className="text-sm text-gray-400">
+                                    {t('generateAndSaveHint')}
+                                </p>
                             </div>
                         )}
                     </Card>

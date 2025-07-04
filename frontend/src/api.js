@@ -164,3 +164,47 @@ export const behavioralAPI = {
     });
   }
 };
+
+// Mock Interview API
+export const mockInterviewAPI = {
+  // 获取数据库中的题目
+  getCodingQuestions: async (difficulty = 'all') => {
+    const queryParams = new URLSearchParams({ difficulty }).toString();
+    return await apiRequest(`/mock/coding-questions?${queryParams}`, 'GET');
+  },
+  
+  getSystemDesignQuestions: async (difficulty = 'all') => {
+    const queryParams = new URLSearchParams({ difficulty }).toString();
+    return await apiRequest(`/mock/system-design-questions?${queryParams}`, 'GET');
+  },
+  
+  getBehavioralQuestions: async (difficulty = 'all') => {
+    const queryParams = new URLSearchParams({ difficulty }).toString();
+    return await apiRequest(`/mock/behavioral-questions?${queryParams}`, 'GET');
+  },
+  
+  // 获取AI生成的题目
+  getAICodingQuestions: async (difficulty = 'all') => {
+    const queryParams = new URLSearchParams({ difficulty }).toString();
+    return await apiRequest(`/mock/ai-coding-questions?${queryParams}`, 'GET');
+  },
+  
+  getAISystemDesignQuestions: async (difficulty = 'all') => {
+    const queryParams = new URLSearchParams({ difficulty }).toString();
+    return await apiRequest(`/mock/ai-system-design-questions?${queryParams}`, 'GET');
+  },
+  
+  getAIBehavioralQuestions: async (difficulty = 'all') => {
+    const queryParams = new URLSearchParams({ difficulty }).toString();
+    return await apiRequest(`/mock/ai-behavioral-questions?${queryParams}`, 'GET');
+  },
+  
+  // AI生成新题目
+  generateQuestion: async (type, difficulty, saveToDatabase = false) => {
+    return await apiRequest('/mock/ai-generate', 'POST', {
+      type,
+      difficulty,
+      saveToDatabase
+    });
+  }
+};
