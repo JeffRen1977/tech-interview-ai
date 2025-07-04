@@ -6,8 +6,20 @@ exports.getCodingQuestions = async (req, res) => {
   try {
     const { difficulty } = req.query;
     let ref = db.collection('coding-questions');
-    if (difficulty) {
-      ref = ref.where('difficulty', '==', difficulty);
+    if (difficulty && difficulty !== 'all') {
+      // 处理不同格式的难度标签
+      let formattedDifficulty;
+      if (difficulty === 'easy') {
+        formattedDifficulty = 'Easy';
+      } else if (difficulty === 'medium') {
+        formattedDifficulty = 'Medium';
+      } else if (difficulty === 'hard') {
+        formattedDifficulty = 'Hard';
+      } else {
+        // 对于中文难度标签，保持原样
+        formattedDifficulty = difficulty;
+      }
+      ref = ref.where('difficulty', '==', formattedDifficulty);
     }
     const snapshot = await ref.get();
     const questions = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
@@ -22,8 +34,20 @@ exports.getSystemDesignQuestions = async (req, res) => {
   try {
     const { difficulty } = req.query;
     let ref = db.collection('system-design-questions');
-    if (difficulty) {
-      ref = ref.where('difficulty', '==', difficulty);
+    if (difficulty && difficulty !== 'all') {
+      // 处理不同格式的难度标签
+      let formattedDifficulty;
+      if (difficulty === 'easy') {
+        formattedDifficulty = '入门';
+      } else if (difficulty === 'medium') {
+        formattedDifficulty = '中等';
+      } else if (difficulty === 'hard') {
+        formattedDifficulty = '困难';
+      } else {
+        // 对于中文难度标签，保持原样
+        formattedDifficulty = difficulty;
+      }
+      ref = ref.where('difficulty', '==', formattedDifficulty);
     }
     const snapshot = await ref.get();
     const questions = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
@@ -38,9 +62,7 @@ exports.getBehavioralQuestions = async (req, res) => {
   try {
     const { difficulty } = req.query;
     let ref = db.collection('behavioral-questions');
-    if (difficulty) {
-      ref = ref.where('difficulty', '==', difficulty);
-    }
+    // 行为面试题目没有难度字段，所以不进行难度过滤
     const snapshot = await ref.get();
     const questions = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
     res.json({ questions });

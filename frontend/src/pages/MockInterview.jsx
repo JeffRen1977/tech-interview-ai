@@ -162,11 +162,11 @@ const MockInterview = () => {
                             <span className="font-medium">{question.title}</span>
                             {question.difficulty && (
                                 <span className={`px-2 py-1 rounded text-xs font-bold ${
-                                    question.difficulty === 'easy' || question.difficulty === '入门'
+                                    question.difficulty.toLowerCase() === 'easy' || question.difficulty === '入门'
                                         ? 'bg-green-600 text-white'
-                                        : question.difficulty === 'medium' || question.difficulty === '中等'
+                                        : question.difficulty.toLowerCase() === 'medium' || question.difficulty === '中等'
                                         ? 'bg-yellow-500 text-gray-900'
-                                        : question.difficulty === 'hard' || question.difficulty === '困难'
+                                        : question.difficulty.toLowerCase() === 'hard' || question.difficulty === '困难'
                                         ? 'bg-red-600 text-white'
                                         : 'bg-gray-500 text-white'
                                 }`}>
@@ -199,11 +199,11 @@ const MockInterview = () => {
                     <h3 className="text-xl font-semibold">{selectedQuestion.title}</h3>
                     {selectedQuestion.difficulty && (
                         <span className={`px-3 py-1 rounded text-sm font-bold ${
-                            selectedQuestion.difficulty === 'easy' || selectedQuestion.difficulty === '入门'
+                            selectedQuestion.difficulty.toLowerCase() === 'easy' || selectedQuestion.difficulty === '入门'
                                 ? 'bg-green-600 text-white'
-                                : selectedQuestion.difficulty === 'medium' || selectedQuestion.difficulty === '中等'
+                                : selectedQuestion.difficulty.toLowerCase() === 'medium' || selectedQuestion.difficulty === '中等'
                                 ? 'bg-yellow-500 text-gray-900'
-                                : selectedQuestion.difficulty === 'hard' || selectedQuestion.difficulty === '困难'
+                                : selectedQuestion.difficulty.toLowerCase() === 'hard' || selectedQuestion.difficulty === '困难'
                                 ? 'bg-red-600 text-white'
                                 : 'bg-gray-500 text-white'
                         }`}>

@@ -35,7 +35,7 @@ app.use('/api/wrong-questions', wrongQuestionRoutes);
 app.use('/api/coach-agent', coachAgentRoutes);
 app.use('/api/system-design', systemDesignRoutes);
 app.use('/api/behavioral', behavioralRoutes);
-app.use('/mock', mockRoutes);
+app.use('/api/mock', mockRoutes);
 
 // --- 启动服务器 ---
 const PORT = process.env.PORT || 3000;
