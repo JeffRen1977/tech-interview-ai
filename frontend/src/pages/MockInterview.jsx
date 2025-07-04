@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Mic, Database, Sparkles, Play, Loader2 } from 'lucide-react';
+import { Mic, Database, Sparkles, Play, Loader2, X } from 'lucide-react';
 import { Card } from '../components/ui/card';
 import { Button } from '../components/ui/button';
 import { Select } from '../components/ui/select';
@@ -111,6 +111,18 @@ const MockInterview = () => {
         console.log('开始面试:', selectedQuestion);
     };
 
+    // 放弃当前题目
+    const abandonQuestion = () => {
+        setSelectedQuestion(null);
+        setQuestions([]);
+        setError('');
+    };
+
+    // 重新生成题目
+    const regenerateQuestion = () => {
+        generateAIQuestion();
+    };
+
     // 渲染题目列表
     const renderQuestionList = () => {
         if (questionSource === 'ai') {
@@ -201,6 +213,96 @@ const MockInterview = () => {
             );
         }
 
+        // 检查是否是AI生成的系统设计或行为面试题目
+        const isAIGeneratedNonCoding = questionSource === 'ai' && 
+            (questionType === 'system-design' || questionType === 'behavioral');
+
+        if (isAIGeneratedNonCoding) {
+            return (
+                <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                        <h3 className="text-xl font-semibold">{selectedQuestion.title}</h3>
+                        {selectedQuestion.difficulty && (
+                            <span className={`px-3 py-1 rounded text-sm font-bold ${
+                                selectedQuestion.difficulty.toLowerCase() === 'easy' || selectedQuestion.difficulty === '入门'
+                                    ? 'bg-green-600 text-white'
+                                    : selectedQuestion.difficulty.toLowerCase() === 'medium' || selectedQuestion.difficulty === '中等'
+                                    ? 'bg-yellow-500 text-gray-900'
+                                    : selectedQuestion.difficulty.toLowerCase() === 'hard' || selectedQuestion.difficulty === '困难'
+                                    ? 'bg-red-600 text-white'
+                                    : 'bg-gray-500 text-white'
+                            }`}>
+                                {selectedQuestion.difficulty}
+                            </span>
+                        )}
+                    </div>
+                    
+                    <div className="bg-gray-800 p-4 rounded-lg">
+                        <h4 className="font-medium mb-2">{t('description')}</h4>
+                        <p className="text-gray-300">{selectedQuestion.description || selectedQuestion.prompt}</p>
+                    </div>
+
+                    {selectedQuestion.example && (
+                        <div className="bg-gray-800 p-4 rounded-lg">
+                            <h4 className="font-medium mb-2">{t('example')}</h4>
+                            <p className="text-gray-300">{selectedQuestion.example}</p>
+                        </div>
+                    )}
+
+                    {selectedQuestion.sampleAnswer && (
+                        <div className="bg-gray-800 p-4 rounded-lg">
+                            <h4 className="font-medium mb-2">{t('sampleAnswer')}</h4>
+                            <p className="text-gray-300">{selectedQuestion.sampleAnswer}</p>
+                        </div>
+                    )}
+
+                    {selectedQuestion.detailedAnswer && (
+                        <div className="bg-gray-800 p-4 rounded-lg">
+                            <h4 className="font-medium mb-2">{t('detailedAnswer')}</h4>
+                            <p className="text-gray-300">{selectedQuestion.detailedAnswer}</p>
+                        </div>
+                    )}
+
+                    {/* AI生成题目的操作按钮 */}
+                    <div className="space-y-3">
+                        <Button 
+                            onClick={startInterview}
+                            className="w-full bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700"
+                        >
+                            <Play className="w-4 h-4 mr-2" />
+                            {t('startInterview')}
+                        </Button>
+                        
+                        <div className="grid grid-cols-2 gap-3">
+                            <Button 
+                                onClick={regenerateQuestion}
+                                disabled={isGenerating}
+                                variant="outline"
+                                className="w-full"
+                            >
+                                {isGenerating ? (
+                                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                                ) : (
+                                    <Sparkles className="w-4 h-4 mr-2" />
+                                )}
+                                {t('regenerateQuestion')}
+                            </Button>
+                            
+                            <Button 
+                                onClick={abandonQuestion}
+                                variant="outline"
+                                className="w-full border-red-500 text-red-500 hover:bg-red-500 hover:text-white"
+                            >
+                                <X className="w-4 h-4 mr-2" />
+                                {t('abandonQuestion')}
+                            </Button>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        // 其他题目的原有布局
         return (
             <div className="space-y-4">
                 <div className="flex items-center justify-between">
@@ -338,21 +440,147 @@ const MockInterview = () => {
             )}
 
             {/* 题目选择和详情 */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                {/* 左侧：题目列表 */}
-                <Card className="bg-gray-800 p-6">
-                    <h3 className="text-lg font-semibold mb-4">
-                        {questionSource === 'database' ? t('questionBank') : t('aiGeneration')}
-                    </h3>
-                    {renderQuestionList()}
-                </Card>
+            {questionSource === 'ai' && (questionType === 'system-design' || questionType === 'behavioral') ? (
+                // AI生成的系统设计或行为面试题目特殊布局
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    {/* 左侧：题目和答案 */}
+                    <Card className="bg-gray-800 p-6">
+                        <h3 className="text-lg font-semibold mb-4">{t('questionDetail')}</h3>
+                        {selectedQuestion ? (
+                            <div className="space-y-4">
+                                <div className="flex items-center justify-between">
+                                    <h3 className="text-xl font-semibold">{selectedQuestion.title}</h3>
+                                    {selectedQuestion.difficulty && (
+                                        <span className={`px-3 py-1 rounded text-sm font-bold ${
+                                            selectedQuestion.difficulty.toLowerCase() === 'easy' || selectedQuestion.difficulty === '入门'
+                                                ? 'bg-green-600 text-white'
+                                                : selectedQuestion.difficulty.toLowerCase() === 'medium' || selectedQuestion.difficulty === '中等'
+                                                ? 'bg-yellow-500 text-gray-900'
+                                                : selectedQuestion.difficulty.toLowerCase() === 'hard' || selectedQuestion.difficulty === '困难'
+                                                ? 'bg-red-600 text-white'
+                                                : 'bg-gray-500 text-white'
+                                        }`}>
+                                            {selectedQuestion.difficulty}
+                                        </span>
+                                    )}
+                                </div>
+                                
+                                <div className="bg-gray-800 p-4 rounded-lg">
+                                    <h4 className="font-medium mb-2">{t('description')}</h4>
+                                    <p className="text-gray-300">{selectedQuestion.description || selectedQuestion.prompt}</p>
+                                </div>
 
-                {/* 右侧：题目详情 */}
-                <Card className="bg-gray-800 p-6">
-                    <h3 className="text-lg font-semibold mb-4">{t('questionDetail')}</h3>
-                    {renderQuestionDetail()}
-                </Card>
-            </div>
+                                {selectedQuestion.example && (
+                                    <div className="bg-gray-800 p-4 rounded-lg">
+                                        <h4 className="font-medium mb-2">{t('example')}</h4>
+                                        <p className="text-gray-300">{selectedQuestion.example}</p>
+                                    </div>
+                                )}
+
+                                {selectedQuestion.sampleAnswer && (
+                                    <div className="bg-gray-800 p-4 rounded-lg">
+                                        <h4 className="font-medium mb-2">{t('sampleAnswer')}</h4>
+                                        <p className="text-gray-300">{selectedQuestion.sampleAnswer}</p>
+                                    </div>
+                                )}
+
+                                {selectedQuestion.detailedAnswer && (
+                                    <div className="bg-gray-800 p-4 rounded-lg">
+                                        <h4 className="font-medium mb-2">{t('detailedAnswer')}</h4>
+                                        <p className="text-gray-300">{selectedQuestion.detailedAnswer}</p>
+                                    </div>
+                                )}
+                            </div>
+                        ) : (
+                            <div className="text-center py-8">
+                                <Button 
+                                    onClick={generateAIQuestion} 
+                                    disabled={isGenerating}
+                                    className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
+                                >
+                                    {isGenerating ? (
+                                        <>
+                                            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                                            {t('generating')}
+                                        </>
+                                    ) : (
+                                        <>
+                                            <Sparkles className="w-4 h-4 mr-2" />
+                                            {t('generateQuestion')}
+                                        </>
+                                    )}
+                                </Button>
+                            </div>
+                        )}
+                    </Card>
+
+                    {/* 右侧：操作按钮 */}
+                    <Card className="bg-gray-800 p-6">
+                        <h3 className="text-lg font-semibold mb-4">{t('interviewActions')}</h3>
+                        {selectedQuestion ? (
+                            <div className="space-y-4">
+                                <div className="text-center py-4">
+                                    <p className="text-gray-300 mb-4">{t('readyToStartInterview')}</p>
+                                </div>
+                                
+                                <Button 
+                                    onClick={startInterview}
+                                    className="w-full bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700"
+                                >
+                                    <Play className="w-4 h-4 mr-2" />
+                                    {t('startInterview')}
+                                </Button>
+                                
+                                <div className="grid grid-cols-2 gap-3">
+                                    <Button 
+                                        onClick={regenerateQuestion}
+                                        disabled={isGenerating}
+                                        variant="outline"
+                                        className="w-full"
+                                    >
+                                        {isGenerating ? (
+                                            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                                        ) : (
+                                            <Sparkles className="w-4 h-4 mr-2" />
+                                        )}
+                                        {t('regenerateQuestion')}
+                                    </Button>
+                                    
+                                    <Button 
+                                        onClick={abandonQuestion}
+                                        variant="outline"
+                                        className="w-full border-red-500 text-red-500 hover:bg-red-500 hover:text-white"
+                                    >
+                                        <X className="w-4 h-4 mr-2" />
+                                        {t('abandonQuestion')}
+                                    </Button>
+                                </div>
+                            </div>
+                        ) : (
+                            <div className="text-center py-8 text-gray-400">
+                                <p>{t('generateQuestionFirst')}</p>
+                            </div>
+                        )}
+                    </Card>
+                </div>
+            ) : (
+                // 其他题目的原有布局
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    {/* 左侧：题目列表 */}
+                    <Card className="bg-gray-800 p-6">
+                        <h3 className="text-lg font-semibold mb-4">
+                            {questionSource === 'database' ? t('questionBank') : t('aiGeneration')}
+                        </h3>
+                        {renderQuestionList()}
+                    </Card>
+
+                    {/* 右侧：题目详情 */}
+                    <Card className="bg-gray-800 p-6">
+                        <h3 className="text-lg font-semibold mb-4">{t('questionDetail')}</h3>
+                        {renderQuestionDetail()}
+                    </Card>
+                </div>
+            )}
         </div>
     );
 };

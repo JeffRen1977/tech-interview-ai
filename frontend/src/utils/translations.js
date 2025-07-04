@@ -284,6 +284,11 @@ export const translations = {
     pleaseSelectQuestion: '请选择题目',
     selectQuestionToStart: '请选择题目开始',
     startInterview: '开始面试',
+    abandonQuestion: '放弃这题',
+    regenerateQuestion: '重新生成',
+    interviewActions: '面试操作',
+    readyToStartInterview: '准备开始面试',
+    generateQuestionFirst: '请先生成题目',
     description: '描述',
     example: '示例',
 
@@ -746,6 +751,11 @@ export const translations = {
     pleaseSelectQuestion: 'Please select a question',
     selectQuestionToStart: 'Please select a question to start',
     startInterview: 'Start Interview',
+    abandonQuestion: 'Abandon Question',
+    regenerateQuestion: 'Regenerate',
+    interviewActions: 'Interview Actions',
+    readyToStartInterview: 'Ready to start interview',
+    generateQuestionFirst: 'Please generate a question first',
     description: 'Description',
     example: 'Example',
 
