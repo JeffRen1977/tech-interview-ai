@@ -98,4 +98,7 @@ exports.generateBehavioralQuestion = async function(difficulty = 'medium') {
     const jsonText = extractJson(geminiData.candidates[0].content.parts[0].text);
     const questionData = JSON.parse(jsonText);
     return questionData;
-}; 
+};
+
+// 导出callGeminiAPI函数供其他模块使用
+exports.callGeminiAPI = callGeminiAPI; 

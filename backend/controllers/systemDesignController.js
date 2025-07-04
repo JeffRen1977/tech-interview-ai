@@ -78,8 +78,54 @@ const getQuestionById = async (req, res) => {
     }
 };
 
+// 保存系统设计问题到用户学习历史
+const saveToLearningHistory = async (req, res) => {
+    const { questionId, completedAt } = req.body;
+    const userId = req.user.userId; // 从认证中间件获取用户ID
+    
+    if (!questionId) {
+        return res.status(400).json({ message: "Question ID is required." });
+    }
+
+    try {
+        // 获取题目详情
+        const questionDoc = await db.collection('system-design-questions').doc(questionId).get();
+        if (!questionDoc.exists) {
+            return res.status(404).json({ message: "Question not found." });
+        }
+        
+        const questionData = questionDoc.data();
+        
+        const historyData = {
+            userId,
+            questionId,
+            questionData: {
+                title: questionData.title,
+                description: questionData.description,
+                category: questionData.category,
+                difficulty: questionData.difficulty,
+                answer: questionData.answer,
+                design_steps: questionData.design_steps || []
+            },
+            completedAt: completedAt ? new Date(completedAt) : new Date(),
+            savedAt: new Date(),
+            interviewType: 'system-design'
+        };
+
+        const docRef = await db.collection('user-learning-history').add(historyData);
+        res.status(200).json({ 
+            message: "System design question saved to learning history successfully.",
+            historyId: docRef.id 
+        });
+    } catch (error) {
+        console.error("Error saving to learning history:", error);
+        res.status(500).json({ message: "Failed to save to learning history." });
+    }
+};
+
 module.exports = {
     getAllQuestions,
     getFilteredQuestions,
-    getQuestionById
+    getQuestionById,
+    saveToLearningHistory
 }; 

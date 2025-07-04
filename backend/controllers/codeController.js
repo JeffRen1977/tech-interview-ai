@@ -139,21 +139,39 @@ exports.getUserLearningHistory = async (req, res) => {
 
 // 保存问题到用户学习历史
 exports.saveToLearningHistory = async (req, res) => {
-    const { userId, questionId, feedback, userCode, language, completedAt } = req.body;
+    const { questionId, feedback, userCode, language, completedAt } = req.body;
+    const userId = req.user.userId; // 从认证中间件获取用户ID
     
-    if (!userId || !questionId) {
-        return res.status(400).json({ message: "User ID and Question ID are required." });
+    if (!questionId) {
+        return res.status(400).json({ message: "Question ID is required." });
     }
 
     try {
+        // 获取题目详情
+        const questionDoc = await db.collection('coding-questions').doc(questionId).get();
+        if (!questionDoc.exists) {
+            return res.status(404).json({ message: "Question not found." });
+        }
+        
+        const questionData = questionDoc.data();
+        
         const historyData = {
             userId,
             questionId,
-            feedback,
+            questionData: {
+                title: questionData.title,
+                description: questionData.description,
+                difficulty: questionData.difficulty,
+                topic: questionData.topic || 'programming',
+                algorithms: questionData.algorithms || [],
+                dataStructures: questionData.dataStructures || []
+            },
             userCode,
             language,
-            completedAt: completedAt || new Date(),
-            savedAt: new Date()
+            feedback,
+            completedAt: completedAt ? new Date(completedAt) : new Date(),
+            savedAt: new Date(),
+            interviewType: 'coding'
         };
 
         const docRef = await db.collection('user-learning-history').add(historyData);

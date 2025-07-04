@@ -1,6 +1,9 @@
 const admin = require('firebase-admin');
 const db = admin.firestore();
 
+// 导入Gemini API调用函数
+const { callGeminiAPI } = require('../utils/geminiService');
+
 // 获取所有行为面试问题
 const getAllQuestions = async (req, res) => {
     try {
@@ -83,35 +86,34 @@ const analyzeAnswer = async (req, res) => {
             return res.status(400).json({ error: 'Missing required fields' });
         }
         
-        // 这里可以集成AI分析逻辑
-        // 目前返回模拟的AI分析结果
+        // 调用Gemini API进行智能分析
+        const analysisPrompt = `
+            Act as an expert behavioral interviewer evaluating a candidate's response.
+            
+            Question: ${question}
+            Question ID: ${questionId}
+            Candidate's Answer: ${userAnswer}
+            
+            Please provide a comprehensive analysis of the candidate's response in Chinese, including:
+            
+            1. **回答结构分析**: Evaluate how well the response follows the STAR framework
+            2. **优点**: Identify strengths in the response
+            3. **改进建议**: Provide specific suggestions for improvement
+            4. **STAR方法建议**: Give specific guidance on each STAR component
+            5. **示例改进**: Provide a concrete example of how to improve the response
+            6. **总体评分**: Give a score out of 100 with brief explanation
+            
+            Format your response as a detailed analysis with clear sections and actionable feedback.
+            Focus on the specific question context and provide relevant examples.
+        `;
+        
+        // 调用Gemini API
+        const geminiData = await callGeminiAPI(analysisPrompt);
+        const analysisText = geminiData.candidates[0].content.parts[0].text;
+        
         const analysis = {
             success: true,
-            message: `基于你的回答，我提供以下反馈和建议：
-
-**回答结构分析：**
-你的回答展现了良好的思考过程，但可以在以下几个方面进行改进：
-
-**优点：**
-- 回答逻辑清晰
-- 包含了具体的例子
-- 体现了问题解决能力
-
-**改进建议：**
-1. 可以更详细地描述具体的行动步骤
-2. 建议增加量化的结果
-3. 可以补充一些反思和学习经验
-
-**STAR方法建议：**
-- Situation: 更清晰地描述背景情况
-- Task: 明确说明你的任务和责任
-- Action: 详细描述你采取的具体行动
-- Result: 强调可量化的结果和影响
-
-**示例改进：**
-"我通过制定详细的项目计划，与团队密切协作，最终在预期时间内完成了项目，客户满意度达到95%。"
-
-继续练习，你的回答会越来越出色！`
+            message: analysisText
         };
         
         res.json(analysis);
@@ -124,9 +126,90 @@ const analyzeAnswer = async (req, res) => {
     }
 };
 
+// 保存行为面试问题到用户学习历史
+const saveToLearningHistory = async (req, res) => {
+    const { questionId, userAnswer, feedback, completedAt } = req.body;
+    const userId = req.user.userId; // 从认证中间件获取用户ID
+    
+    if (!questionId) {
+        return res.status(400).json({ message: "Question ID is required." });
+    }
+
+    try {
+        // 获取题目详情
+        const questionDoc = await db.collection('behavioral-questions').doc(questionId).get();
+        let questionData;
+        if (questionDoc.exists) {
+            questionData = questionDoc.data();
+        } else {
+            // 兼容AI生成的题目，直接用前端传来的字段
+            questionData = req.body.questionData || {
+                title: req.body.title || '',
+                prompt: req.body.prompt || '',
+                category: req.body.category || '',
+                difficulty: req.body.difficulty || '',
+                sampleAnswer: req.body.sampleAnswer || ''
+            };
+        }
+        
+        // 处理feedback字段，限制长度避免Firestore限制
+        let processedFeedback = feedback;
+        if (feedback && typeof feedback === 'object' && feedback.message) {
+            // 如果feedback.message太长，截断它
+            if (feedback.message.length > 10000) {
+                processedFeedback = {
+                    ...feedback,
+                    message: feedback.message.substring(0, 10000) + '... (truncated)'
+                };
+            }
+        }
+        
+        const historyData = {
+            userId,
+            questionId,
+            questionData: {
+                title: questionData.title || '',
+                prompt: questionData.prompt || '',
+                category: questionData.category || '',
+                difficulty: questionData.difficulty || '',
+                sampleAnswer: questionData.sampleAnswer || ''
+            },
+            userAnswer: userAnswer || '',
+            feedback: processedFeedback && processedFeedback.message ? processedFeedback.message : null,
+            completedAt: completedAt ? new Date(completedAt) : new Date(),
+            savedAt: new Date(),
+            interviewType: 'behavioral'
+        };
+
+        console.log('Saving behavioral history with data:', {
+            userId,
+            questionId,
+            questionDataKeys: Object.keys(historyData.questionData),
+            userAnswerLength: historyData.userAnswer.length,
+            feedbackType: typeof historyData.feedback,
+            feedbackKeys: historyData.feedback ? Object.keys(historyData.feedback) : null
+        });
+
+        const docRef = await db.collection('user-learning-history').add(historyData);
+        res.status(200).json({ 
+            message: "Behavioral question saved to learning history successfully.",
+            historyId: docRef.id 
+        });
+    } catch (error) {
+        console.error("Error saving to learning history:", error);
+        console.error("Error details:", {
+            message: error.message,
+            stack: error.stack,
+            code: error.code
+        });
+        res.status(500).json({ message: "Failed to save to learning history." });
+    }
+};
+
 module.exports = {
     getAllQuestions,
     getFilteredQuestions,
     getQuestionById,
-    analyzeAnswer
+    analyzeAnswer,
+    saveToLearningHistory
 }; 

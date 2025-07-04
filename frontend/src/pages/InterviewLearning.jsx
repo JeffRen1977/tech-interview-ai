@@ -163,12 +163,28 @@ const ProgrammingPractice = () => {
         setIsLoading(prev => ({ ...prev, submission: true }));
         setFeedback(null);
         try {
-            const result = await apiRequest('/code/submit', 'POST', {
-                questionId: selectedProblem.id,
+            // 首先进行AI分析
+            const analysisResult = await apiRequest('/code/submit', 'POST', {
+                question: selectedProblem,
                 userCode: userCode,
                 language: programmingLanguage
             });
-            setFeedback({ type: 'submission', ...result });
+            
+            // 然后保存到学习历史
+            const saveResult = await apiRequest('/code/learning-history', 'POST', {
+                questionId: selectedProblem.id,
+                userCode: userCode,
+                language: programmingLanguage,
+                feedback: analysisResult,
+                completedAt: new Date().toISOString()
+            });
+            
+            setFeedback({ 
+                type: 'submission', 
+                ...analysisResult,
+                saved: true,
+                saveMessage: saveResult.message
+            });
         } catch (error) {
             setFeedback({ type: 'submission', success: false, message: `${t('submissionError')} ${error.message}` });
         } finally {
@@ -387,6 +403,21 @@ const SystemDesignPractice = () => {
         }
     };
 
+    const handleSaveSystemDesign = async () => {
+        if (!selectedQuestion) return;
+        
+        try {
+            const saveResult = await apiRequest('/system-design/learning-history', 'POST', {
+                questionId: selectedQuestion.id,
+                completedAt: new Date().toISOString()
+            });
+            
+            alert(saveResult.message);
+        } catch (error) {
+            alert(`${t('saveFailed')} ${error.message}`);
+        }
+    };
+
     return (
         <ResizablePanelGroup direction="horizontal" className="h-full rounded-lg border border-gray-700">
             {/* 左侧题目列表 */}
@@ -510,6 +541,16 @@ const SystemDesignPractice = () => {
                                         </div>
                                     </div>
                                 )}
+                                
+                                <div className="flex justify-end">
+                                    <Button
+                                        onClick={handleSaveSystemDesign}
+                                        className="bg-green-600 hover:bg-green-700"
+                                    >
+                                        <Save size={16} className="mr-2" />
+                                        {t('saveToLearningHistory')}
+                                    </Button>
+                                </div>
                             </div>
                         </div>
                     ) : (
@@ -575,22 +616,47 @@ const BehavioralPractice = () => {
 
     const handleAnalyzeAnswer = async () => {
         if (!selectedQuestion || !userAnswer.trim()) return;
-        
         setIsLoading(prev => ({ ...prev, analysis: true }));
         setFeedback(null);
-        
         try {
-            const result = await apiRequest('/behavioral/analyze', 'POST', {
+            // 只做AI分析，不保存
+            const analysisResult = await apiRequest('/behavioral/analyze', 'POST', {
                 questionId: selectedQuestion.id,
                 userAnswer: userAnswer,
-                question: selectedQuestion.question
+                question: selectedQuestion.prompt || selectedQuestion.title
             });
-            setFeedback(result);
+            setFeedback({ ...analysisResult, saved: false });
         } catch (error) {
             setFeedback({ 
                 success: false, 
                 message: `${t('analysisError')} ${error.message}` 
             });
+        } finally {
+            setIsLoading(prev => ({ ...prev, analysis: false }));
+        }
+    };
+
+    // 新增：保存到学习历史
+    const handleSaveToHistory = async () => {
+        if (!selectedQuestion || !userAnswer.trim() || !feedback) return;
+        setIsLoading(prev => ({ ...prev, analysis: true }));
+        try {
+            const saveResult = await apiRequest('/behavioral/learning-history', 'POST', {
+                questionId: selectedQuestion.id,
+                userAnswer: userAnswer,
+                feedback: feedback,
+                completedAt: new Date().toISOString(),
+                questionData: {
+                  title: selectedQuestion.title,
+                  prompt: selectedQuestion.prompt,
+                  category: selectedQuestion.category,
+                  difficulty: selectedQuestion.difficulty,
+                  sampleAnswer: selectedQuestion.sampleAnswer
+                }
+            });
+            setFeedback(prev => ({ ...prev, saved: true, saveMessage: saveResult.message }));
+        } catch (error) {
+            setFeedback(prev => ({ ...prev, saved: false, saveMessage: `${t('saveToHistoryError')} ${error.message}` }));
         } finally {
             setIsLoading(prev => ({ ...prev, analysis: false }));
         }
@@ -672,9 +738,9 @@ const BehavioralPractice = () => {
 
             {/* 右侧答案输入和反馈 */}
             <ResizablePanel defaultSize={70}>
-                <div className="h-full bg-gray-800 p-4">
+                <div className="h-full bg-gray-800 p-4 overflow-y-auto">
                     {selectedQuestion ? (
-                        <div className="h-full flex flex-col">
+                        <div className="min-h-full flex flex-col">
                             <div className="mb-4">
                                 <h3 className="text-xl font-semibold mb-2">{t('question')}</h3>
                                 <p className="text-gray-300 mb-4">{selectedQuestion.prompt}</p>
@@ -712,13 +778,31 @@ const BehavioralPractice = () => {
                                 </div>
 
                                 {feedback && (
-                                    <div className="flex-1">
+                                    <div className="bg-gray-900 p-4 rounded-lg mb-4">
                                         <h4 className="text-lg font-medium mb-2">{t('aiFeedback')}</h4>
-                                        <div className={`p-4 rounded-lg ${
-                                            feedback.success ? 'bg-green-900 border border-green-600' : 'bg-red-900 border border-red-600'
-                                        }`}>
-                                            <pre className="text-gray-300 whitespace-pre-wrap text-sm">{feedback.message}</pre>
+                                        <div style={{ whiteSpace: 'pre-wrap' }} className="text-gray-200 text-sm">
+                                            {feedback.message}
                                         </div>
+                                        {/* 详细调试信息 */}
+                                        <div className="text-xs text-gray-500 mt-2">
+                                            Debug: saved={String(feedback.saved)}, success={String(feedback.success)}, message={feedback.message ? '有消息' : '无消息'}
+                                        </div>
+                                        {/* 更简单的按钮显示条件 */}
+                                        {feedback.message && (
+                                            <Button
+                                                onClick={handleSaveToHistory}
+                                                className="mt-4 bg-green-600 hover:bg-green-700"
+                                                disabled={isLoading.analysis || feedback.saved}
+                                            >
+                                                {feedback.saved ? t('savedToHistory') : t('saveToLearningHistory')}
+                                            </Button>
+                                        )}
+                                        {feedback.saved && (
+                                            <div className="mt-2 text-green-400 text-sm">{feedback.saveMessage || t('savedToHistory')}</div>
+                                        )}
+                                        {feedback.saved === false && feedback.saveMessage && (
+                                            <div className="mt-2 text-red-400 text-sm">{feedback.saveMessage}</div>
+                                        )}
                                     </div>
                                 )}
                             </div>

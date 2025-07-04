@@ -15,4 +15,7 @@ router.get('/questions/:id', behavioralController.getQuestionById);
 // AI分析用户答案 - 需要用户登录
 router.post('/analyze', verifyToken, behavioralController.analyzeAnswer);
 
+// 保存到学习历史 - 需要用户登录
+router.post('/learning-history', verifyToken, behavioralController.saveToLearningHistory);
+
 module.exports = router; 
