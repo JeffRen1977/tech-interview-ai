@@ -249,14 +249,15 @@ const MockInterview = () => {
                         </div>
                     )}
 
-                    {selectedQuestion.sampleAnswer && (
+                    {/* 对于AI生成的题目，隐藏答案让用户通过面试获取反馈 */}
+                    {questionSource === 'database' && selectedQuestion.sampleAnswer && (
                         <div className="bg-gray-800 p-4 rounded-lg">
                             <h4 className="font-medium mb-2">{t('sampleAnswer')}</h4>
                             <p className="text-gray-300">{selectedQuestion.sampleAnswer}</p>
                         </div>
                     )}
 
-                    {selectedQuestion.detailedAnswer && (
+                    {questionSource === 'database' && selectedQuestion.detailedAnswer && (
                         <div className="bg-gray-800 p-4 rounded-lg">
                             <h4 className="font-medium mb-2">{t('detailedAnswer')}</h4>
                             <p className="text-gray-300">{selectedQuestion.detailedAnswer}</p>
@@ -477,19 +478,12 @@ const MockInterview = () => {
                                     </div>
                                 )}
 
-                                {selectedQuestion.sampleAnswer && (
-                                    <div className="bg-gray-800 p-4 rounded-lg">
-                                        <h4 className="font-medium mb-2">{t('sampleAnswer')}</h4>
-                                        <p className="text-gray-300">{selectedQuestion.sampleAnswer}</p>
-                                    </div>
-                                )}
-
-                                {selectedQuestion.detailedAnswer && (
-                                    <div className="bg-gray-800 p-4 rounded-lg">
-                                        <h4 className="font-medium mb-2">{t('detailedAnswer')}</h4>
-                                        <p className="text-gray-300">{selectedQuestion.detailedAnswer}</p>
-                                    </div>
-                                )}
+                                {/* 提示用户通过面试获取答案和反馈 */}
+                                <div className="bg-blue-900 border border-blue-700 text-blue-200 px-4 py-3 rounded">
+                                    <p className="text-sm">
+                                        💡 {t('aiQuestionHint')}
+                                    </p>
+                                </div>
                             </div>
                         ) : (
                             <div className="text-center py-8">

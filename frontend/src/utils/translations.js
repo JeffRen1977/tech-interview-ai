@@ -289,6 +289,7 @@ export const translations = {
     interviewActions: '面试操作',
     readyToStartInterview: '准备开始面试',
     generateQuestionFirst: '请先生成题目',
+    aiQuestionHint: '这是AI生成的新题目，答案和详细解析将在面试过程中提供。点击"开始面试"来获取个性化反馈！',
     description: '描述',
     example: '示例',
 
@@ -756,6 +757,7 @@ export const translations = {
     interviewActions: 'Interview Actions',
     readyToStartInterview: 'Ready to start interview',
     generateQuestionFirst: 'Please generate a question first',
+    aiQuestionHint: 'This is an AI-generated new question. Answers and detailed explanations will be provided during the interview process. Click "Start Interview" to get personalized feedback!',
     description: 'Description',
     example: 'Example',
 
