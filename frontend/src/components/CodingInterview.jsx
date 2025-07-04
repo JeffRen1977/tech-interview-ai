@@ -3,7 +3,7 @@ import { Card } from './ui/card';
 import { Button } from './ui/button';
 import { Select } from './ui/select';
 import { Textarea } from './ui/textarea';
-import { apiRequest, programmingAPI } from '../api';
+import { apiRequest, programmingAPI, mockInterviewAPI } from '../api';
 import { useLanguage } from '../contexts/LanguageContext';
 import { getText } from '../utils/translations';
 import { Play, Pause, Square, Clock, Lightbulb, CheckCircle, AlertCircle } from 'lucide-react';
@@ -157,7 +157,7 @@ const CodingInterview = ({ mockInterviewData, onBackToSetup }) => {
             const questionId = questionData?.id || questionData?.title || 'unknown';
             const isMockInterview = !!mockInterviewData;
             
-            console.log('Saving to learning history...', {
+            console.log('Saving to interview history...', {
                 questionId,
                 questionTitle: questionData?.title,
                 hasId: !!questionData?.id,
@@ -170,18 +170,21 @@ const CodingInterview = ({ mockInterviewData, onBackToSetup }) => {
             // 对于模拟面试，如果题目没有id，使用title作为标识符
             const identifier = questionData?.id || questionData?.title;
             
-            await programmingAPI.saveToLearningHistory(
+            // 使用新的API保存到面试历史
+            await mockInterviewAPI.saveInterviewResult(
                 identifier,
-                aiAnalysis,
+                questionData,
                 solution,
-                programmingLanguage === 'any' ? 'javascript' : programmingLanguage,
+                aiAnalysis,
+                'coding',
+                timeSpent,
                 new Date().toISOString()
             );
             
             setShowSaveDialog(false);
-            alert(t('savedToLearningHistory'));
+            alert(t('savedToInterviewHistory'));
         } catch (error) {
-            console.error('Failed to save to learning history:', error);
+            console.error('Failed to save to interview history:', error);
             alert(`${t('failedToSaveToHistory')} ${error.message}`);
         }
     };

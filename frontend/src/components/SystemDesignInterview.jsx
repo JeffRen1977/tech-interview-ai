@@ -3,7 +3,7 @@ import { Card } from './ui/card';
 import { Button } from './ui/button';
 import { Select } from './ui/select';
 import { Textarea } from './ui/textarea';
-import { apiRequest } from '../api';
+import { apiRequest, systemDesignAPI, mockInterviewAPI } from '../api';
 import { useLanguage } from '../contexts/LanguageContext';
 import { getText } from '../utils/translations';
 import { 
@@ -37,6 +37,8 @@ const SystemDesignInterview = ({ mockInterviewData, onBackToSetup }) => {
     const [difficulty, setDifficulty] = useState('medium');
     const [interviewLanguage, setInterviewLanguage] = useState('chinese');
     const [localMockInterviewData, setLocalMockInterviewData] = useState(null);
+    const [showSaveDialog, setShowSaveDialog] = useState(false);
+    const [aiAnalysis, setAiAnalysis] = useState(null);
     
     const canvasRef = useRef(null);
     const contextRef = useRef(null);
@@ -252,18 +254,77 @@ const SystemDesignInterview = ({ mockInterviewData, onBackToSetup }) => {
 
     const submitSolution = async () => {
         try {
-            const response = await apiRequest('/questions/system-design-interview/submit', 'POST', {
-                sessionId,
-                whiteboardData,
-                voiceInput,
-                timeSpent
-            });
+            // 检查是否为模拟面试
+            const isMockInterview = !!mockInterviewData;
             
-            setFeedback(response.feedback);
+            if (isMockInterview) {
+                // 模拟面试：直接进行AI分析
+                console.log('模拟面试：进行AI分析...');
+                const analysisResult = await systemDesignAPI.analyzeSolution(
+                    questionData,
+                    whiteboardData,
+                    voiceInput,
+                    timeSpent
+                );
+                
+                setAiAnalysis(analysisResult.feedback);
+                setFeedback(analysisResult.feedback);
+                setShowSaveDialog(true);
+            } else {
+                // 正式面试：使用sessionId
+                if (!sessionId) {
+                    throw new Error('Session ID is required');
+                }
+                
+                const response = await apiRequest('/questions/system-design-interview/submit', 'POST', {
+                    sessionId,
+                    whiteboardData,
+                    voiceInput,
+                    timeSpent
+                });
+                
+                setFeedback(response.feedback);
+            }
         } catch (error) {
             console.error('Failed to submit solution:', error);
             alert(`${t('failedToSubmitSolution')} ${error.message}`);
         }
+    };
+
+    const saveToInterviewHistory = async () => {
+        try {
+            console.log('保存到面试历史...', {
+                questionTitle: questionData?.title,
+                hasAiAnalysis: !!aiAnalysis,
+                whiteboardDataLength: whiteboardData.length,
+                voiceInputLength: voiceInput.length,
+                timeSpent
+            });
+            
+            await mockInterviewAPI.saveInterviewResult(
+                questionData?.id || questionData?.title || 'unknown',
+                questionData,
+                {
+                    whiteboardData: whiteboardData,
+                    voiceInput: voiceInput
+                },
+                aiAnalysis,
+                'system-design',
+                timeSpent,
+                new Date().toISOString()
+            );
+            
+            setShowSaveDialog(false);
+            alert(t('savedToInterviewHistory'));
+        } catch (error) {
+            console.error('Failed to save to interview history:', error);
+            alert(`${t('failedToSaveToHistory')} ${error.message}`);
+        }
+    };
+
+    const skipSaving = () => {
+        setShowSaveDialog(false);
+        // 不要清空aiAnalysis，这样分析结果会一直显示
     };
 
     const endInterview = async () => {
@@ -605,6 +666,93 @@ const SystemDesignInterview = ({ mockInterviewData, onBackToSetup }) => {
                                                     <li key={index} className="text-sm text-gray-300">• {suggestion}</li>
                                                 ))}
                                             </ul>
+                                        </div>
+                                    )}
+
+                                    {/* AI Analysis Results for Mock Interview */}
+                                    {aiAnalysis && (
+                                        <div className="mt-4">
+                                            <h3 className="font-semibold mb-2 text-blue-400">{t('aiAnalysis')}</h3>
+                                            <div className="space-y-3">
+                                                {aiAnalysis.overallScore && (
+                                                    <div className="flex items-center justify-between p-3 bg-gray-700 rounded-md">
+                                                        <span className="text-sm">{t('overallScore')}</span>
+                                                        <span className={`text-lg font-bold ${getScoreColor(aiAnalysis.overallScore)}`}>
+                                                            {aiAnalysis.overallScore}/100
+                                                        </span>
+                                                    </div>
+                                                )}
+                                                
+                                                {aiAnalysis.categoryScores && (
+                                                    <div className="grid grid-cols-1 gap-2">
+                                                        {Object.entries(aiAnalysis.categoryScores).map(([category, score]) => (
+                                                            <div key={category} className="flex items-center justify-between p-2 bg-gray-700 rounded-md">
+                                                                <span className="text-sm">{t(category)}</span>
+                                                                <span className="text-sm font-medium">{score}/100</span>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                )}
+                                                
+                                                {aiAnalysis.strengths && aiAnalysis.strengths.length > 0 && (
+                                                    <div className="mt-3">
+                                                        <h4 className="font-semibold mb-2 text-green-400">{t('strengths')}</h4>
+                                                        <ul className="space-y-1">
+                                                            {aiAnalysis.strengths.map((strength, index) => (
+                                                                <li key={index} className="flex items-center gap-2 text-sm text-gray-300">
+                                                                    <CheckCircle className="w-4 h-4 text-green-500" />
+                                                                    {strength}
+                                                                </li>
+                                                            ))}
+                                                        </ul>
+                                                    </div>
+                                                )}
+                                                
+                                                {aiAnalysis.areasForImprovement && aiAnalysis.areasForImprovement.length > 0 && (
+                                                    <div className="mt-3">
+                                                        <h4 className="font-semibold mb-2 text-yellow-400">{t('areasForImprovement')}</h4>
+                                                        <ul className="space-y-1">
+                                                            {aiAnalysis.areasForImprovement.map((area, index) => (
+                                                                <li key={index} className="flex items-center gap-2 text-sm text-gray-300">
+                                                                    <AlertCircle className="w-4 h-4 text-yellow-500" />
+                                                                    {area}
+                                                                </li>
+                                                            ))}
+                                                        </ul>
+                                                    </div>
+                                                )}
+                                                
+                                                {aiAnalysis.finalAssessment && (
+                                                    <div className="mt-3">
+                                                        <h4 className="font-semibold mb-2">{t('finalAssessmentComment')}</h4>
+                                                        <p className="text-sm text-gray-300">{aiAnalysis.finalAssessment}</p>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {/* Save Dialog for Mock Interview */}
+                                    {showSaveDialog && (
+                                        <div className="mt-4 p-4 bg-blue-900/20 border border-blue-500/30 rounded-lg">
+                                            <h3 className="font-semibold mb-2 text-blue-400">{t('saveToInterviewHistory')}</h3>
+                                            <p className="text-sm text-gray-300 mb-3">{t('saveAnalysisDescription')}</p>
+                                            <div className="flex gap-2">
+                                                <Button
+                                                    onClick={saveToInterviewHistory}
+                                                    className="bg-green-600 hover:bg-green-700 text-sm"
+                                                >
+                                                    <Save size={16} className="mr-2" />
+                                                    {t('saveAnalysis')}
+                                                </Button>
+                                                <Button
+                                                    onClick={skipSaving}
+                                                    variant="outline"
+                                                    className="text-sm"
+                                                >
+                                                    {t('skipSaving')}
+                                                </Button>
+                                            </div>
                                         </div>
                                     )}
                                 </div>

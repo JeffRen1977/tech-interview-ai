@@ -141,6 +141,14 @@ export const systemDesignAPI = {
   },
   getQuestionById: async (id) => {
     return await apiRequest(`/system-design/questions/${id}`, 'GET');
+  },
+  analyzeSolution: async (questionData, whiteboardData, voiceInput, timeSpent) => {
+    return await apiRequest('/system-design/analyze', 'POST', {
+      questionData,
+      whiteboardData,
+      voiceInput,
+      timeSpent
+    });
   }
 };
 
@@ -205,6 +213,19 @@ export const mockInterviewAPI = {
       type,
       difficulty,
       saveToDatabase
+    });
+  },
+  
+  // 保存模拟面试结果到用户面试历史
+  saveInterviewResult: async (questionId, questionData, userSolution, feedback, interviewType, timeSpent = 0, completedAt) => {
+    return await apiRequest('/mock/save-interview-result', 'POST', {
+      questionId,
+      questionData,
+      userSolution,
+      feedback,
+      interviewType,
+      timeSpent,
+      completedAt
     });
   }
 };
