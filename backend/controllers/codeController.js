@@ -190,18 +190,42 @@ exports.saveToLearningHistory = async (req, res) => {
     }
 
     try {
-        // 获取题目详情
-        const questionDoc = await db.collection('coding-questions').doc(questionId).get();
-        if (!questionDoc.exists) {
-            return res.status(404).json({ message: "Question not found." });
+        let questionData = null;
+        
+        // 检查questionId是否是有效的Firestore文档ID（通常包含字母、数字、连字符，长度在1-1500之间）
+        const isValidFirestoreId = /^[a-zA-Z0-9_-]{1,1500}$/.test(questionId);
+        
+        if (isValidFirestoreId) {
+            // 尝试从数据库获取题目详情
+            try {
+                const questionDoc = await db.collection('coding-questions').doc(questionId).get();
+                if (questionDoc.exists) {
+                    questionData = questionDoc.data();
+                    console.log("Found question in database:", questionData.title);
+                }
+            } catch (dbError) {
+                console.log("Question not found in database or invalid ID:", questionId);
+            }
         }
         
-        const questionData = questionDoc.data();
+        // 如果没有找到题目数据，创建一个基本的题目数据结构
+        if (!questionData) {
+            console.log("Using fallback question data structure for:", questionId);
+            questionData = {
+                title: questionId, // 使用questionId作为title
+                description: 'Mock interview question',
+                difficulty: 'medium',
+                topic: 'programming',
+                algorithms: [],
+                dataStructures: []
+            };
+        }
+        
         console.log("Question data keys:", Object.keys(questionData));
         
         // 清理数据，移除 undefined 值并确保所有字段都有有效值
         const cleanQuestionData = {
-            title: questionData.title || '',
+            title: questionData.title || questionId,
             description: questionData.description || '',
             difficulty: questionData.difficulty || 'medium',
             topic: questionData.topic || 'programming',

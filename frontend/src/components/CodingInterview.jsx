@@ -153,15 +153,25 @@ const CodingInterview = ({ mockInterviewData, onBackToSetup }) => {
 
     const saveToLearningHistory = async () => {
         try {
+            // 检查题目数据
+            const questionId = questionData?.id || questionData?.title || 'unknown';
+            const isMockInterview = !!mockInterviewData;
+            
             console.log('Saving to learning history...', {
-                questionId: questionData.id,
+                questionId,
+                questionTitle: questionData?.title,
+                hasId: !!questionData?.id,
+                isMockInterview,
                 aiAnalysis: aiAnalysis ? Object.keys(aiAnalysis) : null,
                 solutionLength: solution.length,
                 language: programmingLanguage === 'any' ? 'javascript' : programmingLanguage
             });
             
+            // 对于模拟面试，如果题目没有id，使用title作为标识符
+            const identifier = questionData?.id || questionData?.title;
+            
             await programmingAPI.saveToLearningHistory(
-                questionData.id,
+                identifier,
                 aiAnalysis,
                 solution,
                 programmingLanguage === 'any' ? 'javascript' : programmingLanguage,
