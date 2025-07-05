@@ -1,4 +1,22 @@
-const fetch = require('node-fetch');
+// 使用动态导入来支持 node-fetch v3
+let fetch;
+
+// 初始化 fetch
+(async () => {
+    try {
+        const fetchModule = await import('node-fetch');
+        fetch = fetchModule.default;
+    } catch (error) {
+        console.error('Failed to import node-fetch:', error);
+        // 如果 node-fetch 不可用，使用全局 fetch（Node.js 18+）
+        if (typeof globalThis.fetch === 'function') {
+            fetch = globalThis.fetch;
+        } else {
+            console.error('No fetch implementation available');
+        }
+    }
+})();
+
 require('dotenv').config();
 
 // Resume Analyzer - Analyze resume and provide optimization suggestions
