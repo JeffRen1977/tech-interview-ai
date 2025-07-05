@@ -1,0 +1,35 @@
+#!/bin/bash
+
+# Render 部署脚本
+# 使用方法: ./deploy-render.sh
+
+echo "🚀 Render 部署脚本..."
+
+echo "📋 部署步骤:"
+echo ""
+echo "1. 访问 https://render.com"
+echo "2. 注册/登录账户"
+echo "3. 点击 'New +' → 'Web Service'"
+echo "4. 连接你的 GitHub 仓库"
+echo "5. 配置以下设置:"
+echo ""
+echo "   📝 基本信息:"
+echo "   - Name: ai-interview-coach-backend"
+echo "   - Environment: Node"
+echo "   - Region: 选择离你最近的地区"
+echo ""
+echo "   🔧 构建配置:"
+echo "   - Build Command: cd backend && npm install"
+echo "   - Start Command: cd backend && npm start"
+echo ""
+echo "   🔑 环境变量:"
+echo "   - FIREBASE_PROJECT_ID"
+echo "   - FIREBASE_PRIVATE_KEY"
+echo "   - FIREBASE_CLIENT_EMAIL"
+echo "   - JWT_SECRET"
+echo "   - GEMINI_API_KEY"
+echo ""
+echo "6. 点击 'Create Web Service'"
+echo ""
+echo "✅ Render 提供免费计划，每月 750 小时免费额度"
+echo "🌐 部署完成后会获得一个 .onrender.com 域名" 
