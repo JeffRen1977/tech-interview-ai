@@ -397,17 +397,17 @@ exports.getFilterOptions = async (req, res) => {
 // 获取错题本数据
 exports.getWrongQuestions = async (req, res) => {
     try {
-        const userEmail = req.user.email;
+        const userId = req.user.userId;
         
         // 从user-learning-history获取数据
         const learningHistorySnapshot = await db.collection('user-learning-history')
-            .where('userId', '==', userEmail)
+            .where('userId', '==', userId)
             .orderBy('completedAt', 'desc')
             .get();
         
         // 从user-interview-history获取数据
         const interviewHistorySnapshot = await db.collection('user-interview-history')
-            .where('userEmail', '==', userEmail)
+            .where('userId', '==', userId)
             .orderBy('endTime', 'desc')
             .get();
         
@@ -449,6 +449,8 @@ exports.getWrongQuestions = async (req, res) => {
         
         // 按完成时间排序
         wrongQuestions.sort((a, b) => new Date(b.completedAt) - new Date(a.completedAt));
+        
+        console.log(`Found ${wrongQuestions.length} wrong questions for user ${userId}`);
         
         res.status(200).json({ 
             wrongQuestions,

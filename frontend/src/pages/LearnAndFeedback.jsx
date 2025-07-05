@@ -4,13 +4,13 @@ import { Button } from '../components/ui/button';
 import { Select } from '../components/ui/select';
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from '../components/ui/resizable';
 import { BookOpen, X, Clock, BarChart3, Lightbulb, Award } from 'lucide-react';
-import { apiRequest } from '../api.js';
+import { apiRequest, getWrongQuestions } from '../api.js';
 import { useLanguage } from '../contexts/LanguageContext';
 import { getText } from '../utils/translations';
 
 const fetchWrongQuestions = async () => {
   try {
-    const data = await apiRequest('/code/wrong-questions', 'GET');
+    const data = await getWrongQuestions();
     return data.wrongQuestions || [];
   } catch (error) {
     console.error('Error fetching wrong questions:', error);
