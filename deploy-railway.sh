@@ -19,9 +19,6 @@ if ! command -v railway &> /dev/null; then
     npm install -g @railway/cli
 fi
 
-# 进入后端目录
-cd backend
-
 echo "🔐 检查 Railway 登录状态..."
 if ! railway whoami &> /dev/null; then
     echo "🔑 请先登录 Railway..."
@@ -29,15 +26,15 @@ if ! railway whoami &> /dev/null; then
 fi
 
 echo "📋 检查项目配置..."
-if [ ! -f "railway.json" ]; then
-    echo "❌ 错误: 找不到 railway.json 配置文件"
+if [ ! -f "railway.json" ] && [ ! -f "nixpacks.toml" ]; then
+    echo "❌ 错误: 找不到 railway.json 或 nixpacks.toml 配置文件"
     exit 1
 fi
 
 echo "🔍 检查环境变量..."
-if [ ! -f ".env" ]; then
-    echo "⚠️  警告: 找不到 .env 文件"
-    echo "📝 请根据 env.example 创建 .env 文件并配置环境变量"
+if [ ! -f "backend/.env" ]; then
+    echo "⚠️  警告: 找不到 backend/.env 文件"
+    echo "📝 请根据 backend/env.example 创建 .env 文件并配置环境变量"
     echo "💡 或者直接在 Railway 控制台中配置环境变量"
 fi
 
