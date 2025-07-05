@@ -2,6 +2,16 @@ const { auth, db } = require('../config/firebase');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 
+// 健康检查端点
+exports.healthCheck = (req, res) => {
+    res.status(200).json({ 
+        status: 'OK', 
+        timestamp: new Date().toISOString(),
+        service: 'AI Interview Coach Backend',
+        version: '1.0.0'
+    });
+};
+
 // JWT密钥 - 在生产环境中应该使用环境变量
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
 
