@@ -39,6 +39,27 @@ app.use(fileUpload({
     createParentPath: true
 }));
 
+// Health check endpoint
+app.get('/health', (req, res) => {
+  res.json({ 
+    status: 'OK', 
+    timestamp: new Date().toISOString(),
+    environment: process.env.NODE_ENV,
+    port: process.env.PORT,
+    firebaseProjectId: process.env.FIREBASE_PROJECT_ID ? 'Set' : 'Not Set'
+  });
+});
+
+// Root endpoint
+app.get('/', (req, res) => {
+  res.json({ 
+    message: 'AI Interview Coach API is running',
+    version: '1.0.0',
+    environment: process.env.NODE_ENV,
+    timestamp: new Date().toISOString()
+  });
+});
+
 // --- API 路由挂载 ---
 // 所有 /api/auth 开头的请求都由 authRoutes 处理
 app.use('/api/auth', authRoutes);
@@ -56,4 +77,6 @@ app.use('/api/mock', mockRoutes);
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
+  console.log(`Environment: ${process.env.NODE_ENV}`);
+  console.log(`Firebase Project ID: ${process.env.FIREBASE_PROJECT_ID ? 'Set' : 'Not Set'}`);
 });
