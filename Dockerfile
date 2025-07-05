@@ -4,13 +4,13 @@ FROM node:18-alpine
 WORKDIR /app
 
 # Copy package files first for better caching
-COPY backend/package*.json ./
+COPY package*.json ./
 
 # Install dependencies
 RUN npm ci --only=production
 
-# Copy all backend files
-COPY backend/ ./
+# Copy all files
+COPY . ./
 
 # Expose port
 EXPOSE 3000
