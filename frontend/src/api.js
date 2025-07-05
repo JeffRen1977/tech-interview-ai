@@ -105,7 +105,7 @@ export const resumeAPI = {
 
     // Assess JD matching and calculate matching degree
     assessJDMatching: async (resumeText, jobDescription) => {
-        return await apiRequest('/resume/match', 'POST', {
+        return await apiRequest('/resume/jd-matching', 'POST', {
             resumeText,
             jobDescription
         });
