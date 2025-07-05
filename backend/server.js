@@ -21,8 +21,7 @@ const app = express();
 const corsOptions = {
   origin: process.env.NODE_ENV === 'production' 
     ? [
-        'https://your-frontend-domain.vercel.app', // 替换为你的 Vercel 域名
-        'https://your-frontend-domain.vercel.app', // 替换为你的 Vercel 域名
+        'https://tech-interview-ai.vercel.app', // 你的 Vercel 前端域名
         'http://localhost:5173', // 开发环境
         'http://localhost:3000'  // 开发环境
       ]
