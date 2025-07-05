@@ -1,11 +1,11 @@
-const { auth, db } = require('../config/firebase');
+const { getAuth, getDb } = require('../config/firebase');
 
 async function fixUsers() {
     try {
         console.log('=== Fixing User Synchronization ===');
         
         // List all Firebase Auth users
-        const listUsersResult = await auth.listUsers();
+        const listUsersResult = await getAuth().listUsers();
         console.log(`Found ${listUsersResult.users.length} users in Firebase Auth`);
         
         // Check each user and add to Firestore if missing
@@ -13,7 +13,7 @@ async function fixUsers() {
             console.log(`\nChecking user: ${user.email}`);
             
             // Check if user exists in Firestore
-            const firestoreUser = await db.collection('users').doc(user.uid).get();
+            const firestoreUser = await getDb().collection('users').doc(user.uid).get();
             
             if (!firestoreUser.exists) {
                 console.log(`User ${user.email} not found in Firestore, adding...`);
@@ -40,7 +40,7 @@ async function fixUsers() {
                 };
                 
                 // Save to Firestore
-                await db.collection('users').doc(user.uid).set(userData);
+                await getDb().collection('users').doc(user.uid).set(userData);
                 console.log(`✅ Added user ${user.email} to Firestore with role: ${role}`);
             } else {
                 console.log(`✅ User ${user.email} already exists in Firestore`);
@@ -50,7 +50,7 @@ async function fixUsers() {
         console.log('\n=== User Synchronization Complete ===');
         
         // Verify the fix
-        const firestoreUsers = await db.collection('users').get();
+        const firestoreUsers = await getDb().collection('users').get();
         console.log(`Total users in Firestore: ${firestoreUsers.size}`);
         
     } catch (error) {

@@ -1,4 +1,4 @@
-const { auth, db } = require('../config/firebase');
+const { getAuth, getDb } = require('../config/firebase');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 
@@ -74,7 +74,7 @@ exports.registerUser = async (req, res) => {
     try {
         console.log('DEBUG: Checking if user already exists');
         // 检查用户是否已存在
-        const existingUser = await db.collection('users').where('email', '==', email).get();
+        const existingUser = await getDb().collection('users').where('email', '==', email).get();
         if (!existingUser.empty) {
             console.log('DEBUG: User already exists');
             return res.status(400).json({ message: 'User already exists' });
@@ -82,7 +82,7 @@ exports.registerUser = async (req, res) => {
 
         console.log('DEBUG: Creating Firebase user');
         // 创建Firebase用户
-        const userRecord = await auth.createUser({ 
+        const userRecord = await getAuth().createUser({ 
             email, 
             password,
             displayName: name
@@ -106,7 +106,7 @@ exports.registerUser = async (req, res) => {
             }
         };
 
-        await db.collection('users').doc(userRecord.uid).set(userData);
+        await getDb().collection('users').doc(userRecord.uid).set(userData);
 
         console.log('DEBUG: User saved to database, generating token');
         // 生成JWT token
@@ -138,7 +138,7 @@ exports.loginUser = async (req, res) => {
 
     try {
         // 从数据库获取用户信息
-        const userSnapshot = await db.collection('users').where('email', '==', email).get();
+        const userSnapshot = await getDb().collection('users').where('email', '==', email).get();
         
         if (userSnapshot.empty) {
             return res.status(401).json({ message: 'Invalid credentials' });
@@ -148,10 +148,10 @@ exports.loginUser = async (req, res) => {
         const userData = userDoc.data();
 
         // 验证Firebase用户
-        const userRecord = await auth.getUserByEmail(email);
+        const userRecord = await getAuth().getUserByEmail(email);
         
         // 更新最后登录时间
-        await db.collection('users').doc(userData.uid).update({
+        await getDb().collection('users').doc(userData.uid).update({
             lastLogin: new Date()
         });
 
@@ -176,7 +176,7 @@ exports.loginUser = async (req, res) => {
 
 exports.getCurrentUser = async (req, res) => {
     try {
-        const userSnapshot = await db.collection('users').doc(req.user.userId).get();
+        const userSnapshot = await getDb().collection('users').doc(req.user.userId).get();
         
         if (!userSnapshot.exists) {
             return res.status(404).json({ message: 'User not found' });
@@ -207,7 +207,7 @@ exports.updateProfile = async (req, res) => {
         if (name) updateData.name = name;
         if (profile) updateData.profile = profile;
 
-        await db.collection('users').doc(req.user.userId).update(updateData);
+        await getDb().collection('users').doc(req.user.userId).update(updateData);
 
         res.status(200).json({ message: 'Profile updated successfully' });
     } catch (error) {
@@ -225,11 +225,11 @@ exports.changePassword = async (req, res) => {
 
     try {
         // 获取用户信息
-        const userSnapshot = await db.collection('users').doc(req.user.userId).get();
+        const userSnapshot = await getDb().collection('users').doc(req.user.userId).get();
         const userData = userSnapshot.data();
 
         // 更新Firebase用户密码
-        await auth.updateUser(userData.uid, {
+        await getAuth().updateUser(userData.uid, {
             password: newPassword
         });
 

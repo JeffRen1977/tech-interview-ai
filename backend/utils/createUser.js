@@ -1,4 +1,4 @@
-const { auth, db } = require('../config/firebase');
+const { getAuth, getDb } = require('../config/firebase');
 
 async function createUser(email, password, name, role = 'user') {
     try {
@@ -6,7 +6,7 @@ async function createUser(email, password, name, role = 'user') {
         console.log(`Role: ${role}`);
         
         // Check if user already exists
-        const existingUser = await db.collection('users').where('email', '==', email).get();
+        const existingUser = await getDb().collection('users').where('email', '==', email).get();
         
         if (!existingUser.empty) {
             console.log('❌ User already exists');
@@ -14,7 +14,7 @@ async function createUser(email, password, name, role = 'user') {
         }
 
         // Create Firebase user
-        const userRecord = await auth.createUser({ 
+        const userRecord = await getAuth().createUser({ 
             email: email, 
             password: password,
             displayName: name
@@ -37,7 +37,7 @@ async function createUser(email, password, name, role = 'user') {
             }
         };
 
-        await db.collection('users').doc(userRecord.uid).set(userData);
+        await getDb().collection('users').doc(userRecord.uid).set(userData);
 
         console.log('✅ User created successfully!');
         console.log('Email:', email);

@@ -1,4 +1,4 @@
-const { auth, db } = require('../config/firebase');
+const { getAuth, getDb } = require('../config/firebase');
 
 async function createAdminUser() {
     const adminEmail = 'admin@aiinterview.com';
@@ -7,7 +7,7 @@ async function createAdminUser() {
 
     try {
         // 检查管理员是否已存在
-        const existingUser = await db.collection('users').where('email', '==', adminEmail).get();
+        const existingUser = await getDb().collection('users').where('email', '==', adminEmail).get();
         
         if (!existingUser.empty) {
             console.log('Admin user already exists');
@@ -15,7 +15,7 @@ async function createAdminUser() {
         }
 
         // 创建Firebase用户
-        const userRecord = await auth.createUser({ 
+        const userRecord = await getAuth().createUser({ 
             email: adminEmail, 
             password: adminPassword,
             displayName: adminName
@@ -38,7 +38,7 @@ async function createAdminUser() {
             }
         };
 
-        await db.collection('users').doc(userRecord.uid).set(adminData);
+        await getDb().collection('users').doc(userRecord.uid).set(adminData);
 
         console.log('Admin user created successfully!');
         console.log('Email:', adminEmail);

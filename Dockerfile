@@ -17,4 +17,5 @@ COPY backend/ ./backend/
 EXPOSE 3000
 
 # 启动命令
-CMD ["cd", "backend", "&&", "npm", "start"] 
+WORKDIR /app/backend
+CMD ["npm", "start"] 

@@ -1,24 +1,24 @@
-const { auth, db } = require('../config/firebase');
+const { getAuth, getDb } = require('../config/firebase');
 
 async function deleteUser(email) {
     try {
         console.log(`=== Deleting User: ${email} ===`);
         
         // Find the user in Firebase Auth
-        const userRecord = await auth.getUserByEmail(email);
+        const userRecord = await getAuth().getUserByEmail(email);
         console.log(`Found user in Firebase Auth: ${userRecord.uid}`);
         
         // Delete from Firestore first
-        const firestoreUser = await db.collection('users').doc(userRecord.uid).get();
+        const firestoreUser = await getDb().collection('users').doc(userRecord.uid).get();
         if (firestoreUser.exists) {
-            await db.collection('users').doc(userRecord.uid).delete();
+            await getDb().collection('users').doc(userRecord.uid).delete();
             console.log(`✅ Deleted user from Firestore`);
         } else {
             console.log(`User not found in Firestore`);
         }
         
         // Delete from Firebase Auth
-        await auth.deleteUser(userRecord.uid);
+        await getAuth().deleteUser(userRecord.uid);
         console.log(`✅ Deleted user from Firebase Auth`);
         
         console.log(`✅ User ${email} has been completely deleted`);

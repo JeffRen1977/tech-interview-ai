@@ -1,4 +1,4 @@
-const { db } = require('../config/firebase');
+const { getDb } = require('../config/firebase');
 const fetch = require('node-fetch');
 
 // POST /api/coach-agent/profile
@@ -6,7 +6,7 @@ const saveProfile = async (req, res) => {
   const { userId, targetCompanies, techStacks, language, availableTime, preferences } = req.body;
   if (!userId) return res.status(400).json({ error: 'userId is required' });
   try {
-    await db.collection('coachAgentProfiles').doc(userId).set({
+    await getDb().collection('coachAgentProfiles').doc(userId).set({
       targetCompanies,
       techStacks,
       language,
@@ -25,7 +25,7 @@ const getProfile = async (req, res) => {
   const userId = req.query.userId;
   if (!userId) return res.status(400).json({ error: 'userId is required' });
   try {
-    const doc = await db.collection('coachAgentProfiles').doc(userId).get();
+    const doc = await getDb().collection('coachAgentProfiles').doc(userId).get();
     if (!doc.exists) return res.json({ success: true, profile: null });
     res.json({ success: true, profile: doc.data() });
   } catch (err) {
@@ -39,12 +39,12 @@ const getDailyPlan = async (req, res) => {
   if (!userId) return res.status(400).json({ error: 'userId is required' });
   try {
     // Fetch user profile
-    const profileDoc = await db.collection('coachAgentProfiles').doc(userId).get();
+    const profileDoc = await getDb().collection('coachAgentProfiles').doc(userId).get();
     if (!profileDoc.exists) return res.status(400).json({ error: 'User profile not found' });
     const profile = profileDoc.data();
     // Fetch ability map (reuse ability map logic or mock for now)
     let abilityMap = null;
-    const abilityDoc = await db.collection('abilityMaps').doc(userId).get();
+    const abilityDoc = await getDb().collection('abilityMaps').doc(userId).get();
     if (abilityDoc.exists) abilityMap = abilityDoc.data();
     // If not in DB, use mock or fallback
     if (!abilityMap) {

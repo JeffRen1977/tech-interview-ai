@@ -1,11 +1,11 @@
 // 使用现有的Firebase配置
-const { db } = require('../config/firebase');
+const { getDb } = require('../config/firebase');
 
 const debugSystemDesignQuestions = async () => {
     try {
         console.log('正在检查系统设计题目数据结构...');
         
-        const questionsRef = db.collection('system-design-questions');
+        const questionsRef = getDb().collection('system-design-questions');
         const snapshot = await questionsRef.get();
         
         console.log(`找到 ${snapshot.size} 个系统设计题目`);

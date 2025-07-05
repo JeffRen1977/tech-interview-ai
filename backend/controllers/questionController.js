@@ -1,4 +1,4 @@
-const { admin, db } = require('../config/firebase');
+const { getAdmin, getDb } = require('../config/firebase');
 
 // 使用动态导入来支持 node-fetch v3
 let fetch;
@@ -89,7 +89,7 @@ exports.saveCodingQuestion = async (req, res) => {
         return res.status(400).json({ message: 'Valid question data is required.' });
     }
     try {
-        await db.collection('coding-questions').doc(questionData.questionId).set(questionData);
+        await getDb().collection('coding-questions').doc(questionData.questionId).set(questionData);
         res.status(201).json({ message: `Question "${questionData.title}" saved successfully!` });
     } catch (error) {
         res.status(500).json({ message: 'Failed to save question to database.' });
@@ -135,7 +135,7 @@ exports.saveSystemDesignQuestion = async (req, res) => {
         if (!docId) {
             return res.status(400).json({ message: 'A valid ID could not be generated from the title.' });
         }
-        await db.collection('system-design-questions').doc(docId).set(questionData);
+        await getDb().collection('system-design-questions').doc(docId).set(questionData);
         res.status(201).json({ message: `System design question "${questionData.title}" saved successfully!` });
     } catch (error) {
         res.status(500).json({ message: 'Failed to save question to database.' });
@@ -185,7 +185,7 @@ exports.startCodingInterview = async (req, res) => {
             feedback: []
         };
         
-        await db.collection('coding-interviews').doc(sessionId).set(sessionData);
+        await getDb().collection('coding-interviews').doc(sessionId).set(sessionData);
         
         res.status(200).json({ 
             sessionId,
@@ -206,7 +206,7 @@ exports.submitCodingSolution = async (req, res) => {
     }
     
     try {
-        const sessionRef = db.collection('coding-interviews').doc(sessionId);
+        const sessionRef = getDb().collection('coding-interviews').doc(sessionId);
         const sessionDoc = await sessionRef.get();
         
         if (!sessionDoc.exists) {
@@ -258,8 +258,8 @@ exports.submitCodingSolution = async (req, res) => {
         };
         
         await sessionRef.update({
-            userSolutions: admin.firestore.FieldValue.arrayUnion(solutionData),
-            feedback: admin.firestore.FieldValue.arrayUnion(feedback)
+            userSolutions: getAdmin().firestore.FieldValue.arrayUnion(solutionData),
+            feedback: getAdmin().firestore.FieldValue.arrayUnion(feedback)
         });
         
         // 保存到用户学习历史
@@ -278,7 +278,7 @@ exports.submitCodingSolution = async (req, res) => {
             sessionId: sessionId
         };
         
-        await db.collection('user-learning-history').add(learningHistoryData);
+        await getDb().collection('user-learning-history').add(learningHistoryData);
         
         res.status(200).json({ 
             feedback,
@@ -298,7 +298,7 @@ exports.getCodingFeedback = async (req, res) => {
     }
     
     try {
-        const sessionRef = db.collection('coding-interviews').doc(sessionId);
+        const sessionRef = getDb().collection('coding-interviews').doc(sessionId);
         const sessionDoc = await sessionRef.get();
         
         if (!sessionDoc.exists) {
@@ -327,7 +327,7 @@ exports.endCodingInterview = async (req, res) => {
     }
     
     try {
-        const sessionRef = db.collection('coding-interviews').doc(sessionId);
+        const sessionRef = getDb().collection('coding-interviews').doc(sessionId);
         const sessionDoc = await sessionRef.get();
         
         if (!sessionDoc.exists) {
@@ -383,7 +383,7 @@ exports.endCodingInterview = async (req, res) => {
         });
         
         // 保存到用户历史记录
-        await db.collection('user-interview-history').add(userHistoryData);
+        await getDb().collection('user-interview-history').add(userHistoryData);
         
         res.status(200).json({ 
             finalReport,
@@ -463,7 +463,7 @@ exports.startBehavioralInterview = async (req, res) => {
             timeRemaining: 45 * 60 // 45 minutes in seconds
         };
         
-        await db.collection('behavioral-interviews').doc(sessionId).set(sessionData);
+        await getDb().collection('behavioral-interviews').doc(sessionId).set(sessionData);
         
         res.status(200).json({ 
             sessionId,
@@ -484,7 +484,7 @@ exports.submitBehavioralResponse = async (req, res) => {
     }
     
     try {
-        const sessionRef = db.collection('behavioral-interviews').doc(sessionId);
+        const sessionRef = getDb().collection('behavioral-interviews').doc(sessionId);
         const sessionDoc = await sessionRef.get();
         
         if (!sessionDoc.exists) {
@@ -567,9 +567,9 @@ exports.submitBehavioralResponse = async (req, res) => {
         };
         
         await sessionRef.update({
-            responses: admin.firestore.FieldValue.arrayUnion(responseData),
-            feedback: admin.firestore.FieldValue.arrayUnion(feedback),
-            currentQuestionIndex: admin.firestore.FieldValue.increment(1)
+            responses: getAdmin().firestore.FieldValue.arrayUnion(responseData),
+            feedback: getAdmin().firestore.FieldValue.arrayUnion(feedback),
+            currentQuestionIndex: getAdmin().firestore.FieldValue.increment(1)
         });
         
         // 保存到用户学习历史
@@ -591,7 +591,7 @@ exports.submitBehavioralResponse = async (req, res) => {
             sessionId: sessionId
         };
         
-        await db.collection('user-learning-history').add(learningHistoryData);
+        await getDb().collection('user-learning-history').add(learningHistoryData);
         
         res.status(200).json({ 
             feedback,
@@ -612,7 +612,7 @@ exports.getBehavioralFeedback = async (req, res) => {
     }
     
     try {
-        const sessionRef = db.collection('behavioral-interviews').doc(sessionId);
+        const sessionRef = getDb().collection('behavioral-interviews').doc(sessionId);
         const sessionDoc = await sessionRef.get();
         
         if (!sessionDoc.exists) {
@@ -641,7 +641,7 @@ exports.endBehavioralInterview = async (req, res) => {
     }
     
     try {
-        const sessionRef = db.collection('behavioral-interviews').doc(sessionId);
+        const sessionRef = getDb().collection('behavioral-interviews').doc(sessionId);
         const sessionDoc = await sessionRef.get();
         
         if (!sessionDoc.exists) {
@@ -720,7 +720,7 @@ exports.endBehavioralInterview = async (req, res) => {
         });
         
         // 保存到用户历史记录
-        await db.collection('user-interview-history').add(userHistoryData);
+        await getDb().collection('user-interview-history').add(userHistoryData);
         
         res.status(200).json({ 
             finalReport,
@@ -806,7 +806,7 @@ exports.startSystemDesignInterview = async (req, res) => {
             timeSpent: 0
         };
         
-        await db.collection('system-design-interviews').doc(sessionId).set(sessionData);
+        await getDb().collection('system-design-interviews').doc(sessionId).set(sessionData);
         
         res.status(200).json({ 
             sessionId,
@@ -831,7 +831,7 @@ exports.submitSystemDesignSolution = async (req, res) => {
     }
     
     try {
-        const sessionRef = db.collection('system-design-interviews').doc(sessionId);
+        const sessionRef = getDb().collection('system-design-interviews').doc(sessionId);
         const sessionDoc = await sessionRef.get();
         
         if (!sessionDoc.exists) {
@@ -887,9 +887,9 @@ exports.submitSystemDesignSolution = async (req, res) => {
         };
         
         await sessionRef.update({
-            voiceInputs: admin.firestore.FieldValue.arrayUnion(voiceInput),
-            whiteboardData: admin.firestore.FieldValue.arrayUnion(whiteboardData || []),
-            feedback: admin.firestore.FieldValue.arrayUnion(feedback),
+            voiceInputs: getAdmin().firestore.FieldValue.arrayUnion(voiceInput),
+            whiteboardData: getAdmin().firestore.FieldValue.arrayUnion(whiteboardData || []),
+            feedback: getAdmin().firestore.FieldValue.arrayUnion(feedback),
             timeSpent: timeSpent || 0
         });
         
@@ -910,7 +910,7 @@ exports.submitSystemDesignSolution = async (req, res) => {
             sessionId: sessionId
         };
         
-        await db.collection('user-learning-history').add(learningHistoryData);
+        await getDb().collection('user-learning-history').add(learningHistoryData);
         
         res.status(200).json({ 
             feedback,
@@ -930,7 +930,7 @@ exports.getSystemDesignFeedback = async (req, res) => {
     }
     
     try {
-        const sessionRef = db.collection('system-design-interviews').doc(sessionId);
+        const sessionRef = getDb().collection('system-design-interviews').doc(sessionId);
         const sessionDoc = await sessionRef.get();
         
         if (!sessionDoc.exists) {
@@ -959,7 +959,7 @@ exports.endSystemDesignInterview = async (req, res) => {
     }
     
     try {
-        const sessionRef = db.collection('system-design-interviews').doc(sessionId);
+        const sessionRef = getDb().collection('system-design-interviews').doc(sessionId);
         const sessionDoc = await sessionRef.get();
         
         if (!sessionDoc.exists) {
@@ -1029,7 +1029,7 @@ exports.endSystemDesignInterview = async (req, res) => {
         });
         
         // 保存到用户历史记录
-        await db.collection('user-interview-history').add(userHistoryData);
+        await getDb().collection('user-interview-history').add(userHistoryData);
         
         res.status(200).json({ 
             finalReport,
@@ -1080,7 +1080,7 @@ exports.transcribeAudio = async (req, res) => {
 exports.getUserHistory = async (req, res) => {
     try {
         // 从用户历史记录集合中获取数据
-        const historySnapshot = await db.collection('user-interview-history')
+        const historySnapshot = await getDb().collection('user-interview-history')
             .orderBy('startTime', 'desc')
             .limit(50) // 限制返回最近50条记录
             .get();

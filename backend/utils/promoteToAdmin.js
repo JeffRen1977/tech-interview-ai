@@ -1,15 +1,15 @@
-const { auth, db } = require('../config/firebase');
+const { getAuth, getDb } = require('../config/firebase');
 
 async function promoteToAdmin(email) {
     try {
         console.log(`=== Promoting User to Admin: ${email} ===`);
         
         // Find the user in Firebase Auth
-        const userRecord = await auth.getUserByEmail(email);
+        const userRecord = await getAuth().getUserByEmail(email);
         console.log(`Found user in Firebase Auth: ${userRecord.uid}`);
         
         // Update user role in Firestore
-        const userRef = db.collection('users').doc(userRecord.uid);
+        const userRef = getDb().collection('users').doc(userRecord.uid);
         const userDoc = await userRef.get();
         
         if (!userDoc.exists) {

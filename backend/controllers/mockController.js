@@ -1,11 +1,11 @@
-const { db } = require('../config/firebase');
+const { getDb } = require('../config/firebase');
 const { generateCodingQuestion, generateSystemDesignQuestion, generateBehavioralQuestion } = require('../utils/geminiService');
 
 // 获取编程题
 exports.getCodingQuestions = async (req, res) => {
   try {
     const { difficulty } = req.query;
-    let ref = db.collection('coding-questions');
+    let ref = getDb().collection('coding-questions');
     if (difficulty && difficulty !== 'all') {
       // 处理不同格式的难度标签
       let formattedDifficulty;
@@ -33,7 +33,7 @@ exports.getCodingQuestions = async (req, res) => {
 exports.getSystemDesignQuestions = async (req, res) => {
   try {
     const { difficulty } = req.query;
-    let ref = db.collection('system-design-questions');
+    let ref = getDb().collection('system-design-questions');
     if (difficulty && difficulty !== 'all') {
       // 处理不同格式的难度标签
       let formattedDifficulty;
@@ -61,7 +61,7 @@ exports.getSystemDesignQuestions = async (req, res) => {
 exports.getBehavioralQuestions = async (req, res) => {
   try {
     const { difficulty } = req.query;
-    let ref = db.collection('behavioral-questions');
+    let ref = getDb().collection('behavioral-questions');
     // 行为面试题目没有难度字段，所以不进行难度过滤
     const snapshot = await ref.get();
     const questions = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
@@ -141,7 +141,7 @@ exports.generateQuestion = async (req, res) => {
             break;
         }
 
-        const docRef = await db.collection(collectionName).add(formattedQuestion);
+        const docRef = await getDb().collection(collectionName).add(formattedQuestion);
         question.id = docRef.id;
         question.savedToDatabase = true;
         question.collectionName = collectionName;
@@ -162,7 +162,7 @@ exports.generateQuestion = async (req, res) => {
 exports.getAICodingQuestions = async (req, res) => {
   try {
     const { difficulty } = req.query;
-    let ref = db.collection('coding-ai-questions');
+    let ref = getDb().collection('coding-ai-questions');
     if (difficulty && difficulty !== 'all') {
       let formattedDifficulty;
       if (difficulty === 'easy') {
@@ -188,7 +188,7 @@ exports.getAICodingQuestions = async (req, res) => {
 exports.getAISystemDesignQuestions = async (req, res) => {
   try {
     const { difficulty } = req.query;
-    let ref = db.collection('system-design-ai-questions');
+    let ref = getDb().collection('system-design-ai-questions');
     if (difficulty && difficulty !== 'all') {
       let formattedDifficulty;
       if (difficulty === 'easy') {
@@ -214,7 +214,7 @@ exports.getAISystemDesignQuestions = async (req, res) => {
 exports.getAIBehavioralQuestions = async (req, res) => {
   try {
     const { difficulty } = req.query;
-    let ref = db.collection('behavioral-ai-questions');
+    let ref = getDb().collection('behavioral-ai-questions');
     if (difficulty && difficulty !== 'all') {
       ref = ref.where('difficulty', '==', difficulty);
     }
@@ -314,7 +314,7 @@ exports.saveMockInterviewResult = async (req, res) => {
       timeSpent: interviewHistoryData.timeSpent
     });
 
-    const docRef = await db.collection('user-interview-history').add(interviewHistoryData);
+    const docRef = await getDb().collection('user-interview-history').add(interviewHistoryData);
     
     res.status(200).json({ 
       message: "Mock interview result saved to interview history successfully.",

@@ -1,6 +1,7 @@
 // 使用动态导入来支持 node-fetch v3
 let fetch;
-const { db } = require('../config/firebase');
+const express = require('express');
+const { getDb } = require('../config/firebase');
 
 // 初始化 fetch
 (async () => {
@@ -42,7 +43,7 @@ function extractJson(text) {
 // 获取所有编程题
 exports.getCodingQuestions = async (req, res) => {
     try {
-        const snapshot = await db.collection('coding-questions').get();
+        const snapshot = await getDb().collection('coding-questions').get();
         const questions = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
         res.status(200).json({ questions });
     } catch (error) {
@@ -159,7 +160,7 @@ exports.getUserLearningHistory = async (req, res) => {
     }
 
     try {
-        const snapshot = await db.collection('user-learning-history')
+        const snapshot = await getDb().collection('user-learning-history')
             .where('userId', '==', userId)
             .get();
         
@@ -198,7 +199,7 @@ exports.saveToLearningHistory = async (req, res) => {
         if (isValidFirestoreId) {
             // 尝试从数据库获取题目详情
             try {
-                const questionDoc = await db.collection('coding-questions').doc(questionId).get();
+                const questionDoc = await getDb().collection('coding-questions').doc(questionId).get();
                 if (questionDoc.exists) {
                     questionData = questionDoc.data();
                     console.log("Found question in database:", questionData.title);
@@ -277,7 +278,7 @@ exports.saveToLearningHistory = async (req, res) => {
             interviewType: historyData.interviewType
         });
 
-        const docRef = await db.collection('user-learning-history').add(historyData);
+        const docRef = await getDb().collection('user-learning-history').add(historyData);
         res.status(200).json({ 
             message: "Problem saved to learning history successfully.",
             historyId: docRef.id 
@@ -297,7 +298,7 @@ exports.removeFromLearningHistory = async (req, res) => {
     }
 
     try {
-        await db.collection('user-learning-history').doc(historyId).delete();
+        await getDb().collection('user-learning-history').doc(historyId).delete();
         res.status(200).json({ message: "Problem removed from learning history successfully." });
     } catch (error) {
         console.error("Error removing from learning history:", error);
@@ -310,7 +311,7 @@ exports.getFilteredCodingQuestions = async (req, res) => {
     const { userId, difficulty, algorithms, dataStructures, companies } = req.query;
     
     try {
-        let query = db.collection('coding-questions');
+        let query = getDb().collection('coding-questions');
         
         // Apply filters
         if (difficulty) {
@@ -351,7 +352,7 @@ exports.getFilteredCodingQuestions = async (req, res) => {
         
         // Filter out completed questions if userId is provided
         if (userId) {
-            const historySnapshot = await db.collection('user-learning-history')
+            const historySnapshot = await getDb().collection('user-learning-history')
                 .where('userId', '==', userId)
                 .get();
             
@@ -373,7 +374,7 @@ exports.getFilteredCodingQuestions = async (req, res) => {
 // 获取可用的过滤选项
 exports.getFilterOptions = async (req, res) => {
     try {
-        const snapshot = await db.collection('coding-questions').get();
+        const snapshot = await getDb().collection('coding-questions').get();
         const questions = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
         
         // Extract unique values
@@ -400,13 +401,13 @@ exports.getWrongQuestions = async (req, res) => {
         const userId = req.user.userId;
         
         // 从user-learning-history获取数据
-        const learningHistorySnapshot = await db.collection('user-learning-history')
+        const learningHistorySnapshot = await getDb().collection('user-learning-history')
             .where('userId', '==', userId)
             .orderBy('completedAt', 'desc')
             .get();
         
         // 从user-interview-history获取数据
-        const interviewHistorySnapshot = await db.collection('user-interview-history')
+        const interviewHistorySnapshot = await getDb().collection('user-interview-history')
             .where('userId', '==', userId)
             .orderBy('endTime', 'desc')
             .get();

@@ -1,11 +1,11 @@
-const { auth, db } = require('../config/firebase');
+const { getAuth, getDb } = require('../config/firebase');
 
 async function checkUsers() {
     try {
         console.log('=== Checking Firebase Auth Users ===');
         
         // List all Firebase Auth users
-        const listUsersResult = await auth.listUsers();
+        const listUsersResult = await getAuth().listUsers();
         console.log(`Found ${listUsersResult.users.length} users in Firebase Auth:`);
         
         listUsersResult.users.forEach(user => {
@@ -15,7 +15,7 @@ async function checkUsers() {
         console.log('\n=== Checking Firestore Users ===');
         
         // List all users in Firestore
-        const firestoreUsers = await db.collection('users').get();
+        const firestoreUsers = await getDb().collection('users').get();
         console.log(`Found ${firestoreUsers.size} users in Firestore:`);
         
         firestoreUsers.forEach(doc => {
