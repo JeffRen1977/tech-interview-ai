@@ -54,8 +54,8 @@ export async function apiRequest(endpoint, method, body) {
         console.log(`DEBUG: Response data:`, data);
         
         if (!response.ok) {
-            // 如果是401错误，清除认证信息
-            if (response.status === 401) {
+            // 如果是401错误且不是登录请求，才清除认证信息
+            if (response.status === 401 && !endpoint.includes('/auth/login') && !endpoint.includes('/auth/register')) {
                 clearAuth();
                 // 重定向到登录页面
                 window.location.reload();
