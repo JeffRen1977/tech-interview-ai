@@ -16,7 +16,22 @@ const mockRoutes = require('./routes/mockRoutes');
 
 // --- 初始化 ---
 const app = express();
-app.use(cors());
+
+// CORS 配置
+const corsOptions = {
+  origin: process.env.NODE_ENV === 'production' 
+    ? [
+        'https://your-frontend-domain.vercel.app', // 替换为你的 Vercel 域名
+        'https://your-frontend-domain.vercel.app', // 替换为你的 Vercel 域名
+        'http://localhost:5173', // 开发环境
+        'http://localhost:3000'  // 开发环境
+      ]
+    : true,
+  credentials: true,
+  optionsSuccessStatus: 200
+};
+
+app.use(cors(corsOptions));
 app.use(express.json());
 app.use(fileUpload({
     limits: { fileSize: 50 * 1024 * 1024 }, // 50MB limit

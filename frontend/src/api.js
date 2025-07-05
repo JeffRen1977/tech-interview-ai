@@ -23,7 +23,8 @@ export const clearAuth = () => {
 };
 
 export async function apiRequest(endpoint, method, body) {
-    const url = `http://localhost:3000/api${endpoint}`;
+    const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000';
+    const url = `${baseUrl}/api${endpoint}`;
     console.log(`DEBUG: Making API request to ${url}`);
     console.log(`DEBUG: Method: ${method}`);
     console.log(`DEBUG: Body:`, body);

@@ -9,6 +9,15 @@ const {
     verifyToken 
 } = require('../controllers/authController');
 
+// 健康检查端点
+router.get('/health', (req, res) => {
+    res.status(200).json({ 
+        status: 'OK', 
+        message: 'AI Interview Coach Backend is running',
+        timestamp: new Date().toISOString()
+    });
+});
+
 // 公开路由
 router.post('/register', registerUser);
 router.post('/login', loginUser);
