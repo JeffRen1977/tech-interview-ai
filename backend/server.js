@@ -75,8 +75,47 @@ app.use('/api/mock', mockRoutes);
 
 // --- 启动服务器 ---
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
+
+// 添加错误处理
+process.on('uncaughtException', (error) => {
+  console.error('Uncaught Exception:', error);
+  process.exit(1);
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('Unhandled Rejection at:', promise, 'reason:', reason);
+  process.exit(1);
+});
+
+const server = app.listen(PORT, '0.0.0.0', () => {
   console.log(`Server is running on port ${PORT}`);
   console.log(`Environment: ${process.env.NODE_ENV}`);
   console.log(`Firebase Project ID: ${process.env.FIREBASE_PROJECT_ID ? 'Set' : 'Not Set'}`);
+  console.log(`Server listening on 0.0.0.0:${PORT}`);
+});
+
+// 添加服务器错误处理
+server.on('error', (error) => {
+  console.error('Server error:', error);
+  if (error.code === 'EADDRINUSE') {
+    console.error(`Port ${PORT} is already in use`);
+  }
+  process.exit(1);
+});
+
+// 优雅关闭
+process.on('SIGTERM', () => {
+  console.log('SIGTERM received, shutting down gracefully');
+  server.close(() => {
+    console.log('Process terminated');
+    process.exit(0);
+  });
+});
+
+process.on('SIGINT', () => {
+  console.log('SIGINT received, shutting down gracefully');
+  server.close(() => {
+    console.log('Process terminated');
+    process.exit(0);
+  });
 });

@@ -8,5 +8,4 @@ cmds = ["npm ci"]
 cmds = ["npm run build"]
 
 [start]
-cmd = "npm start"
-workDir = "backend" 
+cmd = "npm start" 
