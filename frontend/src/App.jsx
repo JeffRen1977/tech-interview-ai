@@ -32,9 +32,19 @@ const AppContent = () => {
       const savedUser = localStorage.getItem('user');
       if (token && savedUser) {
         try {
-          const response = await authAPI.getCurrentUser();
-          setUser(response.user);
+          // 先尝试使用本地存储的用户信息
+          const userData = JSON.parse(savedUser);
+          setUser(userData);
           setIsLoggedIn(true);
+          
+          // 然后异步验证token有效性
+          try {
+            const response = await authAPI.getCurrentUser();
+            setUser(response.user);
+          } catch (error) {
+            console.log('DEBUG: Token validation failed, but keeping local session');
+            // 如果验证失败，不清除本地认证，让用户继续使用
+          }
         } catch (error) {
           clearAuth();
           setIsLoggedIn(false);
