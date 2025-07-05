@@ -8,5 +8,21 @@ export default defineConfig({
     proxy: {
       '/api': 'http://localhost:3000'
     }
+  },
+  build: {
+    outDir: 'dist',
+    sourcemap: false,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          vendor: ['react', 'react-dom'],
+          ui: ['lucide-react']
+        }
+      }
+    }
+  },
+  define: {
+    // Ensure environment variables are available at build time
+    'process.env': {}
   }
 })
