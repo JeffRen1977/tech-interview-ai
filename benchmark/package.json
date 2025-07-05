@@ -1,0 +1,45 @@
+{
+  "name": "ai-interview-agent-benchmark",
+  "version": "1.0.0",
+  "description": "Quality benchmark suite for AI Interview Agent's AI analysis features",
+  "main": "run_all_tests.js",
+  "scripts": {
+    "test": "node run_all_tests.js",
+    "test:behavioral": "node test_behavioral_analysis.js",
+    "test:coding": "node test_coding_analysis.js",
+    "test:resume": "node test_resume_analysis.js",
+    "test:jd-matching": "node test_jd_matching.js",
+    "test:cover-letter": "node test_cover_letter.js",
+    "test:system-design": "node test_system_design_analysis.js",
+    "test:wrong-question": "node test_wrong_question_feedback.js",
+    "test:video": "node test_video_feedback.js",
+    "setup": "mkdir -p results test_videos"
+  },
+  "keywords": [
+    "ai",
+    "interview",
+    "benchmark",
+    "quality",
+    "testing",
+    "gemini",
+    "analysis"
+  ],
+  "author": "AI Interview Agent Team",
+  "license": "MIT",
+  "dependencies": {
+    "axios": "^1.6.0",
+    "form-data": "^4.0.0"
+  },
+  "devDependencies": {},
+  "engines": {
+    "node": ">=16.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/your-repo/ai-interview-agent.git"
+  },
+  "bugs": {
+    "url": "https://github.com/your-repo/ai-interview-agent/issues"
+  },
+  "homepage": "https://github.com/your-repo/ai-interview-agent#readme"
+} 
