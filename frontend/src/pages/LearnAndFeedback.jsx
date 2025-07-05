@@ -69,7 +69,7 @@ function AbilityMap() {
           <ul className="list-disc pl-5">
             {data.recommendations.map((rec, i) => (
               <li key={i} className="mb-1">
-                <span className="font-medium">{rec.knowledgePoint}</span> ({rec.type}): {rec.title}
+                <span className="font-medium">{rec.knowledgePoint}</span> ({rec.type}): {typeof rec.title === 'object' ? rec.title[language] : rec?.title}
               </li>
             ))}
           </ul>

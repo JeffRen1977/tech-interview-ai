@@ -242,7 +242,9 @@ const MockInterview = () => {
                         }`}
                     >
                         <div className="flex items-center justify-between">
-                            <span className="font-medium">{question.title}</span>
+                            <span className="font-medium">
+                                {typeof question.title === 'object' ? question.title[language] : question?.title}
+                            </span>
                             {question.difficulty && (
                                 <span className={`px-2 py-1 rounded text-xs font-bold ${
                                     question.difficulty.toLowerCase() === 'easy' || question.difficulty === '入门'
@@ -258,7 +260,9 @@ const MockInterview = () => {
                             )}
                         </div>
                         <p className="text-sm mt-1 line-clamp-2">
-                            {question.description || question.prompt || question.question}
+                            {typeof (question.description || question.prompt || question.question) === 'object' 
+                                ? (question.description || question.prompt || question.question)[language]
+                                : (question.description || question.prompt || question.question)}
                         </p>
                     </div>
                 ))}
@@ -284,7 +288,9 @@ const MockInterview = () => {
             return (
                 <div className="space-y-4">
                     <div className="flex items-center justify-between">
-                        <h3 className="text-xl font-semibold">{selectedQuestion.title}</h3>
+                        <h3 className="text-xl font-semibold">
+                            {typeof selectedQuestion?.title === 'object' ? selectedQuestion.title[language] : selectedQuestion?.title}
+                        </h3>
                         {selectedQuestion.difficulty && (
                             <span className={`px-3 py-1 rounded text-sm font-bold ${
                                 selectedQuestion.difficulty.toLowerCase() === 'easy' || selectedQuestion.difficulty === '入门'
@@ -302,7 +308,11 @@ const MockInterview = () => {
                     
                     <div className="bg-gray-800 p-4 rounded-lg">
                         <h4 className="font-medium mb-2">{t('description')}</h4>
-                        <p className="text-gray-300">{selectedQuestion.description || selectedQuestion.prompt}</p>
+                        <p className="text-gray-300">
+                            {typeof (selectedQuestion?.description || selectedQuestion?.prompt) === 'object'
+                                ? (selectedQuestion.description || selectedQuestion.prompt)[language]
+                                : (selectedQuestion?.description || selectedQuestion.prompt)}
+                        </p>
                     </div>
 
                     {selectedQuestion.example && (
@@ -370,7 +380,9 @@ const MockInterview = () => {
         return (
             <div className="space-y-4">
                 <div className="flex items-center justify-between">
-                    <h3 className="text-xl font-semibold">{selectedQuestion.title}</h3>
+                    <h3 className="text-xl font-semibold">
+                        {typeof selectedQuestion?.title === 'object' ? selectedQuestion.title[language] : selectedQuestion?.title}
+                    </h3>
                     {selectedQuestion.difficulty && (
                         <span className={`px-3 py-1 rounded text-sm font-bold ${
                             selectedQuestion.difficulty.toLowerCase() === 'easy' || selectedQuestion.difficulty === '入门'
@@ -388,7 +400,11 @@ const MockInterview = () => {
                 
                 <div className="bg-gray-800 p-4 rounded-lg">
                     <h4 className="font-medium mb-2">{t('description')}</h4>
-                    <p className="text-gray-300">{selectedQuestion.description || selectedQuestion.prompt}</p>
+                    <p className="text-gray-300">
+                        {typeof (selectedQuestion?.description || selectedQuestion?.prompt) === 'object'
+                            ? (selectedQuestion.description || selectedQuestion.prompt)[language]
+                            : (selectedQuestion?.description || selectedQuestion.prompt)}
+                    </p>
                 </div>
 
                 {selectedQuestion.example && (
@@ -526,7 +542,9 @@ const MockInterview = () => {
                         {selectedQuestion ? (
                             <div className="space-y-4">
                                 <div className="flex items-center justify-between">
-                                    <h3 className="text-xl font-semibold">{selectedQuestion.title}</h3>
+                                    <h3 className="text-xl font-semibold">
+                                        {typeof selectedQuestion?.title === 'object' ? selectedQuestion.title[language] : selectedQuestion?.title}
+                                    </h3>
                                     {selectedQuestion.difficulty && (
                                         <span className={`px-3 py-1 rounded text-sm font-bold ${
                                             selectedQuestion.difficulty.toLowerCase() === 'easy' || selectedQuestion.difficulty === '入门'
@@ -544,7 +562,11 @@ const MockInterview = () => {
                                 
                                 <div className="bg-gray-800 p-4 rounded-lg">
                                     <h4 className="font-medium mb-2">{t('description')}</h4>
-                                    <p className="text-gray-300">{selectedQuestion.description || selectedQuestion.prompt}</p>
+                                    <p className="text-gray-300">
+                                        {typeof (selectedQuestion?.description || selectedQuestion?.prompt) === 'object'
+                                            ? (selectedQuestion.description || selectedQuestion.prompt)[language]
+                                            : (selectedQuestion?.description || selectedQuestion.prompt)}
+                                    </p>
                                 </div>
 
                                 {selectedQuestion.example && (

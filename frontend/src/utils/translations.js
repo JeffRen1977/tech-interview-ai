@@ -549,6 +549,86 @@ export const translations = {
     recordingInProgress: '录音进行中...',
     voiceInputPlaceholder: '语音输入内容...',
     failedToStartRecording: '启动录音失败',
+    wrongQuestions: {
+        en: 'Wrong Questions',
+        zh: '错题本'
+    },
+    wrongQuestionsDescription: {
+        en: 'Review your previous answers and AI feedback',
+        zh: '查看您之前的答案和AI反馈'
+    },
+    noWrongQuestions: {
+        en: 'No wrong questions found',
+        zh: '暂无错题记录'
+    },
+    questionType: {
+        en: 'Question Type',
+        zh: '题目类型'
+    },
+    completedAt: {
+        en: 'Completed At',
+        zh: '完成时间'
+    },
+    viewDetails: {
+        en: 'View Details',
+        zh: '查看详情'
+    },
+    yourAnswer: {
+        en: 'Your Answer',
+        zh: '您的答案'
+    },
+    aiFeedback: {
+        en: 'AI Feedback',
+        zh: 'AI反馈'
+    },
+    backToList: {
+        en: 'Back to List',
+        zh: '返回列表'
+    },
+    filterByType: {
+        en: 'Filter by Type',
+        zh: '按类型筛选'
+    },
+    allTypes: {
+        en: 'All Types',
+        zh: '所有类型'
+    },
+    coding: {
+        en: 'Coding',
+        zh: '编程'
+    },
+    systemDesign: {
+        en: 'System Design',
+        zh: '系统设计'
+    },
+    behavioral: {
+        en: 'Behavioral',
+        zh: '行为面试'
+    },
+    mockInterview: {
+        en: 'Mock Interview',
+        zh: '模拟面试'
+    },
+    learningHistory: {
+        en: 'Learning History',
+        zh: '学习历史'
+    },
+    interviewHistory: {
+        en: 'Interview History',
+        zh: '面试历史'
+    },
+    selectQuestionToView: {
+        en: 'Select a question to view details',
+        zh: '选择题目查看详情'
+    },
+    noFeedbackAvailable: {
+        en: 'No feedback available',
+        zh: '暂无反馈'
+    },
+    unknownQuestion: {
+        en: 'Unknown Question',
+        zh: '未知题目'
+    },
   },
   en: {
     // HomePage
@@ -1060,9 +1140,96 @@ export const translations = {
     recordingInProgress: 'Recording in progress...',
     voiceInputPlaceholder: 'Describe your system design approach here...',
     failedToStartRecording: 'Failed to start recording',
+    wrongQuestions: {
+        en: 'Wrong Questions',
+        zh: '错题本'
+    },
+    wrongQuestionsDescription: {
+        en: 'Review your previous answers and AI feedback',
+        zh: '查看您之前的答案和AI反馈'
+    },
+    noWrongQuestions: {
+        en: 'No wrong questions found',
+        zh: '暂无错题记录'
+    },
+    questionType: {
+        en: 'Question Type',
+        zh: '题目类型'
+    },
+    completedAt: {
+        en: 'Completed At',
+        zh: '完成时间'
+    },
+    viewDetails: {
+        en: 'View Details',
+        zh: '查看详情'
+    },
+    yourAnswer: {
+        en: 'Your Answer',
+        zh: '您的答案'
+    },
+    aiFeedback: {
+        en: 'AI Feedback',
+        zh: 'AI反馈'
+    },
+    backToList: {
+        en: 'Back to List',
+        zh: '返回列表'
+    },
+    filterByType: {
+        en: 'Filter by Type',
+        zh: '按类型筛选'
+    },
+    allTypes: {
+        en: 'All Types',
+        zh: '所有类型'
+    },
+    coding: {
+        en: 'Coding',
+        zh: '编程'
+    },
+    systemDesign: {
+        en: 'System Design',
+        zh: '系统设计'
+    },
+    behavioral: {
+        en: 'Behavioral',
+        zh: '行为面试'
+    },
+    mockInterview: {
+        en: 'Mock Interview',
+        zh: '模拟面试'
+    },
+    learningHistory: {
+        en: 'Learning History',
+        zh: '学习历史'
+    },
+    interviewHistory: {
+        en: 'Interview History',
+        zh: '面试历史'
+    },
+    selectQuestionToView: {
+        en: 'Select a question to view details',
+        zh: '选择题目查看详情'
+    },
+    noFeedbackAvailable: {
+        en: 'No feedback available',
+        zh: '暂无反馈'
+    },
+    unknownQuestion: {
+        en: 'Unknown Question',
+        zh: '未知题目'
+    },
   }
 };
 
 export const getText = (key, language = 'zh') => {
-  return translations[language]?.[key] || key;
+  const result = translations[language]?.[key] || key;
+  
+  // If the result is an object with language keys (like {en: 'text', zh: '文本'})
+  if (typeof result === 'object' && result !== null && (result.en || result.zh)) {
+    return result[language] || result.en || result.zh || key;
+  }
+  
+  return result;
 }; 

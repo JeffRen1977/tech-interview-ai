@@ -342,7 +342,9 @@ const CodingInterview = ({ mockInterviewData, onBackToSetup }) => {
                             ← {t('backToSetup')}
                         </Button>
                     )}
-                    <h1 className="text-3xl font-bold">{questionData?.title}</h1>
+                    <h1 className="text-3xl font-bold">
+                        {typeof questionData?.title === 'object' ? questionData.title[language] : questionData?.title}
+                    </h1>
                 </div>
                 <div className="flex items-center gap-4">
                     <div className="flex items-center gap-2">
@@ -365,7 +367,9 @@ const CodingInterview = ({ mockInterviewData, onBackToSetup }) => {
                         <div className="p-6">
                             <h2 className="text-xl font-bold mb-4">{t('currentQuestion')}</h2>
                             <div className="prose prose-invert max-w-none">
-                                <p className="text-gray-300">{questionData?.description}</p>
+                                <p className="text-gray-300">
+                                    {typeof questionData?.description === 'object' ? questionData.description[language] : questionData?.description}
+                                </p>
                                 {questionData?.example && (
                                     <div className="mt-4">
                                         <h3 className="font-semibold mb-2">{t('example')}</h3>

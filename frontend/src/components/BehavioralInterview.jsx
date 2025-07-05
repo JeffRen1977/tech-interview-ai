@@ -407,7 +407,9 @@ const BehavioralInterview = ({ mockInterviewData, onBackToSetup }) => {
                 <Card className="bg-gray-800 p-6">
                     <div className="flex justify-between items-start mb-4">
                         <h2 className="text-xl font-bold">{t('currentQuestion')}</h2>
-                        <span className="bg-blue-600 px-2 py-1 rounded text-sm">{currentQuestion?.category}</span>
+                        <span className="bg-blue-600 px-2 py-1 rounded text-sm">
+                            {typeof currentQuestion?.category === 'object' ? currentQuestion.category[language] : currentQuestion?.category}
+                        </span>
                     </div>
                     
                     <div className="space-y-4">

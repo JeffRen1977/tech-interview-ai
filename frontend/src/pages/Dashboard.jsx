@@ -266,7 +266,9 @@ export default function Dashboard() {
                         {getActivityIcon(activity.type)}
                       </div>
                       <div>
-                        <p className="font-medium">{activity.title}</p>
+                        <p className="font-medium">
+                          {typeof activity.title === 'object' ? activity.title[language] : activity?.title}
+                        </p>
                         <div className="flex items-center space-x-2 text-sm text-gray-400">
                           <span className={getDifficultyColor(activity.difficulty)}>
                             {t(activity.difficulty)}
@@ -343,7 +345,9 @@ export default function Dashboard() {
                       {getRecommendationIcon(rec.type)}
                     </div>
                     <div>
-                      <p className="font-medium">{rec.title}</p>
+                      <p className="font-medium">
+                        {typeof rec.title === 'object' ? rec.title[language] : rec?.title}
+                      </p>
                       <div className="flex items-center space-x-2 text-sm text-gray-400">
                         <span className={getDifficultyColor(rec.difficulty)}>
                           {t(rec.difficulty)}

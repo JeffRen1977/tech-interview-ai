@@ -259,10 +259,14 @@ const CoachAgent = () => {
                   <li key={i} className="bg-gray-900 rounded-lg p-4 border border-gray-700">
                     <div className="flex items-center gap-2 mb-1">
                       <span className="text-sm px-2 py-1 rounded bg-blue-700 text-white uppercase">{task.type}</span>
-                      <span className="font-semibold text-lg">{task.title}</span>
+                      <span className="font-semibold text-lg">
+                        {typeof task.title === 'object' ? task.title[language] : task?.title}
+                      </span>
                       <span className="ml-auto text-xs text-gray-400">{task.estimatedTime} min</span>
                     </div>
-                    <div className="text-gray-200 text-sm whitespace-pre-line">{task.description}</div>
+                    <div className="text-gray-200 text-sm whitespace-pre-line">
+                      {typeof task.description === 'object' ? task.description[language] : task?.description}
+                    </div>
                   </li>
                 ))}
               </ul>

@@ -393,3 +393,69 @@ exports.getFilterOptions = async (req, res) => {
         res.status(500).json({ message: "Failed to fetch filter options." });
     }
 };
+
+// 获取错题本数据
+exports.getWrongQuestions = async (req, res) => {
+    try {
+        const userEmail = req.user.email;
+        
+        // 从user-learning-history获取数据
+        const learningHistorySnapshot = await db.collection('user-learning-history')
+            .where('userId', '==', userEmail)
+            .orderBy('completedAt', 'desc')
+            .get();
+        
+        // 从user-interview-history获取数据
+        const interviewHistorySnapshot = await db.collection('user-interview-history')
+            .where('userEmail', '==', userEmail)
+            .orderBy('endTime', 'desc')
+            .get();
+        
+        const wrongQuestions = [];
+        
+        // 处理学习历史数据
+        learningHistorySnapshot.forEach(doc => {
+            const data = doc.data();
+            wrongQuestions.push({
+                id: doc.id,
+                type: 'learning',
+                interviewType: data.interviewType || 'unknown',
+                questionData: data.questionData || {},
+                userAnswer: data.userAnswer || data.userCode || '',
+                feedback: data.feedback || {},
+                completedAt: data.completedAt,
+                savedAt: data.savedAt
+            });
+        });
+        
+        // 处理面试历史数据
+        interviewHistorySnapshot.forEach(doc => {
+            const data = doc.data();
+            if (data.userSolutions && data.userSolutions.length > 0) {
+                data.userSolutions.forEach((solution, index) => {
+                    wrongQuestions.push({
+                        id: `${doc.id}_${index}`,
+                        type: 'interview',
+                        interviewType: data.interviewType || 'unknown',
+                        questionData: data.questionData || {},
+                        userAnswer: solution.solution || '',
+                        feedback: solution.feedback || {},
+                        completedAt: solution.timestamp || data.endTime,
+                        savedAt: data.endTime
+                    });
+                });
+            }
+        });
+        
+        // 按完成时间排序
+        wrongQuestions.sort((a, b) => new Date(b.completedAt) - new Date(a.completedAt));
+        
+        res.status(200).json({ 
+            wrongQuestions,
+            message: 'Wrong questions retrieved successfully'
+        });
+    } catch (error) {
+        console.error("Error fetching wrong questions:", error);
+        res.status(500).json({ message: "Failed to fetch wrong questions." });
+    }
+};

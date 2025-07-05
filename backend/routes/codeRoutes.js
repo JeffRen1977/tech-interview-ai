@@ -5,7 +5,9 @@ const {
     executeCode, 
     submitCodeForAnalysis, 
     saveToLearningHistory,
-    getUserLearningHistory
+    getUserLearningHistory,
+    removeFromLearningHistory,
+    getWrongQuestions
 } = require('../controllers/codeController');
 const { verifyToken } = require('../controllers/authController');
 
@@ -17,5 +19,7 @@ router.post('/execute', verifyToken, executeCode);
 router.post('/submit', verifyToken, submitCodeForAnalysis);
 router.post('/learning-history', verifyToken, saveToLearningHistory);
 router.get('/learning-history/:userId', verifyToken, getUserLearningHistory);
+router.delete('/learning-history/:historyId', verifyToken, removeFromLearningHistory);
+router.get('/wrong-questions', verifyToken, getWrongQuestions);
 
 module.exports = router;

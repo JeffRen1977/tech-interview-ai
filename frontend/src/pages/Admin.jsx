@@ -240,7 +240,7 @@ const EditableCodingForm = ({ initialData, onSaveSuccess }) => {
                 <CardContent className="space-y-4">
                     <div>
                         <label htmlFor="edit-title" className="block mb-2 font-medium text-gray-400">{t('title')}</label>
-                        <Input name="edit-title" id="edit-title" defaultValue={initialData.title} />
+                        <Input name="edit-title" id="edit-title" defaultValue={typeof initialData.title === 'object' ? initialData.title[language] : initialData?.title} />
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
@@ -261,7 +261,7 @@ const EditableCodingForm = ({ initialData, onSaveSuccess }) => {
                 <CardContent className="space-y-4">
                     <div>
                         <label htmlFor="edit-description" className="block mb-2 font-medium text-gray-400">{t('description')}</label>
-                        <Textarea name="edit-description" id="edit-description" className="h-24" defaultValue={initialData.description} />
+                        <Textarea name="edit-description" id="edit-description" className="h-24" defaultValue={typeof initialData.description === 'object' ? initialData.description[language] : initialData?.description} />
                     </div>
                     <div>
                         <label htmlFor="edit-example" className="block mb-2 font-medium text-gray-400">{t('example')}</label>
@@ -360,12 +360,12 @@ const EditableSystemForm = ({ initialData, onSaveSuccess }) => {
                 <CardContent className="space-y-4">
                     <div>
                         <label htmlFor="edit-title" className="block mb-2 font-medium text-gray-400">{t('title')}</label>
-                        <Input name="edit-title" id="edit-title" defaultValue={initialData.title} />
+                        <Input name="edit-title" id="edit-title" defaultValue={typeof initialData.title === 'object' ? initialData.title[language] : initialData?.title} />
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                             <label htmlFor="edit-category" className="block mb-2 font-medium text-gray-400">{t('category')}</label>
-                            <Input name="edit-category" id="edit-category" defaultValue={initialData.category} />
+                            <Input name="edit-category" id="edit-category" defaultValue={typeof initialData.category === 'object' ? initialData.category[language] : initialData?.category} />
                         </div>
                         <div>
                             <label htmlFor="edit-tags" className="block mb-2 font-medium text-gray-400">{t('tags')}</label>

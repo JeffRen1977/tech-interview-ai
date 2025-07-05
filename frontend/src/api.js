@@ -277,5 +277,14 @@ export const programmingAPI = {
   // 从学习历史中移除
   removeFromLearningHistory: async (historyId) => {
     return await apiRequest(`/code/learning-history/${historyId}`, 'DELETE');
+  },
+
+  // 获取错题本数据
+  getWrongQuestions: async () => {
+    return await apiRequest('/code/wrong-questions', 'GET');
   }
+};
+
+export const getWrongQuestions = async () => {
+  return await apiRequest('/code/wrong-questions', 'GET');
 };
