@@ -80,9 +80,16 @@ const LoginRegister = ({ onLoginSuccess }) => {
       
       const response = await apiRequest(endpoint, 'POST', payload);
       
+      console.log('DEBUG: Login response received:', response);
+      console.log('DEBUG: Response token:', response.token);
+      console.log('DEBUG: Response user:', response.user);
+      
       // 保存token到localStorage
       localStorage.setItem('token', response.token);
       localStorage.setItem('user', JSON.stringify(response.user));
+      
+      console.log('DEBUG: localStorage after setItem - token:', localStorage.getItem('token'));
+      console.log('DEBUG: localStorage after setItem - user:', localStorage.getItem('user'));
       
       // 调用父组件的登录成功回调
       onLoginSuccess(response.user);
