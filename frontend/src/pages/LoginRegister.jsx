@@ -78,11 +78,30 @@ const LoginRegister = ({ onLoginSuccess }) => {
         ? { email: formData.email, password: formData.password }
         : { email: formData.email, password: formData.password, name: formData.name };
       
+      console.log('DEBUG: About to make API request to:', endpoint);
+      console.log('DEBUG: Payload:', payload);
+      
       const response = await apiRequest(endpoint, 'POST', payload);
       
       console.log('DEBUG: Login response received:', response);
+      console.log('DEBUG: Response type:', typeof response);
+      console.log('DEBUG: Response keys:', Object.keys(response));
       console.log('DEBUG: Response token:', response.token);
       console.log('DEBUG: Response user:', response.user);
+      
+      if (!response.token) {
+        console.error('DEBUG: No token in response!');
+        throw new Error('No token received from server');
+      }
+      
+      if (!response.user) {
+        console.error('DEBUG: No user data in response!');
+        throw new Error('No user data received from server');
+      }
+      
+      console.log('DEBUG: About to save to localStorage');
+      console.log('DEBUG: Token to save:', response.token);
+      console.log('DEBUG: User to save:', response.user);
       
       // 保存token到localStorage
       localStorage.setItem('token', response.token);
@@ -91,10 +110,25 @@ const LoginRegister = ({ onLoginSuccess }) => {
       console.log('DEBUG: localStorage after setItem - token:', localStorage.getItem('token'));
       console.log('DEBUG: localStorage after setItem - user:', localStorage.getItem('user'));
       
+      // 验证保存是否成功
+      const savedToken = localStorage.getItem('token');
+      const savedUser = localStorage.getItem('user');
+      
+      console.log('DEBUG: Verification - saved token exists:', !!savedToken);
+      console.log('DEBUG: Verification - saved user exists:', !!savedUser);
+      
+      if (!savedToken || !savedUser) {
+        console.error('DEBUG: Failed to save to localStorage!');
+        throw new Error('Failed to save authentication data');
+      }
+      
+      console.log('DEBUG: Successfully saved to localStorage, calling onLoginSuccess');
+      
       // 调用父组件的登录成功回调
       onLoginSuccess(response.user);
       
     } catch (error) {
+      console.error('DEBUG: Login error:', error);
       setError(error.message || t('loginFailed'));
     } finally {
       setLoading(false);
