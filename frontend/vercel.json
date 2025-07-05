@@ -34,6 +34,6 @@
     }
   ],
   "env": {
-    "VITE_API_BASE_URL": "@vite_api_base_url"
+    "VITE_API_BASE_URL": "tech-interview-ai-production.up.railway.app"
   }
 } 

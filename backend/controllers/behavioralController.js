@@ -1,5 +1,4 @@
-const admin = require('firebase-admin');
-const db = admin.firestore();
+const { getDb } = require('../config/firebase');
 
 // 导入Gemini API调用函数
 const { callGeminiAPI } = require('../utils/geminiService');
@@ -7,7 +6,7 @@ const { callGeminiAPI } = require('../utils/geminiService');
 // 获取所有行为面试问题
 const getAllQuestions = async (req, res) => {
     try {
-        const questionsRef = db.collection('behavioral-questions');
+        const questionsRef = getDb().collection('behavioral-questions');
         const snapshot = await questionsRef.get();
         
         const questions = [];
@@ -30,7 +29,7 @@ const getFilteredQuestions = async (req, res) => {
     try {
         const { category } = req.query;
         
-        let questionsRef = db.collection('behavioral-questions');
+        let questionsRef = getDb().collection('behavioral-questions');
         
         // 应用筛选条件
         if (category) {
@@ -59,7 +58,7 @@ const getQuestionById = async (req, res) => {
     try {
         const { id } = req.params;
         
-        const questionDoc = await db.collection('behavioral-questions').doc(id).get();
+        const questionDoc = await getDb().collection('behavioral-questions').doc(id).get();
         
         if (!questionDoc.exists) {
             return res.status(404).json({ error: 'Question not found' });
@@ -137,7 +136,7 @@ const saveToLearningHistory = async (req, res) => {
 
     try {
         // 获取题目详情
-        const questionDoc = await db.collection('behavioral-questions').doc(questionId).get();
+        const questionDoc = await getDb().collection('behavioral-questions').doc(questionId).get();
         let questionData;
         if (questionDoc.exists) {
             questionData = questionDoc.data();
@@ -190,7 +189,7 @@ const saveToLearningHistory = async (req, res) => {
             feedbackKeys: historyData.feedback ? Object.keys(historyData.feedback) : null
         });
 
-        const docRef = await db.collection('user-learning-history').add(historyData);
+        const docRef = await getDb().collection('user-learning-history').add(historyData);
         res.status(200).json({ 
             message: "Behavioral question saved to learning history successfully.",
             historyId: docRef.id 

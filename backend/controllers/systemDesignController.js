@@ -1,5 +1,4 @@
-const admin = require('firebase-admin');
-const db = admin.firestore();
+const { getDb } = require('../config/firebase');
 const { callGeminiAPI } = require('../utils/geminiService');
 
 // 从questionController复制extractJson函数
@@ -19,7 +18,7 @@ function extractJson(text) {
 // 获取所有系统设计问题
 const getAllQuestions = async (req, res) => {
     try {
-        const questionsRef = db.collection('system-design-questions');
+        const questionsRef = getDb().collection('system-design-questions');
         const snapshot = await questionsRef.get();
         
         const questions = [];
@@ -42,7 +41,7 @@ const getFilteredQuestions = async (req, res) => {
     try {
         const { difficulty, category } = req.query;
         
-        let questionsRef = db.collection('system-design-questions');
+        let questionsRef = getDb().collection('system-design-questions');
         
         // 应用筛选条件
         if (difficulty) {
@@ -75,7 +74,7 @@ const getQuestionById = async (req, res) => {
     try {
         const { id } = req.params;
         
-        const questionDoc = await db.collection('system-design-questions').doc(id).get();
+        const questionDoc = await getDb().collection('system-design-questions').doc(id).get();
         
         if (!questionDoc.exists) {
             return res.status(404).json({ error: 'Question not found' });
@@ -104,7 +103,7 @@ const saveToLearningHistory = async (req, res) => {
 
     try {
         // 获取题目详情
-        const questionDoc = await db.collection('system-design-questions').doc(questionId).get();
+        const questionDoc = await getDb().collection('system-design-questions').doc(questionId).get();
         if (!questionDoc.exists) {
             return res.status(404).json({ message: "Question not found." });
         }
@@ -127,7 +126,7 @@ const saveToLearningHistory = async (req, res) => {
             interviewType: 'system-design'
         };
 
-        const docRef = await db.collection('user-learning-history').add(historyData);
+        const docRef = await getDb().collection('user-learning-history').add(historyData);
         res.status(200).json({ 
             message: "System design question saved to learning history successfully.",
             historyId: docRef.id 
