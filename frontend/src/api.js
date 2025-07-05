@@ -24,7 +24,9 @@ export const clearAuth = () => {
 
 export async function apiRequest(endpoint, method, body) {
     const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000';
-    const url = `${baseUrl}/api${endpoint}`;
+    // 确保 baseUrl 不以斜杠结尾，避免双斜杠问题
+    const cleanBaseUrl = baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl;
+    const url = `${cleanBaseUrl}/api${endpoint}`;
     console.log(`DEBUG: Making API request to ${url}`);
     console.log(`DEBUG: Method: ${method}`);
     console.log(`DEBUG: Body:`, body);
