@@ -5,8 +5,8 @@ import { Select } from '../components/ui/select';
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from '../components/ui/resizable';
 import MonacoEditor from '../components/ui/MonacoEditor';
 import QuestionFilterPanel from '../components/QuestionFilterPanel';
-import { BookCopy, Flame, HelpCircle, Play, Send, Check, X, AlertTriangle, Save, BookOpen, Filter, Code, Cpu, Users, FileText, RefreshCw } from 'lucide-react';
-import { apiRequest, getWrongQuestions } from '../api.js';
+import { BookCopy, Flame, HelpCircle, Play, Send, Check, X, AlertTriangle, Save, Filter, Code, Cpu, Users, RefreshCw } from 'lucide-react';
+import { apiRequest } from '../api.js';
 import { useLanguage } from '../contexts/LanguageContext';
 import { getText } from '../utils/translations';
 import ReactMarkdown from 'react-markdown';
@@ -23,8 +23,7 @@ const InterviewLearning = () => {
     const tabs = [
         { id: 'programming', label: t('programmingPractice'), icon: Code },
         { id: 'system-design', label: t('systemDesignPractice'), icon: Cpu },
-        { id: 'behavioral', label: t('behavioralPractice'), icon: Users },
-        { id: 'wrong-questions', label: t('wrongQuestions'), icon: FileText }
+        { id: 'behavioral', label: t('behavioralPractice'), icon: Users }
     ];
 
     return (
@@ -60,7 +59,6 @@ const InterviewLearning = () => {
                 {activeTab === 'programming' && <ProgrammingPractice />}
                 {activeTab === 'system-design' && <SystemDesignPractice />}
                 {activeTab === 'behavioral' && <BehavioralPractice />}
-                {activeTab === 'wrong-questions' && <WrongQuestionsPractice />}
             </div>
         </div>
     );
@@ -867,249 +865,6 @@ const BehavioralPractice = () => {
                     ) : (
                         <div className="flex items-center justify-center h-full text-gray-400">
                             {t('selectQuestionToStart')}
-                        </div>
-                    )}
-                </div>
-            </ResizablePanel>
-        </ResizablePanelGroup>
-    );
-};
-
-// --- 错题本练习组件 ---
-const WrongQuestionsPractice = () => {
-    const { language } = useLanguage();
-    const t = (key) => getText(key, language);
-    
-    const [wrongQuestions, setWrongQuestions] = useState([]);
-    const [selectedQuestion, setSelectedQuestion] = useState(null);
-    const [isLoading, setIsLoading] = useState(true);
-    const [error, setError] = useState(null);
-    const [filterType, setFilterType] = useState('all');
-
-    useEffect(() => {
-        loadWrongQuestions();
-    }, []);
-
-    const loadWrongQuestions = async () => {
-        setIsLoading(true);
-        try {
-            const data = await getWrongQuestions();
-            if (data.wrongQuestions && data.wrongQuestions.length > 0) {
-                setWrongQuestions(data.wrongQuestions);
-            } else {
-                setWrongQuestions([]);
-                setError(t('noWrongQuestions'));
-            }
-        } catch (err) {
-            console.error("Error loading wrong questions:", err);
-            setError(t('cannotLoadQuestions'));
-        } finally {
-            setIsLoading(false);
-        }
-    };
-
-    const handleSelectQuestion = (question) => {
-        setSelectedQuestion(question);
-    };
-
-    const getInterviewTypeLabel = (type) => {
-        switch (type) {
-            case 'coding': return t('coding');
-            case 'system-design': return t('systemDesign');
-            case 'behavioral': return t('behavioral');
-            case 'mock': return t('mockInterview');
-            default: return type;
-        }
-    };
-
-    const getSourceLabel = (type) => {
-        switch (type) {
-            case 'learning': return t('learningHistory');
-            case 'interview': return t('interviewHistory');
-            default: return type;
-        }
-    };
-
-    const formatDate = (date) => {
-        return new Date(date).toLocaleDateString(language === 'zh' ? 'zh-CN' : 'en-US', {
-            year: 'numeric',
-            month: 'short',
-            day: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit'
-        });
-    };
-
-    const filteredQuestions = wrongQuestions.filter(question => {
-        if (filterType === 'all') return true;
-        return question.interviewType === filterType;
-    });
-
-    return (
-        <ResizablePanelGroup direction="horizontal" className="h-full rounded-lg border border-gray-700">
-            {/* 左侧题目列表 */}
-            <ResizablePanel defaultSize={40} minSize={30}>
-                <div className="h-full bg-gray-800 p-4">
-                    <div className="flex items-center justify-between mb-4">
-                        <h2 className="text-xl font-semibold">{t('wrongQuestions')}</h2>
-                        <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={loadWrongQuestions}
-                            className="text-gray-400 hover:text-white"
-                        >
-                            <BookOpen size={16} />
-                        </Button>
-                    </div>
-
-                    {/* 筛选器 */}
-                    <div className="mb-4">
-                        <Select
-                            value={filterType}
-                            onValueChange={setFilterType}
-                            className="w-full"
-                        >
-                            <option value="all">{t('allTypes')}</option>
-                            <option value="coding">{t('coding')}</option>
-                            <option value="system-design">{t('systemDesign')}</option>
-                            <option value="behavioral">{t('behavioral')}</option>
-                            <option value="mock">{t('mockInterview')}</option>
-                        </Select>
-                    </div>
-
-                    {isLoading ? (
-                        <div className="flex items-center justify-center h-32">
-                            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-400"></div>
-                        </div>
-                    ) : error ? (
-                        <div className="text-red-400 text-center p-4">{error}</div>
-                    ) : filteredQuestions.length === 0 ? (
-                        <div className="text-gray-400 text-center p-4">{t('noWrongQuestions')}</div>
-                    ) : (
-                        <div className="space-y-2 max-h-96 overflow-y-auto">
-                            {filteredQuestions.map((question) => (
-                                <div
-                                    key={question.id}
-                                    onClick={() => handleSelectQuestion(question)}
-                                    className={`p-3 rounded-lg cursor-pointer transition-colors ${
-                                        selectedQuestion?.id === question.id
-                                            ? 'bg-indigo-600 text-white'
-                                            : 'bg-gray-700 hover:bg-gray-600'
-                                    }`}
-                                >
-                                    <div className="flex items-center justify-between mb-2">
-                                        <span className="font-medium text-sm">
-                                            {typeof question.questionData?.title === 'object'
-                                                ? question.questionData.title[language]
-                                                : question.questionData?.title || t('unknownQuestion')}
-                                        </span>
-                                        <span className="text-xs px-2 py-1 rounded bg-gray-600">
-                                            {getInterviewTypeLabel(question.interviewType)}
-                                        </span>
-                                    </div>
-                                    <div className="flex items-center justify-between text-xs text-gray-300">
-                                        <span>{getSourceLabel(question.type)}</span>
-                                        <span>{formatDate(question.completedAt)}</span>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    )}
-                </div>
-            </ResizablePanel>
-
-            <ResizableHandle />
-
-            {/* 右侧详情显示 */}
-            <ResizablePanel defaultSize={60}>
-                <div className="h-full bg-gray-800 p-4 overflow-y-auto">
-                    {selectedQuestion ? (
-                        <div className="min-h-full">
-                            <div className="mb-4">
-                                <Button
-                                    onClick={() => setSelectedQuestion(null)}
-                                    variant="ghost"
-                                    size="sm"
-                                    className="text-gray-400 hover:text-white mb-4"
-                                >
-                                    <X size={16} className="mr-2" />
-                                    {t('backToList')}
-                                </Button>
-                                
-                                <h3 className="text-xl font-semibold mb-2">
-                                    {typeof selectedQuestion.questionData?.title === 'object'
-                                        ? selectedQuestion.questionData.title[language]
-                                        : selectedQuestion.questionData?.title || t('unknownQuestion')}
-                                </h3>
-                                
-                                <div className="flex items-center gap-4 text-sm text-gray-400 mb-4">
-                                    <span>{getInterviewTypeLabel(selectedQuestion.interviewType)}</span>
-                                    <span>{getSourceLabel(selectedQuestion.type)}</span>
-                                    <span>{formatDate(selectedQuestion.completedAt)}</span>
-                                </div>
-
-                                {selectedQuestion.questionData?.description && (
-                                    <div className="mb-4">
-                                        <h4 className="text-lg font-medium mb-2">{t('question')}</h4>
-                                        <div className="bg-gray-900 p-4 rounded-lg">
-                                            <p className="text-gray-300">
-                                                {typeof selectedQuestion.questionData?.description === 'object'
-                                                    ? selectedQuestion.questionData.description[language]
-                                                    : selectedQuestion.questionData?.description}
-                                            </p>
-                                        </div>
-                                    </div>
-                                )}
-
-                                {selectedQuestion.questionData?.prompt && (
-                                    <div className="mb-4">
-                                        <h4 className="text-lg font-medium mb-2">{t('question')}</h4>
-                                        <div className="bg-gray-900 p-4 rounded-lg">
-                                            <p className="text-gray-300">
-                                                {typeof selectedQuestion.questionData?.prompt === 'object'
-                                                    ? selectedQuestion.questionData.prompt[language]
-                                                    : selectedQuestion.questionData?.prompt}
-                                            </p>
-                                        </div>
-                                    </div>
-                                )}
-
-                                <div className="mb-4">
-                                    <h4 className="text-lg font-medium mb-2">{t('yourAnswer')}</h4>
-                                    <div className="bg-gray-900 p-4 rounded-lg">
-                                        {selectedQuestion.interviewType === 'coding' ? (
-                                            <pre className="text-gray-300 text-sm overflow-x-auto">
-                                                <code>{selectedQuestion.userAnswer}</code>
-                                            </pre>
-                                        ) : (
-                                            <p className="text-gray-300 whitespace-pre-wrap">{selectedQuestion.userAnswer}</p>
-                                        )}
-                                    </div>
-                                </div>
-
-                                {selectedQuestion.feedback && (
-                                    <div className="mb-4">
-                                        <h4 className="text-lg font-medium mb-2">{t('aiFeedback')}</h4>
-                                        <div className="bg-gray-900 p-4 rounded-lg">
-                                            {selectedQuestion.feedback.aiAnalysis ? (
-                                                <div className="text-gray-300 whitespace-pre-wrap">
-                                                    {selectedQuestion.feedback.aiAnalysis}
-                                                </div>
-                                            ) : selectedQuestion.feedback.message ? (
-                                                <div className="text-gray-300 whitespace-pre-wrap">
-                                                    {selectedQuestion.feedback.message}
-                                                </div>
-                                            ) : (
-                                                <div className="text-gray-500">{t('noFeedbackAvailable')}</div>
-                                            )}
-                                        </div>
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-                    ) : (
-                        <div className="flex items-center justify-center h-full text-gray-400">
-                            {t('selectQuestionToView')}
                         </div>
                     )}
                 </div>

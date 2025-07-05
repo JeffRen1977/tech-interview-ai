@@ -1,20 +1,21 @@
 import React, { useEffect, useState } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '../components/ui/card';
 import { Button } from '../components/ui/button';
-import axios from 'axios';
+import { Select } from '../components/ui/select';
+import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from '../components/ui/resizable';
+import { BookOpen, X, Clock, BarChart3, Lightbulb, Award } from 'lucide-react';
+import { apiRequest } from '../api.js';
 import { useLanguage } from '../contexts/LanguageContext';
 import { getText } from '../utils/translations';
 
 const fetchWrongQuestions = async () => {
-  const res = await fetch('http://localhost:3000/api/wrong-questions');
-  const data = await res.json();
-  return data.questions || [];
-};
-
-const fetchAIFeedback = async (id) => {
-  const res = await fetch(`http://localhost:3000/api/wrong-questions/${id}/ai-feedback`, { method: 'POST' });
-  const data = await res.json();
-  return data;
+  try {
+    const data = await apiRequest('/code/wrong-questions', 'GET');
+    return data.wrongQuestions || [];
+  } catch (error) {
+    console.error('Error fetching wrong questions:', error);
+    return [];
+  }
 };
 
 function AbilityMap() {
@@ -26,8 +27,8 @@ function AbilityMap() {
 
   useEffect(() => {
     setLoading(true);
-    axios.get('/api/wrong-questions/ability-map')
-      .then(res => setData(res.data))
+    apiRequest('/wrong-questions/ability-map', 'GET')
+      .then(res => setData(res))
       .catch(e => setError(t('loadAbilityMapFailed')))
       .finally(() => setLoading(false));
   }, [language]);
@@ -102,11 +103,7 @@ function VideoInterviewFeedback() {
     const formData = new FormData();
     formData.append('video', video);
     try {
-      const res = await fetch('/api/wrong-questions/learn-feedback/video-feedback', {
-        method: 'POST',
-        body: formData
-      });
-      const data = await res.json();
+      const data = await apiRequest('/wrong-questions/learn-feedback/video-feedback', 'POST', formData);
       if (data.success) setResult(data);
       else setError(t('analyzeVideoFailed'));
     } catch (err) {
@@ -157,27 +154,73 @@ const LearnAndFeedback = () => {
   const t = (key) => getText(key, language);
   const [tab, setTab] = useState('wrong');
   const [questions, setQuestions] = useState([]);
+  const [selectedQuestion, setSelectedQuestion] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [aiFeedback, setAIFeedback] = useState({});
-  const [loadingAI, setLoadingAI] = useState({});
+  const [error, setError] = useState(null);
+  const [filterType, setFilterType] = useState('all');
 
   useEffect(() => {
-    fetchWrongQuestions().then(qs => {
-      setQuestions(qs);
-      setLoading(false);
-    });
+    loadWrongQuestions();
   }, []);
 
-  const handleAIFeedback = async (id) => {
-    setLoadingAI(prev => ({ ...prev, [id]: true }));
-    const feedback = await fetchAIFeedback(id);
-    setAIFeedback(prev => ({ ...prev, [id]: feedback }));
-    setLoadingAI(prev => ({ ...prev, [id]: false }));
+  const loadWrongQuestions = async () => {
+    setLoading(true);
+    try {
+      const data = await fetchWrongQuestions();
+      if (data && data.length > 0) {
+        setQuestions(data);
+      } else {
+        setQuestions([]);
+        setError(t('noWrongQuestions'));
+      }
+    } catch (err) {
+      console.error("Error loading wrong questions:", err);
+      setError(t('cannotLoadQuestions'));
+    } finally {
+      setLoading(false);
+    }
   };
+
+  const handleSelectQuestion = (question) => {
+    setSelectedQuestion(question);
+  };
+
+  const getInterviewTypeLabel = (type) => {
+    switch (type) {
+      case 'coding': return t('coding');
+      case 'system-design': return t('systemDesign');
+      case 'behavioral': return t('behavioral');
+      case 'mock': return t('mockInterview');
+      default: return type;
+    }
+  };
+
+  const getSourceLabel = (type) => {
+    switch (type) {
+      case 'learning': return t('learningHistory');
+      case 'interview': return t('interviewHistory');
+      default: return type;
+    }
+  };
+
+  const formatDate = (date) => {
+    return new Date(date).toLocaleDateString(language === 'zh' ? 'zh-CN' : 'en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
+
+  const filteredQuestions = questions.filter(question => {
+    if (filterType === 'all') return true;
+    return question.interviewType === filterType;
+  });
 
   return (
     <div className="min-h-screen bg-gray-900 text-white p-6">
-      <div className="max-w-4xl mx-auto">
+      <div className="max-w-6xl mx-auto">
         <h1 className="text-4xl font-bold mb-8 text-center">{t('learnAndFeedback')}</h1>
         <div className="flex space-x-4 mb-8 justify-center">
           {TABS.map(ti => (
@@ -195,47 +238,172 @@ const LearnAndFeedback = () => {
             <h2 className="text-2xl font-semibold mb-6">{t('wrongTab')}</h2>
             {loading ? (
               <div className="text-center text-gray-400">{t('loading')}</div>
+            ) : error ? (
+              <div className="text-red-400 text-center p-4">{error}</div>
             ) : (
-              <div className="space-y-6">
-                {questions.length === 0 && <div className="text-center text-gray-400">{t('noWrongQuestions')}</div>}
-                {questions.map(q => (
-                  <Card key={q.id} className="bg-gray-800">
-                    <CardHeader>
-                      <CardTitle className="text-lg">{q.question}</CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-2">
-                      <div><span className="font-semibold text-yellow-300">{t('yourAnswer')}:</span> {q.userAnswer}</div>
-                      <div><span className="font-semibold text-green-400">{t('correctAnswer')}:</span> {q.correctAnswer}</div>
-                      <div className="text-sm text-gray-400">{t('type')}: {q.type} | {t('knowledgePoint')}: {q.knowledgePoint}</div>
-                      <Button 
-                        className="mt-2 bg-blue-600 hover:bg-blue-700"
-                        onClick={() => handleAIFeedback(q.id)}
-                        disabled={loadingAI[q.id]}
+              <ResizablePanelGroup direction="horizontal" className="h-full rounded-lg border border-gray-700">
+                {/* 左侧题目列表 */}
+                <ResizablePanel defaultSize={40} minSize={30}>
+                  <div className="h-full bg-gray-800 p-4">
+                    <div className="flex items-center justify-between mb-4">
+                      <h3 className="text-xl font-semibold">{t('wrongQuestions')}</h3>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={loadWrongQuestions}
+                        className="text-gray-400 hover:text-white"
                       >
-                        {loadingAI[q.id] ? t('gettingAIFeedback') : t('getAIExplanationRedoPlan')}
+                        <BookOpen size={16} />
                       </Button>
-                      {aiFeedback[q.id] && (
-                        <div className="mt-4 p-4 bg-gray-900 rounded-lg space-y-3">
-                          <div>
-                            <h4 className="font-semibold text-blue-400 mb-1">{t('aiExplanation')}</h4>
-                            <p className="text-gray-200 whitespace-pre-wrap">{aiFeedback[q.id].explanation}</p>
+                    </div>
+
+                    {/* 筛选器 */}
+                    <div className="mb-4">
+                      <Select
+                        value={filterType}
+                        onValueChange={setFilterType}
+                        className="w-full"
+                      >
+                        <option value="all">{t('allTypes')}</option>
+                        <option value="coding">{t('coding')}</option>
+                        <option value="system-design">{t('systemDesign')}</option>
+                        <option value="behavioral">{t('behavioral')}</option>
+                        <option value="mock">{t('mockInterview')}</option>
+                      </Select>
+                    </div>
+
+                    {filteredQuestions.length === 0 ? (
+                      <div className="text-gray-400 text-center p-4">{t('noWrongQuestions')}</div>
+                    ) : (
+                      <div className="space-y-2 max-h-96 overflow-y-auto">
+                        {filteredQuestions.map((question) => (
+                          <div
+                            key={question.id}
+                            onClick={() => handleSelectQuestion(question)}
+                            className={`p-3 rounded-lg cursor-pointer transition-colors ${
+                              selectedQuestion?.id === question.id
+                                ? 'bg-indigo-600 text-white'
+                                : 'bg-gray-700 hover:bg-gray-600'
+                            }`}
+                          >
+                            <div className="flex items-center justify-between mb-2">
+                              <span className="font-medium text-sm">
+                                {typeof question.questionData?.title === 'object'
+                                  ? question.questionData.title[language]
+                                  : question.questionData?.title || t('unknownQuestion')}
+                              </span>
+                              <span className="text-xs px-2 py-1 rounded bg-gray-600">
+                                {getInterviewTypeLabel(question.interviewType)}
+                              </span>
+                            </div>
+                            <div className="flex items-center justify-between text-xs text-gray-300">
+                              <span>{getSourceLabel(question.type)}</span>
+                              <span>{formatDate(question.completedAt)}</span>
+                            </div>
                           </div>
-                          {aiFeedback[q.id].redoPlan && aiFeedback[q.id].redoPlan.length > 0 && (
-                            <div>
-                              <h4 className="font-semibold text-green-400 mb-1">{t('redoPlan')}</h4>
-                              <ul className="list-decimal list-inside space-y-1 text-gray-200">
-                                {aiFeedback[q.id].redoPlan.map((step, idx) => (
-                                  <li key={idx}>{step}</li>
-                                ))}
-                              </ul>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </ResizablePanel>
+
+                <ResizableHandle />
+
+                {/* 右侧详情显示 */}
+                <ResizablePanel defaultSize={60}>
+                  <div className="h-full bg-gray-800 p-4 overflow-y-auto">
+                    {selectedQuestion ? (
+                      <div className="min-h-full">
+                        <div className="mb-4">
+                          <Button
+                            onClick={() => setSelectedQuestion(null)}
+                            variant="ghost"
+                            size="sm"
+                            className="text-gray-400 hover:text-white mb-4"
+                          >
+                            <X size={16} className="mr-2" />
+                            {t('backToList')}
+                          </Button>
+                          
+                          <h3 className="text-xl font-semibold mb-2">
+                            {typeof selectedQuestion.questionData?.title === 'object'
+                              ? selectedQuestion.questionData.title[language]
+                              : selectedQuestion.questionData?.title || t('unknownQuestion')}
+                          </h3>
+                          
+                          <div className="flex items-center gap-4 text-sm text-gray-400 mb-4">
+                            <span>{getInterviewTypeLabel(selectedQuestion.interviewType)}</span>
+                            <span>{getSourceLabel(selectedQuestion.type)}</span>
+                            <span>{formatDate(selectedQuestion.completedAt)}</span>
+                          </div>
+
+                          {selectedQuestion.questionData?.description && (
+                            <div className="mb-4">
+                              <h4 className="text-lg font-medium mb-2">{t('question')}</h4>
+                              <div className="bg-gray-900 p-4 rounded-lg">
+                                <p className="text-gray-300">
+                                  {typeof selectedQuestion.questionData?.description === 'object'
+                                    ? selectedQuestion.questionData.description[language]
+                                    : selectedQuestion.questionData?.description}
+                                </p>
+                              </div>
+                            </div>
+                          )}
+
+                          {selectedQuestion.questionData?.prompt && (
+                            <div className="mb-4">
+                              <h4 className="text-lg font-medium mb-2">{t('question')}</h4>
+                              <div className="bg-gray-900 p-4 rounded-lg">
+                                <p className="text-gray-300">
+                                  {typeof selectedQuestion.questionData?.prompt === 'object'
+                                    ? selectedQuestion.questionData.prompt[language]
+                                    : selectedQuestion.questionData?.prompt}
+                                </p>
+                              </div>
+                            </div>
+                          )}
+
+                          <div className="mb-4">
+                            <h4 className="text-lg font-medium mb-2">{t('yourAnswer')}</h4>
+                            <div className="bg-gray-900 p-4 rounded-lg">
+                              {selectedQuestion.interviewType === 'coding' ? (
+                                <pre className="text-gray-300 text-sm overflow-x-auto">
+                                  <code>{selectedQuestion.userAnswer}</code>
+                                </pre>
+                              ) : (
+                                <p className="text-gray-300 whitespace-pre-wrap">{selectedQuestion.userAnswer}</p>
+                              )}
+                            </div>
+                          </div>
+
+                          {selectedQuestion.feedback && (
+                            <div className="mb-4">
+                              <h4 className="text-lg font-medium mb-2">{t('aiFeedback')}</h4>
+                              <div className="bg-gray-900 p-4 rounded-lg">
+                                {selectedQuestion.feedback.aiAnalysis ? (
+                                  <div className="text-gray-300 whitespace-pre-wrap">
+                                    {selectedQuestion.feedback.aiAnalysis}
+                                  </div>
+                                ) : selectedQuestion.feedback.message ? (
+                                  <div className="text-gray-300 whitespace-pre-wrap">
+                                    {selectedQuestion.feedback.message}
+                                  </div>
+                                ) : (
+                                  <div className="text-gray-500">{t('noFeedbackAvailable')}</div>
+                                )}
+                              </div>
                             </div>
                           )}
                         </div>
-                      )}
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
+                      </div>
+                    ) : (
+                      <div className="flex items-center justify-center h-full text-gray-400">
+                        {t('selectQuestionToView')}
+                      </div>
+                    )}
+                  </div>
+                </ResizablePanel>
+              </ResizablePanelGroup>
             )}
           </>
         )}
