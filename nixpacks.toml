@@ -2,13 +2,10 @@
 nixPkgs = ["nodejs_18", "npm-9_x"]
 
 [phases.install]
-workDir = "backend"
 cmds = ["npm ci"]
 
 [phases.build]
-workDir = "backend"
 cmds = ["npm run build"]
 
 [start]
-workDir = "backend"
 cmd = "npm start" 
