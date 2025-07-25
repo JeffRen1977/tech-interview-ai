@@ -74,6 +74,26 @@ An intelligent interview preparation platform that provides comprehensive AI-pow
 - **Voice Recording**: Built-in speech recognition for behavioral interviews
 - **Code Editor**: Monaco Editor with syntax highlighting and autocomplete
 
+## 📚 Documentation
+
+All project documentation has been organized in the `doc/` directory for easy navigation:
+
+### **Documentation Structure**
+- **📖 [Documentation Index](doc/README.md)** - Complete guide to all documentation
+- **🔧 [Deployment Guides](doc/deployment/)** - Main deployment and release documentation
+- **🚂 [Railway Deployment](doc/railway/)** - Railway-specific deployment guides
+- **⚡ [Vercel Deployment](doc/vercel/)** - Vercel deployment documentation
+- **🔥 [Firebase Setup](doc/firebase/)** - Firebase configuration guides
+- **📜 [Scripts](doc/scripts/)** - All deployment and setup scripts
+- **🎯 [System Design](doc/)** - System design interview materials
+- **🔐 [Authentication](doc/)** - Authentication setup guides
+
+### **Quick Start**
+1. For deployment: Check `doc/deployment/DEPLOYMENT.md`
+2. For Railway: See `doc/railway/RAILWAY_DEPLOYMENT.md`
+3. For Vercel: See `doc/vercel/VERCEL_FRONTEND_DEPLOYMENT.md`
+4. For Firebase: See `doc/firebase/FIREBASE_DEPLOYMENT_SETUP.md`
+
 ## 🛠️ Technology Stack
 
 ### **Backend**
