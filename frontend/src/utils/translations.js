@@ -139,7 +139,7 @@ export const translations = {
     invalidEmail: '请输入有效的邮箱地址',
     
     // InterviewLearning
-    interviewLearning: '面试练习',
+    interviewLearning: '面试学习',
     interviewLearningDescription: '通过编程练习、系统设计学习和行为面试训练，全面提升面试技能',
     programmingPractice: '编程练习',
     systemDesignPractice: '系统设计练习',
@@ -683,7 +683,10 @@ export const translations = {
     
     // Sidebar
     dashboard: 'Dashboard',
+    interviewLearning: 'Interview Learning',
     codingPractice: 'Coding Practice',
+    programmingPractice: 'Programming Practice',
+    systemDesignPractice: 'System Design Practice',
     mockInterview: 'Mock Interview',
     resumeOptimizer: 'Resume Optimizer',
     admin: 'Admin',
