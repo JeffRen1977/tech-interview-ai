@@ -62,6 +62,20 @@ async function loadSystemDesignQuestions() {
           updatedAt: new Date()
         };
         
+        // Add English fields if they exist
+        if (question.englishTitle) {
+          docData.englishTitle = question.englishTitle;
+        }
+        if (question.englishDescription) {
+          docData.englishDescription = question.englishDescription;
+        }
+        if (question.englishCategory) {
+          docData.englishCategory = question.englishCategory;
+        }
+        if (question.englishDesignSteps) {
+          docData.englishDesignSteps = question.englishDesignSteps;
+        }
+        
         // Only add tags if it exists and is not undefined
         if (question.tags !== undefined && question.tags !== null) {
           docData.tags = question.tags;

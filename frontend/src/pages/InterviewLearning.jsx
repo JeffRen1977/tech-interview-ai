@@ -536,6 +536,24 @@ const SystemDesignPractice = () => {
                                         : diff === 'hard' || diff === '困难'
                                         ? 'bg-red-600 text-white'
                                         : 'bg-gray-500 text-white';
+                                
+                                // 难度显示函数
+                                const getDifficultyDisplay = (difficulty) => {
+                                    if (language === 'en') {
+                                        switch (difficulty?.toLowerCase()) {
+                                            case '简单':
+                                            case '入门':
+                                                return 'Easy';
+                                            case '中等':
+                                                return 'Medium';
+                                            case '困难':
+                                                return 'Hard';
+                                            default:
+                                                return difficulty || 'Unknown';
+                                        }
+                                    }
+                                    return difficulty || 'Unknown';
+                                };
                                 return (
                                     <div
                                         key={question.id}
@@ -547,12 +565,12 @@ const SystemDesignPractice = () => {
                                         }`}
                                     >
                                         <div className="flex items-center justify-between">
-                                            <span className="font-medium">{typeof question.title === 'object' ? question.title[language] : question?.title}</span>
+                                            <span className="font-medium">{language === 'en' && question.englishTitle ? question.englishTitle : question?.title}</span>
                                             <span className={`px-2 py-1 rounded text-xs font-bold ${colorClass}`}>
-                                                {question.difficulty || 'unknown'}
+                                                {getDifficultyDisplay(question.difficulty)}
                                             </span>
                                         </div>
-                                        <p className="text-sm text-gray-300 mt-1">{typeof question.category === 'object' ? question.category[language] : question?.category}</p>
+                                        <p className="text-sm text-gray-300 mt-1">{language === 'en' && question.englishCategory ? question.englishCategory : question?.category}</p>
                                     </div>
                                 );
                             })}
@@ -568,19 +586,19 @@ const SystemDesignPractice = () => {
                 <div className="h-full bg-gray-800 p-4">
                     {selectedQuestion ? (
                         <div className="h-full overflow-y-auto">
-                            <h3 className="text-xl font-semibold mb-4">{typeof selectedQuestion?.title === 'object' ? selectedQuestion.title[language] : selectedQuestion?.title}</h3>
+                            <h3 className="text-xl font-semibold mb-4">{language === 'en' && selectedQuestion?.englishTitle ? selectedQuestion.englishTitle : selectedQuestion?.title}</h3>
                             
                             <div className="space-y-6">
                                 <div>
                                     <h4 className="text-lg font-medium mb-2">{t('description')}</h4>
-                                    <p className="text-gray-300">{typeof selectedQuestion?.description === 'object' ? selectedQuestion.description[language] : selectedQuestion?.description}</p>
+                                    <p className="text-gray-300">{language === 'en' && selectedQuestion?.englishDescription ? selectedQuestion.englishDescription : selectedQuestion?.description}</p>
                                 </div>
 
                                 {selectedQuestion.design_steps && (
                                     <div>
                                         <h4 className="text-lg font-medium mb-2">{t('designSteps')}</h4>
                                         <ol className="list-decimal list-inside space-y-2 text-gray-300">
-                                            {selectedQuestion.design_steps.map((step, index) => (
+                                            {(language === 'en' && selectedQuestion.englishDesignSteps ? selectedQuestion.englishDesignSteps : selectedQuestion.design_steps).map((step, index) => (
                                                 <li key={index}>{step}</li>
                                             ))}
                                         </ol>
