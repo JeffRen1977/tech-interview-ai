@@ -9,11 +9,11 @@ import { getText } from '../utils/translations';
 import { 
     BookOpen, Clock, Target, CheckCircle, AlertCircle, 
     Search, Filter, RefreshCw, Save, Lightbulb, Eye, EyeOff,
-    Play, Pause, Square, Timer, Star, TrendingUp, Brain
+    Play, Pause, Square, Timer, Star, TrendingUp, Brain, Globe
 } from 'lucide-react';
 
 const LLMInterview = () => {
-    const { language } = useLanguage();
+    const { language, toggleLanguage, isChinese } = useLanguage();
     const t = (key) => getText(key, language);
     
     const [questions, setQuestions] = useState([]);
@@ -175,9 +175,12 @@ const LLMInterview = () => {
 
     const getDifficultyColor = (difficulty) => {
         switch (difficulty) {
-            case '简单': return 'text-green-500';
-            case '中等': return 'text-yellow-500';
-            case '困难': return 'text-red-500';
+            case '简单':
+            case 'Easy': return 'text-green-500';
+            case '中等':
+            case 'Medium': return 'text-yellow-500';
+            case '困难':
+            case 'Hard': return 'text-red-500';
             default: return 'text-gray-500';
         }
     };
@@ -194,23 +197,51 @@ const LLMInterview = () => {
 
     const getDifficultyIcon = (difficulty) => {
         switch (difficulty) {
-            case '简单': return <Star className="w-4 h-4 text-green-500" />;
-            case '中等': return <TrendingUp className="w-4 h-4 text-yellow-500" />;
-            case '困难': return <Brain className="w-4 h-4 text-red-500" />;
+            case '简单':
+            case 'Easy': return <Star className="w-4 h-4 text-green-500" />;
+            case '中等':
+            case 'Medium': return <TrendingUp className="w-4 h-4 text-yellow-500" />;
+            case '困难':
+            case 'Hard': return <Brain className="w-4 h-4 text-red-500" />;
             default: return <Star className="w-4 h-4 text-gray-500" />;
         }
+    };
+
+    const getDifficultyDisplay = (difficulty) => {
+        if (language === 'en') {
+            switch (difficulty) {
+                case '简单': return 'Easy';
+                case '中等': return 'Medium';
+                case '困难': return 'Hard';
+                default: return difficulty;
+            }
+        }
+        return difficulty;
     };
 
     return (
         <div className="container mx-auto p-6">
             <div className="mb-8">
-                <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
-                    <BookOpen className="inline mr-2" />
-                    {t('llmInterview')}
-                </h1>
-                <p className="text-gray-600 dark:text-gray-400">
-                    {t('llmInterviewDescription')}
-                </p>
+                <div className="flex justify-between items-start mb-4">
+                    <div>
+                        <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
+                            <BookOpen className="inline mr-2" />
+                            {t('llmInterview')}
+                        </h1>
+                        <p className="text-gray-600 dark:text-gray-400">
+                            {t('llmInterviewDescription')}
+                        </p>
+                    </div>
+                    <Button 
+                        onClick={toggleLanguage} 
+                        variant="outline" 
+                        size="sm"
+                        className="flex items-center gap-2"
+                    >
+                        <Globe size={16} />
+                        {isChinese ? 'EN' : '中文'}
+                    </Button>
+                </div>
             </div>
 
             {/* 筛选和搜索 */}
@@ -245,7 +276,7 @@ const LLMInterview = () => {
                     >
                         <option value="">{t('allDifficulties')}</option>
                         {difficulties.map(difficulty => (
-                            <option key={difficulty} value={difficulty}>{difficulty}</option>
+                            <option key={difficulty} value={difficulty}>{getDifficultyDisplay(difficulty)}</option>
                         ))}
                     </Select>
                     
@@ -255,7 +286,7 @@ const LLMInterview = () => {
                     </Button>
                 </div>
                 
-                <div className="text-sm text-gray-500">
+                <div className="text-sm text-gray-600 dark:text-gray-300">
                     {t('foundQuestions')}: {filteredQuestions.length}
                 </div>
             </div>
@@ -276,7 +307,7 @@ const LLMInterview = () => {
                         ) : (
                             <div className="space-y-3 max-h-[600px] overflow-y-auto">
                                 {filteredQuestions.length === 0 ? (
-                                    <div className="text-center py-8 text-gray-500">
+                                    <div className="text-center py-8 text-gray-600 dark:text-gray-300">
                                         <BookOpen className="w-8 h-8 mx-auto mb-2 text-gray-400" />
                                         <p>没有找到匹配的题目</p>
                                     </div>
@@ -294,10 +325,10 @@ const LLMInterview = () => {
                                             <div className="flex items-start justify-between mb-2">
                                                 <div className="flex-1">
                                                     <h4 className="font-medium text-sm mb-2 line-clamp-2 leading-tight">
-                                                        {question.title}
+                                                        {language === 'en' && question.englishTitle ? question.englishTitle : question.title}
                                                     </h4>
-                                                    <p className="text-xs text-gray-500 mb-3 line-clamp-2">
-                                                        {question.description}
+                                                    <p className="text-xs text-gray-600 dark:text-gray-300 mb-3 line-clamp-2">
+                                                        {language === 'en' && question.englishDescription ? question.englishDescription : question.description}
                                                     </p>
                                                 </div>
                                             </div>
@@ -309,7 +340,7 @@ const LLMInterview = () => {
                                                     <div className="flex items-center space-x-1">
                                                         {getDifficultyIcon(question.difficulty)}
                                                         <span className={`text-xs font-medium ${getDifficultyColor(question.difficulty)}`}>
-                                                            {question.difficulty}
+                                                            {getDifficultyDisplay(question.difficulty)}
                                                         </span>
                                                     </div>
                                                 </div>
@@ -332,22 +363,26 @@ const LLMInterview = () => {
                                     <div className="flex-1">
                                         <div className="flex items-center space-x-2 mb-2">
                                             {getDifficultyIcon(selectedQuestion.difficulty)}
-                                            <h2 className="text-xl font-bold">{selectedQuestion.title}</h2>
+                                            <h2 className="text-xl font-bold">
+                                                {language === 'en' && selectedQuestion.englishTitle ? selectedQuestion.englishTitle : selectedQuestion.title}
+                                            </h2>
                                         </div>
-                                        {selectedQuestion.englishTitle && (
+                                        {language === 'zh' && selectedQuestion.englishTitle && (
                                             <p className="text-gray-600 dark:text-gray-400 mb-3 italic">
                                                 {selectedQuestion.englishTitle}
                                             </p>
                                         )}
-                                        <p className="text-gray-700 dark:text-gray-300 mb-4 leading-relaxed">
-                                            {selectedQuestion.description}
-                                        </p>
+                                                                <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg mb-4">
+                            <p className="text-gray-900 dark:text-white leading-relaxed font-medium">
+                                {language === 'en' && selectedQuestion.englishDescription ? selectedQuestion.englishDescription : selectedQuestion.description}
+                            </p>
+                        </div>
                                         <div className="flex items-center space-x-4">
                                             <span className={`px-3 py-1 rounded-full text-sm ${getCategoryColor(selectedQuestion.category)}`}>
                                                 {selectedQuestion.category}
                                             </span>
                                             <span className={`text-sm font-medium ${getDifficultyColor(selectedQuestion.difficulty)}`}>
-                                                {selectedQuestion.difficulty}
+                                                {getDifficultyDisplay(selectedQuestion.difficulty)}
                                             </span>
                                         </div>
                                     </div>
@@ -374,9 +409,9 @@ const LLMInterview = () => {
                                             <Target className="w-5 h-5 mr-2" />
                                             {t('designSteps')}
                                         </h3>
-                                        <ol className="list-decimal list-inside space-y-2">
-                                            {selectedQuestion.designSteps.map((step, index) => (
-                                                <li key={index} className="text-gray-700 dark:text-gray-300 pl-4">
+                                        <ol className="list-decimal list-inside space-y-2 bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
+                                            {(language === 'en' && selectedQuestion.englishDesignSteps ? selectedQuestion.englishDesignSteps : selectedQuestion.designSteps).map((step, index) => (
+                                                <li key={index} className="text-gray-900 dark:text-white pl-4 font-medium">
                                                     {step}
                                                 </li>
                                             ))}
@@ -391,11 +426,11 @@ const LLMInterview = () => {
                                             <CheckCircle className="w-5 h-5 mr-2" />
                                             {t('keyPoints')}
                                         </h3>
-                                        <ul className="space-y-2">
-                                            {selectedQuestion.keyPoints.map((point, index) => (
+                                        <ul className="space-y-2 bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
+                                            {(language === 'en' && selectedQuestion.englishKeyPoints ? selectedQuestion.englishKeyPoints : selectedQuestion.keyPoints).map((point, index) => (
                                                 <li key={index} className="flex items-start">
                                                     <CheckCircle className="w-4 h-4 text-green-500 mr-2 mt-0.5 flex-shrink-0" />
-                                                    <span className="text-gray-700 dark:text-gray-300">{point}</span>
+                                                    <span className="text-gray-900 dark:text-white font-medium">{point}</span>
                                                 </li>
                                             ))}
                                         </ul>
@@ -562,11 +597,11 @@ const LLMInterview = () => {
                                             </div>
                                         )}
 
-                                        {/* 技术反馈 */}
+                                                                                {/* 技术反馈 */}
                                         {analysis.technicalFeedback && (
-                                            <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg">
+                                            <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
                                                 <h4 className="font-semibold mb-3">{t('technicalFeedback')}</h4>
-                                                <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
+                                                <p className="text-gray-900 dark:text-white leading-relaxed font-medium">
                                                     {analysis.technicalFeedback}
                                                 </p>
                                             </div>
@@ -596,7 +631,7 @@ const LLMInterview = () => {
                                         {t('standardAnswer')}
                                     </h3>
                                     <div className="prose max-w-none">
-                                        <pre className="whitespace-pre-wrap text-sm text-gray-700 dark:text-gray-300 leading-relaxed bg-gray-50 dark:bg-gray-800 p-4 rounded-lg overflow-x-auto">
+                                        <pre className="whitespace-pre-wrap text-sm text-gray-900 dark:text-white leading-relaxed bg-gray-50 dark:bg-gray-700 p-4 rounded-lg overflow-x-auto font-medium">
                                             {selectedQuestion.detailedAnswer}
                                         </pre>
                                     </div>
@@ -607,7 +642,7 @@ const LLMInterview = () => {
                         <Card className="p-8 text-center">
                             <BookOpen className="w-12 h-12 text-gray-400 mx-auto mb-4" />
                             <h3 className="text-lg font-semibold mb-2">{t('selectQuestion')}</h3>
-                            <p className="text-gray-500">{t('selectQuestionDescription')}</p>
+                            <p className="text-gray-600 dark:text-gray-300">{t('selectQuestionDescription')}</p>
                         </Card>
                     )}
                 </div>

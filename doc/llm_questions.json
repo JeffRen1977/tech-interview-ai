@@ -6,6 +6,7 @@
     "englishTitle": "How to fine-tune models for multi-turn dialogue tasks?",
     "difficulty": "困难",
     "description": "设计一个支持多轮对话的LLM微调方案，包括数据准备、模型选择、训练策略等。",
+    "englishDescription": "Design a multi-turn dialogue LLM fine-tuning solution, including data preparation, model selection, training strategies, etc.",
     "detailedAnswer": "多轮对话微调需要解决的核心问题包括：\n\n1. **数据格式设计**：\n   - 将多轮对话转换为适合训练的格式\n   - 设计合理的对话历史长度限制\n   - 处理角色标识（用户/助手）\n\n2. **模型架构选择**：\n   - 选择支持长序列的模型（如ChatGLM、LLaMA等）\n   - 考虑使用相对位置编码\n   - 优化注意力机制以处理长对话\n\n3. **训练策略**：\n   - 使用对话历史作为上下文\n   - 设计合适的损失函数\n   - 实现渐进式训练（从短对话到长对话）\n\n4. **数据增强**：\n   - 对话重写和扩展\n   - 多轮对话合成\n   - 负样本生成\n\n5. **评估指标**：\n   - 对话连贯性\n   - 上下文理解能力\n   - 多轮对话完成度",
     "tags": ["fine-tuning", "dialogue", "multi-turn", "conversation"],
     "designSteps": [
@@ -15,12 +16,26 @@
       "数据增强和负样本生成",
       "评估指标设计"
     ],
+    "englishDesignSteps": [
+      "Data preprocessing and format conversion",
+      "Model architecture selection and optimization",
+      "Training strategy design",
+      "Data augmentation and negative sample generation",
+      "Evaluation metrics design"
+    ],
     "keyPoints": [
       "对话历史长度管理",
       "角色标识处理",
       "上下文理解优化",
       "训练效率提升",
       "评估体系建立"
+    ],
+    "englishKeyPoints": [
+      "Dialogue history length management",
+      "Role identification processing",
+      "Context understanding optimization",
+      "Training efficiency improvement",
+      "Evaluation system establishment"
     ]
   },
   {
@@ -30,6 +45,7 @@
     "englishTitle": "What causes performance degradation and catastrophic forgetting in fine-tuned models?",
     "difficulty": "中等",
     "description": "分析微调过程中模型能力劣化的原因，以及如何缓解灾难性遗忘问题。",
+    "englishDescription": "Analyze the causes of model performance degradation during fine-tuning and how to mitigate catastrophic forgetting issues.",
     "detailedAnswer": "灾难性遗忘（Catastrophic Forgetting）是深度学习中的经典问题：\n\n1. **根本原因**：\n   - 参数空间冲突：新任务与原始任务在参数空间上存在竞争\n   - 梯度覆盖：新任务的梯度更新覆盖了原始任务的参数\n   - 容量限制：模型容量不足以同时保持多个任务的知识\n\n2. **缓解策略**：\n   - **正则化方法**：\n     * Elastic Weight Consolidation (EWC)\n     * Knowledge Distillation\n     * L2正则化\n   - **参数隔离**：\n     * LoRA (Low-Rank Adaptation)\n     * AdaLoRA\n     * QLoRA\n   - **数据策略**：\n     * 混合训练数据\n     * 渐进式学习\n     * 回放机制\n\n3. **评估方法**：\n   - 原始任务性能保持\n   - 新任务学习效果\n   - 整体能力平衡\n\n4. **最佳实践**：\n   - 使用参数高效微调方法\n   - 保持原始数据的代表性样本\n   - 定期评估和调整策略",
     "tags": ["catastrophic-forgetting", "fine-tuning", "knowledge-preservation", "regularization"],
     "designSteps": [
@@ -38,11 +54,23 @@
       "评估方法建立",
       "最佳实践总结"
     ],
+    "englishDesignSteps": [
+      "Problem cause analysis",
+      "Mitigation strategy design",
+      "Evaluation method establishment",
+      "Best practices summary"
+    ],
     "keyPoints": [
       "参数空间冲突理解",
       "正则化方法应用",
       "参数隔离技术",
       "评估体系设计"
+    ],
+    "englishKeyPoints": [
+      "Parameter space conflict understanding",
+      "Regularization method application",
+      "Parameter isolation technology",
+      "Evaluation system design"
     ]
   },
   {
@@ -52,6 +80,7 @@
     "englishTitle": "What is RAG?",
     "difficulty": "简单",
     "description": "解释检索增强生成（RAG）的基本概念、工作原理和应用场景。",
+    "englishDescription": "Explain the basic concepts, working principles, and application scenarios of Retrieval-Augmented Generation (RAG).",
     "detailedAnswer": "RAG（Retrieval-Augmented Generation）是一种结合检索和生成的AI架构：\n\n1. **核心概念**：\n   - 通过检索相关文档来增强LLM的生成能力\n   - 将外部知识库与生成模型结合\n   - 提高回答的准确性和可追溯性\n\n2. **工作流程**：\n   - **查询处理**：将用户查询转换为检索查询\n   - **文档检索**：从知识库中检索相关文档\n   - **上下文构建**：将检索到的文档作为上下文\n   - **生成回答**：LLM基于上下文生成最终回答\n\n3. **技术组件**：\n   - **检索器**：向量数据库、关键词检索\n   - **生成器**：大语言模型\n   - **知识库**：文档存储和索引\n   - **重排序**：结果排序和过滤\n\n4. **优势**：\n   - 提高事实准确性\n   - 减少幻觉问题\n   - 支持实时信息更新\n   - 增强可解释性\n\n5. **应用场景**：\n   - 客服问答系统\n   - 文档智能助手\n   - 知识库查询\n   - 个性化推荐",
     "tags": ["rag", "retrieval", "generation", "knowledge-base"],
     "designSteps": [
@@ -60,11 +89,23 @@
       "技术组件选择",
       "应用场景分析"
     ],
+    "englishDesignSteps": [
+      "Concept understanding",
+      "Workflow design",
+      "Technical component selection",
+      "Application scenario analysis"
+    ],
     "keyPoints": [
       "检索与生成结合",
       "外部知识集成",
       "准确性提升",
       "可追溯性增强"
+    ],
+    "englishKeyPoints": [
+      "Retrieval and generation combination",
+      "External knowledge integration",
+      "Accuracy improvement",
+      "Traceability enhancement"
     ]
   },
   {
@@ -74,6 +115,7 @@
     "englishTitle": "What are the processes in RAG, and what optimization methods are available for each process?",
     "difficulty": "困难",
     "description": "详细分析RAG系统的各个流程环节，以及每个环节的优化策略和技术手段。",
+    "englishDescription": "Analyze in detail the various process stages of RAG systems and the optimization strategies and technical methods for each stage.",
     "detailedAnswer": "RAG系统包含以下核心流程和优化策略：\n\n1. **查询理解与重写**：\n   - **优化手段**：\n     * 查询扩展：同义词、相关词扩展\n     * 查询分解：复杂查询拆分为子查询\n     * 意图识别：理解用户真实意图\n     * 多语言处理：跨语言查询支持\n\n2. **文档检索**：\n   - **优化手段**：\n     * 混合检索：关键词+语义检索结合\n     * 多路召回：多种检索策略并行\n     * 动态权重：根据查询类型调整权重\n     * 缓存机制：热门查询结果缓存\n\n3. **文档重排序**：\n   - **优化手段**：\n     * 交叉编码器：精确的文档相关性评分\n     * 多阶段排序：粗排+精排\n     * 个性化排序：考虑用户历史偏好\n     * 多样性排序：避免结果同质化\n\n4. **上下文构建**：\n   - **优化手段**：\n     * 智能截断：保留最相关信息\n     * 文档融合：多文档信息整合\n     * 结构化处理：表格、列表等特殊内容\n     * 元数据利用：文档来源、时间等信息\n\n5. **生成优化**：\n   - **优化手段**：\n     * 提示工程：设计有效的提示模板\n     * 约束生成：控制输出格式和长度\n     * 多轮对话：支持上下文记忆\n     * 实时更新：动态调整生成策略\n\n6. **后处理与评估**：\n   - **优化手段**：\n     * 事实检查：验证生成内容的准确性\n     * 引用标注：标注信息来源\n     * 质量评估：自动评估回答质量\n     * 用户反馈：收集用户满意度",
     "tags": ["rag-optimization", "retrieval", "reranking", "context-construction"],
     "designSteps": [
@@ -84,11 +126,25 @@
       "生成优化",
       "后处理优化"
     ],
+    "englishDesignSteps": [
+      "Query processing optimization",
+      "Retrieval strategy optimization",
+      "Reranking optimization",
+      "Context construction optimization",
+      "Generation optimization",
+      "Post-processing optimization"
+    ],
     "keyPoints": [
       "多路召回策略",
       "交叉编码器应用",
       "智能上下文构建",
       "质量评估体系"
+    ],
+    "englishKeyPoints": [
+      "Multi-path recall strategy",
+      "Cross-encoder application",
+      "Intelligent context construction",
+      "Quality evaluation system"
     ]
   },
   {
@@ -98,6 +154,7 @@
     "englishTitle": "Introduction to the architecture of large LLMs?",
     "difficulty": "中等",
     "description": "详细介绍大语言模型的架构设计，包括Transformer结构、注意力机制、位置编码等核心组件。",
+    "englishDescription": "Introduce in detail the architecture design of large language models, including Transformer structure, attention mechanisms, positional encoding and other core components.",
     "detailedAnswer": "大语言模型的核心架构基于Transformer设计：\n\n1. **整体架构**：\n   - **输入层**：词嵌入 + 位置编码\n   - **编码层**：多层Transformer块\n   - **输出层**：线性层 + Softmax\n   - **训练目标**：自回归语言建模\n\n2. **核心组件**：\n   - **Self-Attention机制**：\n     * 计算查询(Q)、键(K)、值(V)\n     * 注意力权重：Attention(Q,K,V) = softmax(QK^T/√d_k)V\n     * 多头注意力：并行计算多个注意力头\n   - **位置编码**：\n     * 绝对位置编码：sin/cos函数\n     * 相对位置编码：RPE、ALiBi\n     * 旋转位置编码：RoPE\n   - **前馈网络**：\n     * 两层线性变换\n     * 激活函数：GeLU、Swish\n     * 残差连接和层归一化\n\n3. **架构变体**：\n   - **Decoder-only**：GPT系列、LLaMA\n   - **Encoder-only**：BERT、RoBERTa\n   - **Encoder-Decoder**：T5、BART\n\n4. **优化技术**：\n   - **注意力优化**：稀疏注意力、滑动窗口\n   - **激活函数**：GeLU、Swish、GLU\n   - **归一化**：LayerNorm、RMSNorm\n   - **初始化**：Xavier、Kaiming初始化\n\n5. **扩展策略**：\n   - **模型并行**：张量并行、流水线并行\n   - **数据并行**：分布式训练\n   - **混合精度**：FP16、BF16训练",
     "tags": ["transformer", "attention", "architecture", "positional-encoding"],
     "designSteps": [
@@ -107,11 +164,24 @@
       "优化技术应用",
       "扩展策略规划"
     ],
+    "englishDesignSteps": [
+      "Overall architecture design",
+      "Core component analysis",
+      "Architecture variant comparison",
+      "Optimization technology application",
+      "Scaling strategy planning"
+    ],
     "keyPoints": [
       "Self-Attention机制",
       "位置编码设计",
       "架构变体选择",
       "优化技术应用"
+    ],
+    "englishKeyPoints": [
+      "Self-Attention mechanism",
+      "Positional encoding design",
+      "Architecture variant selection",
+      "Optimization technology application"
     ]
   },
   {
@@ -121,6 +191,7 @@
     "englishTitle": "Why are current mainstream large models all decoder-only architectures?",
     "difficulty": "中等",
     "description": "分析decoder-only架构成为主流大模型选择的原因，包括技术优势和应用场景。",
+    "englishDescription": "Analyze why decoder-only architecture has become the mainstream choice for large models, including technical advantages and application scenarios.",
     "detailedAnswer": "Decoder-only架构成为主流的原因：\n\n1. **生成任务优势**：\n   - **自回归生成**：天然适合文本生成任务\n   - **因果注意力**：只关注历史信息，符合生成逻辑\n   - **并行训练**：支持高效的并行化训练\n   - **推理效率**：生成时只需前向传播\n\n2. **技术优势**：\n   - **参数效率**：相比Encoder-Decoder更少的参数\n   - **训练稳定性**：避免了编码器-解码器对齐问题\n   - **扩展性**：更容易扩展到更大规模\n   - **预训练目标**：自然适合语言建模任务\n\n3. **应用场景匹配**：\n   - **对话系统**：适合多轮对话生成\n   - **文本创作**：小说、诗歌、代码生成\n   - **问答系统**：基于上下文的回答生成\n   - **指令跟随**：理解和执行用户指令\n\n4. **工程实践优势**：\n   - **部署简单**：单一模型，部署复杂度低\n   - **推理优化**：注意力缓存、KV缓存\n   - **内存效率**：推理时内存占用相对较低\n   - **批处理**：支持高效的批处理推理\n\n5. **发展趋势**：\n   - **规模效应**：大模型时代，生成能力更重要\n   - **多模态**：容易扩展到多模态生成\n   - **指令微调**：天然适合指令跟随训练\n   - **强化学习**：适合RLHF等对齐技术",
     "tags": ["decoder-only", "generation", "architecture-choice", "scaling"],
     "designSteps": [
@@ -130,11 +201,24 @@
       "工程实践考虑",
       "发展趋势分析"
     ],
+    "englishDesignSteps": [
+      "Generation task analysis",
+      "Technical advantage evaluation",
+      "Application scenario matching",
+      "Engineering practice consideration",
+      "Development trend analysis"
+    ],
     "keyPoints": [
       "自回归生成优势",
       "参数效率提升",
       "工程实践简化",
       "扩展性增强"
+    ],
+    "englishKeyPoints": [
+      "Autoregressive generation advantage",
+      "Parameter efficiency improvement",
+      "Engineering practice simplification",
+      "Scalability enhancement"
     ]
   },
   {
@@ -144,6 +228,7 @@
     "englishTitle": "Large Models (LLMs) Inference",
     "difficulty": "困难",
     "description": "设计一个高性能的大模型推理系统，包括模型优化、部署策略、服务架构等。",
+    "englishDescription": "Design a high-performance large model inference system, including model optimization, deployment strategies, service architecture, etc.",
     "detailedAnswer": "大模型推理系统设计需要考虑以下关键方面：\n\n1. **模型优化**：\n   - **量化技术**：\n     * INT8量化：减少内存占用和计算量\n     * INT4量化：进一步压缩模型\n     * 混合精度：FP16/BF16推理\n   - **模型压缩**：\n     * 知识蒸馏：训练更小的学生模型\n     * 剪枝技术：移除不重要的权重\n     * 模型并行：将大模型分割到多个设备\n\n2. **推理加速**：\n   - **注意力优化**：\n     * Flash Attention：减少内存访问\n     * 稀疏注意力：只计算重要位置\n     * 滑动窗口：限制注意力范围\n   - **缓存机制**：\n     * KV缓存：避免重复计算\n     * 注意力缓存：缓存中间结果\n     * 结果缓存：缓存常见查询结果\n\n3. **部署架构**：\n   - **服务框架**：\n     * vLLM：高性能推理框架\n     * TensorRT-LLM：NVIDIA优化框架\n     * DeepSpeed-Inference：微软推理框架\n   - **负载均衡**：\n     * 请求队列：管理并发请求\n     * 动态批处理：提高GPU利用率\n     * 自动扩缩容：根据负载调整实例\n\n4. **性能优化**：\n   - **内存管理**：\n     * 显存优化：减少GPU内存占用\n     * 内存池：复用内存分配\n     * 梯度检查点：节省内存\n   - **计算优化**：\n     * 算子融合：减少内存访问\n     * 并行计算：充分利用硬件\n     * 流水线并行：重叠计算和通信\n\n5. **监控与运维**：\n   - **性能监控**：\n     * 延迟监控：P50、P90、P99延迟\n     * 吞吐量监控：QPS、TPS\n     * 资源监控：GPU利用率、内存使用\n   - **质量保证**：\n     * 结果验证：检查生成质量\n     * A/B测试：比较不同模型版本\n     * 用户反馈：收集用户满意度",
     "tags": ["inference", "optimization", "deployment", "performance"],
     "designSteps": [
@@ -153,11 +238,24 @@
       "性能优化方案",
       "监控运维体系"
     ],
+    "englishDesignSteps": [
+      "Model optimization strategy",
+      "Inference acceleration technology",
+      "Deployment architecture design",
+      "Performance optimization solution",
+      "Monitoring and operation system"
+    ],
     "keyPoints": [
       "量化技术应用",
       "注意力优化",
       "缓存机制设计",
       "服务架构优化"
+    ],
+    "englishKeyPoints": [
+      "Quantization technology application",
+      "Attention optimization",
+      "Cache mechanism design",
+      "Service architecture optimization"
     ]
   },
   {
@@ -167,6 +265,7 @@
     "englishTitle": "Large Models (LLMs) Reinforcement Learning - RLHF and its variations",
     "difficulty": "困难",
     "description": "深入分析RLHF（基于人类反馈的强化学习）技术，包括PPO、DPO等变种算法。",
+    "englishDescription": "In-depth analysis of RLHF (Reinforcement Learning from Human Feedback) technology, including PPO, DPO and other variant algorithms.",
     "detailedAnswer": "RLHF是让大模型对齐人类价值观的关键技术：\n\n1. **RLHF基础流程**：\n   - **步骤1：监督微调（SFT）**：\n     * 使用高质量人类标注数据微调预训练模型\n     * 建立基础的行为模式\n     * 为后续强化学习提供起点\n   - **步骤2：奖励模型训练（RM）**：\n     * 收集人类偏好数据（A/B测试）\n     * 训练奖励模型预测人类偏好\n     * 学习人类价值观的表示\n   - **步骤3：强化学习优化（PPO）**：\n     * 使用奖励模型作为奖励信号\n     * 通过PPO算法优化策略\n     * 在KL散度约束下更新模型\n\n2. **PPO算法详解**：\n   - **目标函数**：\n     * L = E[min(r_t * A_t, clip(r_t, 1-ε, 1+ε) * A_t)]\n     * r_t = π_new(a|s) / π_old(a|s)\n   - **关键特性**：\n     * 重要性采样：使用旧策略的数据\n     * 裁剪机制：限制策略更新幅度\n     * 价值函数：估计状态价值\n     * 熵正则化：鼓励探索\n\n3. **RLHF变种算法**：\n   - **DPO（Direct Preference Optimization）**：\n     * 直接优化偏好目标\n     * 避免显式的奖励模型\n     * 更稳定的训练过程\n   - **IPO（Identity Preference Optimization）**：\n     * 改进的偏好优化算法\n     * 更好的理论保证\n     * 减少过度优化\n   - **KTO（Kahneman-Tversky Optimization）**：\n     * 基于行为经济学的优化\n     * 考虑损失厌恶心理\n     * 更符合人类决策模式\n\n4. **技术挑战**：\n   - **奖励黑客**：模型学会欺骗奖励模型\n   - **过度优化**：过度拟合人类偏好数据\n   - **分布偏移**：训练和部署数据分布不同\n   - **多目标平衡**：帮助性、无害性、诚实性\n\n5. **评估方法**：\n   - **人类评估**：直接的人类偏好测试\n   - **自动指标**：ROUGE、BLEU等\n   - **对抗测试**：检测有害内容生成\n   - **长期评估**：持续监控模型行为",
     "tags": ["rlhf", "ppo", "dpo", "reinforcement-learning", "alignment"],
     "designSteps": [
@@ -176,11 +275,24 @@
       "技术挑战解决",
       "评估方法建立"
     ],
+    "englishDesignSteps": [
+      "RLHF process design",
+      "PPO algorithm implementation",
+      "Variant algorithm analysis",
+      "Technical challenge resolution",
+      "Evaluation method establishment"
+    ],
     "keyPoints": [
       "三阶段训练流程",
       "PPO算法核心",
       "变种算法优势",
       "对齐技术应用"
+    ],
+    "englishKeyPoints": [
+      "Three-stage training process",
+      "PPO algorithm core",
+      "Variant algorithm advantages",
+      "Alignment technology application"
     ]
   }
 ] 

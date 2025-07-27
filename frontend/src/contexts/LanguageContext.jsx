@@ -12,8 +12,8 @@ export const useLanguage = () => {
 
 export const LanguageProvider = ({ children }) => {
   const [language, setLanguage] = useState(() => {
-    // 从本地存储获取语言设置，默认为中文
-    return localStorage.getItem('language') || 'zh';
+    // 从本地存储获取语言设置，默认为英文
+    return localStorage.getItem('language') || 'en';
   });
 
   const toggleLanguage = () => {
