@@ -291,3 +291,54 @@ export const programmingAPI = {
 export const getWrongQuestions = async () => {
   return await apiRequest('/code/wrong-questions', 'GET');
 };
+
+// LLM API functions
+export const llmAPI = {
+  // 获取所有LLM问题
+  getAllQuestions: async () => {
+    return await apiRequest('/llm/questions', 'GET');
+  },
+  
+  // 获取筛选后的LLM问题
+  getFilteredQuestions: async (filters) => {
+    const params = new URLSearchParams(filters);
+    return await apiRequest(`/llm/questions/filtered?${params}`, 'GET');
+  },
+  
+  // 根据ID获取特定LLM问题
+  getQuestionById: async (id) => {
+    return await apiRequest(`/llm/questions/${id}`, 'GET');
+  },
+  
+  // 获取LLM题目分类
+  getCategories: async () => {
+    return await apiRequest('/llm/categories', 'GET');
+  },
+  
+  // 生成LLM问题
+  generateQuestion: async (questionData) => {
+    return await apiRequest('/llm/generate', 'POST', questionData);
+  },
+  
+  // 保存LLM问题
+  saveQuestion: async (questionData) => {
+    return await apiRequest('/llm/save', 'POST', questionData);
+  },
+  
+  // 保存到学习历史
+  saveToLearningHistory: async (questionId, completedAt) => {
+    return await apiRequest('/llm/learning-history', 'POST', {
+      questionId,
+      completedAt
+    });
+  },
+  
+  // 分析LLM解答
+  analyzeSolution: async (questionData, userAnswer, timeSpent) => {
+    return await apiRequest('/llm/analyze', 'POST', {
+      questionData,
+      userAnswer,
+      timeSpent
+    });
+  }
+};

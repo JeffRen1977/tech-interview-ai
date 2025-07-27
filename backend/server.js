@@ -13,6 +13,7 @@ const coachAgentRoutes = require('./routes/coachAgentRoutes');
 const systemDesignRoutes = require('./routes/systemDesignRoutes');
 const behavioralRoutes = require('./routes/behavioralRoutes');
 const mockRoutes = require('./routes/mockRoutes');
+const llmRoutes = require('./routes/llmRoutes');
 
 // --- 初始化 ---
 const app = express();
@@ -72,6 +73,7 @@ app.use('/api/coach-agent', coachAgentRoutes);
 app.use('/api/system-design', systemDesignRoutes);
 app.use('/api/behavioral', behavioralRoutes);
 app.use('/api/mock', mockRoutes);
+app.use('/api/llm', llmRoutes);
 
 // --- 启动服务器 ---
 const PORT = process.env.PORT || 3000;

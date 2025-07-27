@@ -12,6 +12,7 @@ import MainContent from './components/MainContent';
 import UserHistory from './components/UserHistory';
 import LearnAndFeedback from './pages/LearnAndFeedback';
 import CoachAgent from './pages/CoachAgent';
+import LLMInterview from './components/LLMInterview';
 import { LanguageProvider, useLanguage } from './contexts/LanguageContext';
 import { getText } from './utils/translations';
 import { authAPI, clearAuth } from './api';
@@ -139,6 +140,7 @@ const AppContent = () => {
         {activeView === 'dashboard' && <Dashboard />}
         {activeView === 'coding-practice' && <InterviewLearning />}
         {activeView === 'mock-interview' && <MockInterview />}
+        {activeView === 'llm-interview' && <LLMInterview />}
         {activeView === 'resume-optimizer' && <ResumeOptimizer />}
         {activeView === 'admin' && user?.role === 'admin' && <Admin />}
         {activeView === 'user-history' && <UserHistory />}

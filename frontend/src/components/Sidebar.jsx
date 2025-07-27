@@ -1,5 +1,5 @@
 import React from 'react';
-import { LayoutDashboard, Code, Mic, FileText, Building, History, UserCog, BrainCircuit, Shield, Clock, LogOut, User } from 'lucide-react';
+import { LayoutDashboard, Code, Mic, FileText, Building, History, UserCog, BrainCircuit, Shield, Clock, LogOut, User, BookOpen } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { getText } from '../utils/translations';
 
@@ -11,6 +11,7 @@ const Sidebar = ({ activeView, setAppView, onLogout, user, isAdmin }) => {
     { id: 'dashboard', icon: <LayoutDashboard />, label: t('dashboard') },
     { id: 'coding-practice', icon: <Code />, label: t('interviewLearning') },
     { id: 'mock-interview', icon: <Mic />, label: t('mockInterview') },
+    { id: 'llm-interview', icon: <BookOpen />, label: t('llmInterview') },
     { id: 'resume-optimizer', icon: <FileText />, label: t('resumeOptimizer') },
     { id: 'learn-feedback', icon: <History />, label: t('learnFeedback') },
     { id: 'coach-agent', icon: <UserCog />, label: t('coachAgent') },
