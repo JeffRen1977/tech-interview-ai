@@ -6,10 +6,10 @@ import { getText } from '../utils/translations';
 const Button = ({ children, className, ...props }) => <button className={`inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors disabled:opacity-50 ${className}`} {...props}>{children}</button>;
 
 const FeatureCard = ({ icon, title, description }) => (
-    <div className="p-6 rounded-lg text-left bg-gray-800 border border-gray-700">
-        <div className="h-8 w-8 mb-3">{icon}</div>
-        <h3 className="text-xl font-bold mb-2">{title}</h3>
-        <p className="text-gray-400 text-sm">{description}</p>
+    <div className="p-5 lg:p-6 rounded-lg text-left bg-gray-800 border border-gray-700 hover:border-gray-600 transition-all duration-300 hover:shadow-lg mobile-feature-card">
+        <div className="h-8 w-8 mb-3 lg:mb-4">{icon}</div>
+        <h3 className="text-lg lg:text-xl font-bold mb-2 lg:mb-3">{title}</h3>
+        <p className="text-gray-400 text-sm lg:text-base leading-relaxed">{description}</p>
     </div>
 );
 
@@ -83,9 +83,15 @@ const HomePage = ({ onLogin }) => {
           </div>
         </section>
         
-        <section id="features" className="w-full max-w-5xl py-20">
-          <h2 className="text-3xl font-bold mb-8">{t('coreFeatures')}</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+        <section id="features" className="w-full max-w-6xl py-16 lg:py-20">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl lg:text-4xl font-bold mb-4">{t('coreFeatures')}</h2>
+            <p className="text-lg text-gray-400 max-w-2xl mx-auto">
+              {t('coreFeaturesSubtitle')}
+            </p>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8">
               <FeatureCard 
                 icon={<Book className="text-green-400" />} 
                 title={t('smartQuestionBank')} 
