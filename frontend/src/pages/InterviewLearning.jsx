@@ -27,28 +27,28 @@ const InterviewLearning = () => {
     ];
 
     return (
-        <div className="h-full bg-gray-900 text-white p-6">
-            <div className="mb-6">
-                <h1 className="text-3xl font-bold mb-2">{t('interviewLearning')}</h1>
-                <p className="text-gray-400">{t('interviewLearningDescription')}</p>
+        <div className="h-full bg-gray-900 text-white p-4 lg:p-6">
+            <div className="mb-4 lg:mb-6">
+                <h1 className="text-2xl lg:text-3xl font-bold mb-2">{t('interviewLearning')}</h1>
+                <p className="text-gray-400 text-sm lg:text-base">{t('interviewLearningDescription')}</p>
             </div>
 
-            {/* 标签页导航 */}
-            <div className="flex space-x-1 mb-6 bg-gray-800 p-1 rounded-lg">
+            {/* 标签页导航 - 移动端优化 */}
+            <div className="flex space-x-1 mb-4 lg:mb-6 bg-gray-800 p-1 rounded-lg overflow-x-auto mobile-tab-container">
                 {tabs.map((tab) => {
                     const Icon = tab.icon;
                     return (
                         <button
                             key={tab.id}
                             onClick={() => setActiveTab(tab.id)}
-                            className={`flex items-center space-x-2 px-4 py-2 rounded-md transition-colors ${
+                            className={`flex items-center space-x-1 lg:space-x-2 px-3 lg:px-4 py-2 rounded-md transition-colors whitespace-nowrap ${
                                 activeTab === tab.id
                                     ? 'bg-indigo-600 text-white'
                                     : 'text-gray-400 hover:text-white hover:bg-gray-700'
                             }`}
                         >
-                            <Icon size={18} />
-                            <span>{tab.label}</span>
+                            <Icon size={16} className="lg:w-5 lg:h-5" />
+                            <span className="text-sm lg:text-base">{tab.label}</span>
                         </button>
                     );
                 })}
@@ -230,13 +230,31 @@ const ProgrammingPractice = () => {
         }
     };
 
+    const [showQuestionList, setShowQuestionList] = useState(false);
+
     return (
-        <ResizablePanelGroup direction="horizontal" className="h-full rounded-lg border border-gray-700">
-            {/* 左侧题目列表 */}
-            <ResizablePanel defaultSize={30} minSize={20}>
-                <div className="h-full bg-gray-800 p-4">
+        <div className="h-full flex flex-col lg:flex-row bg-gray-800 rounded-lg border border-gray-700">
+            {/* 移动端题目列表切换按钮 */}
+            <div className="lg:hidden bg-gray-700 p-3 border-b border-gray-600">
+                <button
+                    onClick={() => setShowQuestionList(!showQuestionList)}
+                    className="w-full flex items-center justify-between p-2 bg-gray-600 rounded-lg hover:bg-gray-500 transition-colors mobile-question-toggle"
+                >
+                    <span className="font-medium">
+                        {selectedProblem ? 
+                            (typeof selectedProblem.title === 'object' ? selectedProblem.title[language] : selectedProblem.title) : 
+                            t('selectQuestion')
+                        }
+                    </span>
+                    <Filter size={16} />
+                </button>
+            </div>
+
+            {/* 题目列表 - 移动端可切换显示 */}
+            <div className={`${showQuestionList ? 'block' : 'hidden'} lg:block lg:w-1/3 xl:w-1/4 bg-gray-800 border-r border-gray-700`}>
+                <div className="h-full p-4">
                     <div className="flex items-center justify-between mb-4">
-                        <h2 className="text-xl font-semibold">{t('programmingQuestions')}</h2>
+                        <h2 className="text-lg lg:text-xl font-semibold">{t('programmingQuestions')}</h2>
                         <Button
                             variant="ghost"
                             size="sm"
@@ -262,7 +280,7 @@ const ProgrammingPractice = () => {
                     ) : error ? (
                         <div className="text-red-400 text-center p-4">{error}</div>
                     ) : (
-                        <div className="space-y-2 max-h-96 overflow-y-auto">
+                        <div className="space-y-2 max-h-96 overflow-y-auto mobile-question-list">
                             {problems.map((problem) => {
                                 console.log('题目难度:', problem.difficulty);
                                 let diff = (problem.difficulty || '').toLowerCase();
@@ -277,15 +295,18 @@ const ProgrammingPractice = () => {
                                 return (
                                     <div
                                         key={problem.id}
-                                        onClick={() => handleSelectProblem(problem)}
-                                        className={`p-3 rounded-lg cursor-pointer transition-colors ${
+                                        onClick={() => {
+                                            handleSelectProblem(problem);
+                                            setShowQuestionList(false); // 移动端选择后隐藏列表
+                                        }}
+                                        className={`p-3 rounded-lg cursor-pointer transition-colors mobile-question-item ${
                                             selectedProblem?.id === problem.id
                                                 ? 'bg-indigo-600 text-white'
                                                 : 'bg-gray-700 hover:bg-gray-600'
                                         }`}
                                     >
                                         <div className="flex items-center justify-between">
-                                            <span className="font-medium">{typeof problem.title === 'object' ? problem.title[language] : problem?.title}</span>
+                                            <span className="font-medium text-sm lg:text-base">{typeof problem.title === 'object' ? problem.title[language] : problem?.title}</span>
                                             <span className={`px-2 py-1 rounded text-xs font-bold ${colorClass}`}>
                                                 {problem.difficulty || 'unknown'}
                                             </span>
@@ -296,52 +317,54 @@ const ProgrammingPractice = () => {
                         </div>
                     )}
                 </div>
-            </ResizablePanel>
+            </div>
 
-            <ResizableHandle />
-
-            {/* 右侧代码编辑器和反馈 */}
-            <ResizablePanel defaultSize={70}>
+            {/* 代码编辑器和反馈区域 */}
+            <div className="flex-1 flex flex-col">
                 <div className="h-full bg-gray-800 p-4">
                     {selectedProblem ? (
                         <>
                             <div className="mb-4">
-                                <h3 className="text-xl font-semibold mb-2">{typeof selectedProblem?.title === 'object' ? selectedProblem.title[language] : selectedProblem?.title}</h3>
-                                <p className="text-gray-300 mb-4">{typeof selectedProblem?.description === 'object' ? selectedProblem.description[language] : selectedProblem?.description}</p>
+                                <h3 className="text-lg lg:text-xl font-semibold mb-2">{typeof selectedProblem?.title === 'object' ? selectedProblem.title[language] : selectedProblem?.title}</h3>
+                                <p className="text-gray-300 mb-4 text-sm lg:text-base">{typeof selectedProblem?.description === 'object' ? selectedProblem.description[language] : selectedProblem?.description}</p>
                                 
-                                <div className="flex items-center space-x-4 mb-4">
+                                {/* 移动端优化的控制按钮 */}
+                                <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 mb-4">
                                     <Select
                                         value={programmingLanguage}
                                         onValueChange={handleLanguageChange}
-                                        className="w-32"
+                                        className="w-full sm:w-32"
                                     >
                                         <option value="python">Python</option>
                                         <option value="cpp">C++</option>
                                         <option value="java">Java</option>
                                     </Select>
                                     
-                                    <Button
-                                        onClick={handleExecute}
-                                        disabled={isLoading.execution}
-                                        className="bg-green-600 hover:bg-green-700"
-                                    >
-                                        <Play size={16} className="mr-2" />
-                                        {t('execute')}
-                                    </Button>
-                                    
-                                    <Button
-                                        onClick={handleSubmitCode}
-                                        disabled={isLoading.submission}
-                                        className="bg-indigo-600 hover:bg-indigo-700"
-                                    >
-                                        <Send size={16} className="mr-2" />
-                                        {t('submit')}
-                                    </Button>
+                                    <div className="flex gap-2">
+                                        <Button
+                                            onClick={handleExecute}
+                                            disabled={isLoading.execution}
+                                            className="bg-green-600 hover:bg-green-700 flex-1 sm:flex-none"
+                                        >
+                                            <Play size={16} className="mr-2" />
+                                            {t('execute')}
+                                        </Button>
+                                        
+                                        <Button
+                                            onClick={handleSubmitCode}
+                                            disabled={isLoading.submission}
+                                            className="bg-indigo-600 hover:bg-indigo-700 flex-1 sm:flex-none"
+                                        >
+                                            <Send size={16} className="mr-2" />
+                                            {t('submit')}
+                                        </Button>
+                                    </div>
                                 </div>
                             </div>
 
-                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 h-96">
-                                <div className="bg-gray-900 rounded-lg">
+                            {/* 移动端优化的编辑器布局 */}
+                            <div className="flex flex-col lg:grid lg:grid-cols-2 gap-4 h-96 lg:h-80 mobile-editor-container">
+                                <div className="bg-gray-900 rounded-lg flex-1 min-h-48 mobile-code-editor">
                                     <MonacoEditor
                                         value={userCode}
                                         onChange={setUserCode}
@@ -350,46 +373,46 @@ const ProgrammingPractice = () => {
                                     />
                                 </div>
                                 
-                                <div className="bg-gray-900 rounded-lg p-4 overflow-y-auto">
+                                <div className="bg-gray-900 rounded-lg p-4 overflow-y-auto flex-1 min-h-48 mobile-feedback-panel mobile-feedback-container">
                                     {feedback && (
                                         <div className={`p-4 rounded-lg ${
                                             feedback.success ? 'bg-green-900 border border-green-600' : 'bg-red-900 border border-red-600'
                                         }`}>
-                                            <h4 className="font-semibold mb-2">
+                                            <h4 className="font-semibold mb-2 text-sm lg:text-base">
                                                 {feedback.type === 'execution' ? t('executionResult') : t('submissionResult')}
                                             </h4>
                                             {feedback.type === 'submission' && feedback.aiAnalysis && (
                                                 <div className="mb-3">
-                                                    <h5 className="font-medium text-blue-400 mb-1">{t('aiAnalysis')}</h5>
-                                                    <div className="text-sm text-gray-300 whitespace-pre-line bg-gray-800 p-3 rounded">
+                                                    <h5 className="font-medium text-blue-400 mb-1 text-sm">{t('aiAnalysis')}</h5>
+                                                    <div className="text-xs lg:text-sm text-gray-300 whitespace-pre-line bg-gray-800 p-3 rounded">
                                                         {feedback.aiAnalysis}
                                                     </div>
                                                 </div>
                                             )}
                                             {feedback.message && (
-                                                <pre className="text-sm whitespace-pre-wrap">{feedback.message}</pre>
+                                                <pre className="text-xs lg:text-sm whitespace-pre-wrap">{feedback.message}</pre>
                                             )}
                                             
                                             {/* 显示保存状态和保存按钮 */}
                                             {feedback.type === 'submission' && (
                                                 <div className="mt-4">
                                                     {feedback.saved ? (
-                                                        <div className="text-green-400 text-sm flex items-center">
+                                                        <div className="text-green-400 text-xs lg:text-sm flex items-center">
                                                             <Check size={16} className="mr-2" />
                                                             {feedback.saveMessage || t('savedToLearningHistory')}
                                                         </div>
                                                     ) : (
-                                                        <div className="flex items-center gap-2">
+                                                        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
                                                             <Button
                                                                 onClick={handleSaveToHistory}
                                                                 disabled={isLoading.submission}
-                                                                className="bg-green-600 hover:bg-green-700 text-sm"
+                                                                className="bg-green-600 hover:bg-green-700 text-xs lg:text-sm w-full sm:w-auto"
                                                             >
                                                                 <Save size={16} className="mr-2" />
                                                                 {t('saveToLearningHistory')}
                                                             </Button>
                                                             {feedback.saveMessage && (
-                                                                <span className="text-red-400 text-sm">{feedback.saveMessage}</span>
+                                                                <span className="text-red-400 text-xs lg:text-sm">{feedback.saveMessage}</span>
                                                             )}
                                                         </div>
                                                     )}
@@ -406,8 +429,8 @@ const ProgrammingPractice = () => {
                         </div>
                     )}
                 </div>
-            </ResizablePanel>
-        </ResizablePanelGroup>
+            </div>
+        </div>
     );
 };
 
@@ -473,13 +496,31 @@ const SystemDesignPractice = () => {
         }
     };
 
+    const [showQuestionList, setShowQuestionList] = useState(false);
+
     return (
-        <ResizablePanelGroup direction="horizontal" className="h-full rounded-lg border border-gray-700">
-            {/* 左侧题目列表 */}
-            <ResizablePanel defaultSize={30} minSize={20}>
-                <div className="h-full bg-gray-800 p-4">
+        <div className="h-full flex flex-col lg:flex-row bg-gray-800 rounded-lg border border-gray-700">
+            {/* 移动端题目列表切换按钮 */}
+            <div className="lg:hidden bg-gray-700 p-3 border-b border-gray-600">
+                <button
+                    onClick={() => setShowQuestionList(!showQuestionList)}
+                    className="w-full flex items-center justify-between p-2 bg-gray-600 rounded-lg hover:bg-gray-500 transition-colors"
+                >
+                    <span className="font-medium">
+                        {selectedQuestion ? 
+                            (language === 'en' && selectedQuestion.englishTitle ? selectedQuestion.englishTitle : selectedQuestion.title) : 
+                            t('selectQuestion')
+                        }
+                    </span>
+                    <Filter size={16} />
+                </button>
+            </div>
+
+            {/* 题目列表 - 移动端可切换显示 */}
+            <div className={`${showQuestionList ? 'block' : 'hidden'} lg:block lg:w-1/3 xl:w-1/4 bg-gray-800 border-r border-gray-700`}>
+                <div className="h-full p-4">
                     <div className="flex items-center justify-between mb-4">
-                        <h2 className="text-xl font-semibold">{t('systemDesignQuestions')}</h2>
+                        <h2 className="text-lg lg:text-xl font-semibold">{t('systemDesignQuestions')}</h2>
                         <Button
                             variant="ghost"
                             size="sm"
@@ -557,7 +598,10 @@ const SystemDesignPractice = () => {
                                 return (
                                     <div
                                         key={question.id}
-                                        onClick={() => setSelectedQuestion(question)}
+                                        onClick={() => {
+                                            setSelectedQuestion(question);
+                                            setShowQuestionList(false); // 移动端选择后隐藏列表
+                                        }}
                                         className={`p-3 rounded-lg cursor-pointer transition-colors ${
                                             selectedQuestion?.id === question.id
                                                 ? 'bg-indigo-600 text-white'
@@ -565,39 +609,37 @@ const SystemDesignPractice = () => {
                                         }`}
                                     >
                                         <div className="flex items-center justify-between">
-                                            <span className="font-medium">{language === 'en' && question.englishTitle ? question.englishTitle : question?.title}</span>
+                                            <span className="font-medium text-sm lg:text-base">{language === 'en' && question.englishTitle ? question.englishTitle : question?.title}</span>
                                             <span className={`px-2 py-1 rounded text-xs font-bold ${colorClass}`}>
                                                 {getDifficultyDisplay(question.difficulty)}
                                             </span>
                                         </div>
-                                        <p className="text-sm text-gray-300 mt-1">{language === 'en' && question.englishCategory ? question.englishCategory : question?.category}</p>
+                                        <p className="text-xs lg:text-sm text-gray-300 mt-1">{language === 'en' && question.englishCategory ? question.englishCategory : question?.category}</p>
                                     </div>
                                 );
                             })}
                         </div>
                     )}
                 </div>
-            </ResizablePanel>
+            </div>
 
-            <ResizableHandle />
-
-            {/* 右侧答案显示 */}
-            <ResizablePanel defaultSize={70}>
+            {/* 答案显示区域 */}
+            <div className="flex-1 flex flex-col">
                 <div className="h-full bg-gray-800 p-4">
                     {selectedQuestion ? (
                         <div className="h-full overflow-y-auto">
-                            <h3 className="text-xl font-semibold mb-4">{language === 'en' && selectedQuestion?.englishTitle ? selectedQuestion.englishTitle : selectedQuestion?.title}</h3>
+                            <h3 className="text-lg lg:text-xl font-semibold mb-4">{language === 'en' && selectedQuestion?.englishTitle ? selectedQuestion.englishTitle : selectedQuestion?.title}</h3>
                             
-                            <div className="space-y-6">
+                            <div className="space-y-4 lg:space-y-6">
                                 <div>
-                                    <h4 className="text-lg font-medium mb-2">{t('description')}</h4>
-                                    <p className="text-gray-300">{language === 'en' && selectedQuestion?.englishDescription ? selectedQuestion.englishDescription : selectedQuestion?.description}</p>
+                                    <h4 className="text-base lg:text-lg font-medium mb-2">{t('description')}</h4>
+                                    <p className="text-gray-300 text-sm lg:text-base">{language === 'en' && selectedQuestion?.englishDescription ? selectedQuestion.englishDescription : selectedQuestion?.description}</p>
                                 </div>
 
                                 {selectedQuestion.design_steps && (
                                     <div>
-                                        <h4 className="text-lg font-medium mb-2">{t('designSteps')}</h4>
-                                        <ol className="list-decimal list-inside space-y-2 text-gray-300">
+                                        <h4 className="text-base lg:text-lg font-medium mb-2">{t('designSteps')}</h4>
+                                        <ol className="list-decimal list-inside space-y-2 text-gray-300 text-sm lg:text-base">
                                             {(language === 'en' && selectedQuestion.englishDesignSteps ? selectedQuestion.englishDesignSteps : selectedQuestion.design_steps).map((step, index) => (
                                                 <li key={index}>{step}</li>
                                             ))}
@@ -607,8 +649,8 @@ const SystemDesignPractice = () => {
 
                                 {selectedQuestion.answer && (
                                     <div>
-                                        <h4 className="text-lg font-medium mb-2">{t('detailedAnswer')}</h4>
-                                        <div className="bg-gray-900 p-4 rounded-lg text-gray-300 text-sm">
+                                        <h4 className="text-base lg:text-lg font-medium mb-2">{t('detailedAnswer')}</h4>
+                                        <div className="bg-gray-900 p-4 rounded-lg text-gray-300 text-xs lg:text-sm">
                                             {console.log('系统设计答案内容', selectedQuestion.answer)}
                                             <ReactMarkdown>{selectedQuestion.answer}</ReactMarkdown>
                                         </div>
@@ -618,7 +660,7 @@ const SystemDesignPractice = () => {
                                 <div className="flex justify-end">
                                     <Button
                                         onClick={handleSaveSystemDesign}
-                                        className="bg-green-600 hover:bg-green-700"
+                                        className="bg-green-600 hover:bg-green-700 text-sm lg:text-base"
                                     >
                                         <Save size={16} className="mr-2" />
                                         {t('saveToLearningHistory')}
@@ -632,8 +674,8 @@ const SystemDesignPractice = () => {
                         </div>
                     )}
                 </div>
-            </ResizablePanel>
-        </ResizablePanelGroup>
+            </div>
+        </div>
     );
 };
 
@@ -741,13 +783,31 @@ const BehavioralPractice = () => {
         setFeedback(null);
     };
 
+    const [showQuestionList, setShowQuestionList] = useState(false);
+
     return (
-        <ResizablePanelGroup direction="horizontal" className="h-full rounded-lg border border-gray-700">
-            {/* 左侧题目列表 */}
-            <ResizablePanel defaultSize={30} minSize={20}>
-                <div className="h-full bg-gray-800 p-4">
+        <div className="h-full flex flex-col lg:flex-row bg-gray-800 rounded-lg border border-gray-700">
+            {/* 移动端题目列表切换按钮 */}
+            <div className="lg:hidden bg-gray-700 p-3 border-b border-gray-600">
+                <button
+                    onClick={() => setShowQuestionList(!showQuestionList)}
+                    className="w-full flex items-center justify-between p-2 bg-gray-600 rounded-lg hover:bg-gray-500 transition-colors"
+                >
+                    <span className="font-medium">
+                        {selectedQuestion ? 
+                            (typeof selectedQuestion.title === 'object' ? selectedQuestion.title[language] : selectedQuestion.title) : 
+                            t('selectQuestion')
+                        }
+                    </span>
+                    <Filter size={16} />
+                </button>
+            </div>
+
+            {/* 题目列表 - 移动端可切换显示 */}
+            <div className={`${showQuestionList ? 'block' : 'hidden'} lg:block lg:w-1/3 xl:w-1/4 bg-gray-800 border-r border-gray-700`}>
+                <div className="h-full p-4">
                     <div className="flex items-center justify-between mb-4">
-                        <h2 className="text-xl font-semibold">{t('behavioralQuestions')}</h2>
+                        <h2 className="text-lg lg:text-xl font-semibold">{t('behavioralQuestions')}</h2>
                         <Button
                             variant="ghost"
                             size="sm"
@@ -788,7 +848,10 @@ const BehavioralPractice = () => {
                                 return (
                                     <div
                                         key={question.id}
-                                        onClick={() => handleSelectQuestion(question)}
+                                        onClick={() => {
+                                            handleSelectQuestion(question);
+                                            setShowQuestionList(false); // 移动端选择后隐藏列表
+                                        }}
                                         className={`p-3 rounded-lg cursor-pointer transition-colors ${
                                             selectedQuestion?.id === question.id
                                                 ? 'bg-indigo-600 text-white'
@@ -796,33 +859,31 @@ const BehavioralPractice = () => {
                                         }`}
                                     >
                                         <div className="flex items-center justify-between">
-                                            <span className="font-medium">{typeof question.title === 'object' ? question.title[language] : question?.title}</span>
+                                            <span className="font-medium text-sm lg:text-base">{typeof question.title === 'object' ? question.title[language] : question?.title}</span>
                                         </div>
-                                        <p className="text-sm text-gray-300 mt-1 line-clamp-2">{typeof question.prompt === 'object' ? question.prompt[language] : question?.prompt}</p>
+                                        <p className="text-xs lg:text-sm text-gray-300 mt-1 line-clamp-2">{typeof question.prompt === 'object' ? question.prompt[language] : question?.prompt}</p>
                                     </div>
                                 );
                             })}
                         </div>
                     )}
                 </div>
-            </ResizablePanel>
+            </div>
 
-            <ResizableHandle />
-
-            {/* 右侧答案输入和反馈 */}
-            <ResizablePanel defaultSize={70}>
+            {/* 答案输入和反馈区域 */}
+            <div className="flex-1 flex flex-col">
                 <div className="h-full bg-gray-800 p-4 overflow-y-auto">
                     {selectedQuestion ? (
                         <div className="min-h-full flex flex-col">
                             <div className="mb-4">
-                                <h3 className="text-xl font-semibold mb-2">{t('question')}</h3>
-                                <p className="text-gray-300 mb-4">{typeof selectedQuestion?.prompt === 'object' ? selectedQuestion.prompt[language] : selectedQuestion?.prompt}</p>
+                                <h3 className="text-lg lg:text-xl font-semibold mb-2">{t('question')}</h3>
+                                <p className="text-gray-300 mb-4 text-sm lg:text-base">{typeof selectedQuestion?.prompt === 'object' ? selectedQuestion.prompt[language] : selectedQuestion?.prompt}</p>
                                 
                                 {selectedQuestion.sampleAnswer && (
                                     <div className="mb-4">
-                                        <h4 className="text-lg font-medium mb-2">{t('sampleAnswer')}</h4>
+                                        <h4 className="text-base lg:text-lg font-medium mb-2">{t('sampleAnswer')}</h4>
                                         <div className="bg-gray-900 p-4 rounded-lg">
-                                            <p className="text-gray-300">{selectedQuestion.sampleAnswer}</p>
+                                            <p className="text-gray-300 text-sm lg:text-base">{selectedQuestion.sampleAnswer}</p>
                                         </div>
                                     </div>
                                 )}
@@ -830,12 +891,12 @@ const BehavioralPractice = () => {
 
                             <div className="flex-1 flex flex-col">
                                 <div className="mb-4">
-                                    <h4 className="text-lg font-medium mb-2">{t('yourAnswer')}</h4>
+                                    <h4 className="text-base lg:text-lg font-medium mb-2">{t('yourAnswer')}</h4>
                                     <textarea
                                         value={userAnswer}
                                         onChange={(e) => setUserAnswer(e.target.value)}
                                         placeholder={t('enterYourAnswer')}
-                                        className="w-full h-32 bg-gray-900 border border-gray-600 rounded-lg p-3 text-white resize-none"
+                                        className="w-full h-32 lg:h-40 bg-gray-900 border border-gray-600 rounded-lg p-3 text-white resize-none text-sm lg:text-base mobile-textarea"
                                     />
                                 </div>
 
@@ -843,7 +904,7 @@ const BehavioralPractice = () => {
                                     <Button
                                         onClick={handleAnalyzeAnswer}
                                         disabled={isLoading.analysis || !userAnswer.trim()}
-                                        className="bg-indigo-600 hover:bg-indigo-700"
+                                        className="bg-indigo-600 hover:bg-indigo-700 w-full sm:w-auto"
                                     >
                                         <Send size={16} className="mr-2" />
                                         {t('analyzeAnswer')}
@@ -852,8 +913,8 @@ const BehavioralPractice = () => {
 
                                 {feedback && (
                                     <div className="bg-gray-900 p-4 rounded-lg mb-4">
-                                        <h4 className="text-lg font-medium mb-2">{t('aiFeedback')}</h4>
-                                        <div style={{ whiteSpace: 'pre-wrap' }} className="text-gray-200 text-sm">
+                                        <h4 className="text-base lg:text-lg font-medium mb-2">{t('aiFeedback')}</h4>
+                                        <div style={{ whiteSpace: 'pre-wrap' }} className="text-gray-200 text-sm lg:text-base">
                                             {feedback.message}
                                         </div>
                                         {/* 详细调试信息 */}
@@ -864,7 +925,7 @@ const BehavioralPractice = () => {
                                         {feedback.message && (
                                             <Button
                                                 onClick={handleSaveToHistory}
-                                                className="mt-4 bg-green-600 hover:bg-green-700"
+                                                className="mt-4 bg-green-600 hover:bg-green-700 w-full sm:w-auto"
                                                 disabled={isLoading.analysis || feedback.saved}
                                             >
                                                 {feedback.saved ? t('savedToHistory') : t('saveToLearningHistory')}
@@ -886,8 +947,8 @@ const BehavioralPractice = () => {
                         </div>
                     )}
                 </div>
-            </ResizablePanel>
-        </ResizablePanelGroup>
+            </div>
+        </div>
     );
 };
 

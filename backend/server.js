@@ -26,7 +26,11 @@ const corsOptions = {
         'http://localhost:5173', // 开发环境
         'http://localhost:3000'  // 开发环境
       ]
-    : true,
+    : [
+        'http://localhost:5173', // 本地开发
+        'http://192.168.0.39:5173', // 网络访问
+        'http://localhost:3000'  // 本地后端
+      ],
   credentials: true,
   optionsSuccessStatus: 200
 };
