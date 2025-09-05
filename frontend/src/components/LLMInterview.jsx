@@ -8,12 +8,12 @@ import { useLanguage } from '../contexts/LanguageContext';
 import { getText } from '../utils/translations';
 import { 
     BookOpen, Clock, Target, CheckCircle, AlertCircle, 
-    Search, Filter, RefreshCw, Save, Lightbulb, Eye, EyeOff,
-    Play, Pause, Square, Timer, Star, TrendingUp, Brain, Globe
+    RefreshCw, Save, Lightbulb, Eye, EyeOff,
+    Play, Pause, Square, Timer, Star, TrendingUp, Brain
 } from 'lucide-react';
 
 const LLMInterview = () => {
-    const { language, toggleLanguage, isChinese } = useLanguage();
+    const { language } = useLanguage();
     const t = (key) => getText(key, language);
     
     const [questions, setQuestions] = useState([]);
@@ -28,7 +28,6 @@ const LLMInterview = () => {
     const [userAnswer, setUserAnswer] = useState('');
     const [analysis, setAnalysis] = useState(null);
     const [isAnalyzing, setIsAnalyzing] = useState(false);
-    const [searchTerm, setSearchTerm] = useState('');
     const [timer, setTimer] = useState(0);
     const [isTimerRunning, setIsTimerRunning] = useState(false);
     const [showTimer, setShowTimer] = useState(false);
@@ -46,7 +45,7 @@ const LLMInterview = () => {
     // 筛选题目
     useEffect(() => {
         filterQuestions();
-    }, [questions, selectedCategory, selectedDifficulty, searchTerm]);
+    }, [questions, selectedCategory, selectedDifficulty]);
 
     // 计时器效果
     useEffect(() => {
@@ -93,15 +92,6 @@ const LLMInterview = () => {
         // 按难度筛选
         if (selectedDifficulty) {
             filtered = filtered.filter(q => q.difficulty === selectedDifficulty);
-        }
-
-        // 按搜索词筛选
-        if (searchTerm) {
-            filtered = filtered.filter(q => 
-                q.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                q.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                (q.englishTitle && q.englishTitle.toLowerCase().includes(searchTerm.toLowerCase()))
-            );
         }
 
         setFilteredQuestions(filtered);
@@ -220,44 +210,17 @@ const LLMInterview = () => {
     };
 
     return (
-        <div className="container mx-auto p-6">
-            <div className="mb-8">
-                <div className="flex justify-between items-start mb-4">
-                    <div>
-                        <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
-                            <BookOpen className="inline mr-2" />
-                            {t('llmInterview')}
-                        </h1>
-                        <p className="text-gray-600 dark:text-gray-400">
-                            {t('llmInterviewDescription')}
-                        </p>
-                    </div>
-                    <Button 
-                        onClick={toggleLanguage} 
-                        variant="outline" 
-                        size="sm"
-                        className="flex items-center gap-2"
-                    >
-                        <Globe size={16} />
-                        {isChinese ? 'EN' : '中文'}
-                    </Button>
-                </div>
+        <div className="container mx-auto p-4 lg:p-6">
+            <div className="mb-6">
+                <h1 className="text-2xl lg:text-3xl font-bold text-gray-900 dark:text-white mb-4">
+                    <BookOpen className="inline mr-2" />
+                    {t('llmInterview')}
+                </h1>
             </div>
 
-            {/* 筛选和搜索 */}
-            <div className="mb-6 space-y-4">
+            {/* 筛选选项 */}
+            <div className="mb-6">
                 <div className="flex flex-wrap gap-4 items-center">
-                    <div className="flex items-center space-x-2">
-                        <Search className="w-4 h-4 text-gray-500" />
-                        <input
-                            type="text"
-                            placeholder={t('searchQuestions')}
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                            className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        />
-                    </div>
-                    
                     <Select
                         value={selectedCategory}
                         onChange={(e) => setSelectedCategory(e.target.value)}
@@ -286,55 +249,55 @@ const LLMInterview = () => {
                     </Button>
                 </div>
                 
-                <div className="text-sm text-gray-600 dark:text-gray-300">
+                <div className="text-sm text-gray-600 dark:text-gray-300 mt-2">
                     {t('foundQuestions')}: {filteredQuestions.length}
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6">
                 {/* 题目列表 */}
                 <div className="lg:col-span-1">
-                    <Card className="p-4">
-                        <h3 className="text-lg font-semibold mb-4 flex items-center">
-                            <BookOpen className="w-5 h-5 mr-2" />
+                    <Card className="p-3 lg:p-4">
+                        <h3 className="text-base lg:text-lg font-semibold mb-3 lg:mb-4 flex items-center">
+                            <BookOpen className="w-4 h-4 lg:w-5 lg:h-5 mr-2" />
                             {t('questionList')}
                         </h3>
                         {isLoading ? (
-                            <div className="text-center py-8">
-                                <RefreshCw className="w-6 h-6 animate-spin mx-auto mb-2" />
-                                <p>{t('loading')}</p>
+                            <div className="text-center py-6 lg:py-8">
+                                <RefreshCw className="w-5 h-5 lg:w-6 lg:h-6 animate-spin mx-auto mb-2" />
+                                <p className="text-sm">{t('loading')}</p>
                             </div>
                         ) : (
-                            <div className="space-y-3 max-h-[600px] overflow-y-auto">
+                            <div className="space-y-2 lg:space-y-3 max-h-[500px] lg:max-h-[600px] overflow-y-auto">
                                 {filteredQuestions.length === 0 ? (
-                                    <div className="text-center py-8 text-gray-600 dark:text-gray-300">
-                                        <BookOpen className="w-8 h-8 mx-auto mb-2 text-gray-400" />
-                                        <p>没有找到匹配的题目</p>
+                                    <div className="text-center py-6 lg:py-8 text-gray-600 dark:text-gray-300">
+                                        <BookOpen className="w-6 h-6 lg:w-8 lg:h-8 mx-auto mb-2 text-gray-400" />
+                                        <p className="text-sm">没有找到匹配的题目</p>
                                     </div>
                                 ) : (
                                     filteredQuestions.map(question => (
                                         <div
                                             key={question.id}
                                             onClick={() => handleQuestionSelect(question)}
-                                            className={`p-4 rounded-lg border cursor-pointer transition-all hover:shadow-md ${
+                                            className={`p-3 lg:p-4 rounded-lg border cursor-pointer transition-all hover:shadow-md ${
                                                 selectedQuestion?.id === question.id
                                                     ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20 shadow-md'
                                                     : 'border-gray-200 hover:border-gray-300'
                                             }`}
                                         >
                                             <div className="flex items-start justify-between mb-2">
-                                                <div className="flex-1">
-                                                    <h4 className="font-medium text-sm mb-2 line-clamp-2 leading-tight">
+                                                <div className="flex-1 min-w-0">
+                                                    <h4 className="font-medium text-xs lg:text-sm mb-1 lg:mb-2 line-clamp-2 leading-tight">
                                                         {language === 'en' && question.englishTitle ? question.englishTitle : question.title}
                                                     </h4>
-                                                    <p className="text-xs text-gray-600 dark:text-gray-300 mb-3 line-clamp-2">
+                                                    <p className="text-xs text-gray-600 dark:text-gray-300 mb-2 lg:mb-3 line-clamp-2">
                                                         {language === 'en' && question.englishDescription ? question.englishDescription : question.description}
                                                     </p>
                                                 </div>
                                             </div>
                                             <div className="flex items-center justify-between">
-                                                <div className="flex items-center space-x-2">
-                                                    <span className={`px-2 py-1 rounded text-xs ${getCategoryColor(question.category)}`}>
+                                                <div className="flex items-center space-x-1 lg:space-x-2 flex-wrap">
+                                                    <span className={`px-1.5 lg:px-2 py-0.5 lg:py-1 rounded text-xs ${getCategoryColor(question.category)}`}>
                                                         {question.category}
                                                     </span>
                                                     <div className="flex items-center space-x-1">
