@@ -473,8 +473,8 @@ const MockInterview = () => {
     }
 
     return (
-        <div className="max-w-6xl mx-auto p-4 lg:p-6 mobile-mock-interview">
-            <h1 className="text-2xl lg:text-4xl font-bold mb-6 lg:mb-8">{t('aiMockInterviewTitle')}</h1>
+        <div className="w-full max-w-6xl mx-auto p-4 lg:p-6 mobile-mock-interview min-w-0">
+            <h1 className="text-2xl lg:text-4xl font-bold mb-6 lg:mb-8 break-words">{t('aiMockInterviewTitle')}</h1>
             
             {/* 面试设置 */}
             <Card className="bg-gray-800 p-4 lg:p-6 mb-4 lg:mb-6 mobile-mock-settings mobile-compact-settings">
@@ -487,7 +487,7 @@ const MockInterview = () => {
                         {isSettingsCollapsed ? <ChevronDown className="w-5 h-5" /> : <ChevronUp className="w-5 h-5" />}
                     </button>
                 </div>
-                <div className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-4 transition-all duration-300 ${
+                <div className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-4 transition-all duration-300 w-full min-w-0 ${
                     isSettingsCollapsed ? 'lg:block hidden' : 'block'
                 }`}>
                     {/* 题目类型 */}
@@ -565,7 +565,7 @@ const MockInterview = () => {
             {/* 题目选择和详情 */}
             {questionSource === 'ai' && (questionType === 'system-design' || questionType === 'behavioral') ? (
                 // AI生成的系统设计或行为面试题目特殊布局
-                <div className="flex flex-col lg:grid lg:grid-cols-2 gap-4 lg:gap-6">
+                <div className="flex flex-col lg:grid lg:grid-cols-2 gap-4 lg:gap-6 w-full min-w-0">
                     {/* 左侧：题目和答案 */}
                     <Card className="bg-gray-800 p-4 lg:p-6 mobile-mock-card">
                         <h3 className="text-base lg:text-lg font-semibold mb-4">{t('questionDetail')}</h3>
@@ -712,7 +712,7 @@ const MockInterview = () => {
                 </div>
             ) : (
                 // 其他题目的原有布局
-                <div className="flex flex-col lg:grid lg:grid-cols-2 gap-4 lg:gap-6">
+                <div className="flex flex-col lg:grid lg:grid-cols-2 gap-4 lg:gap-6 w-full min-w-0">
                     {/* 左侧：题目列表 */}
                     <Card className="bg-gray-800 p-4 lg:p-6 mobile-mock-card">
                         <div 

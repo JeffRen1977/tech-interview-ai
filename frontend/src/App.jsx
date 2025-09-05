@@ -129,7 +129,7 @@ const AppContent = () => {
 
   // 已登录用户的主界面
   return (
-    <div className="flex h-screen w-full bg-gray-900 text-white relative">
+    <div className="flex h-screen w-full bg-gray-900 text-white relative overflow-hidden">
       {/* 移动端遮罩层 */}
       {isMobileMenuOpen && (
         <div 
@@ -158,7 +158,7 @@ const AppContent = () => {
       </div>
       
       {/* 主内容区域 */}
-      <div className="flex-1 flex flex-col lg:ml-0">
+      <div className="flex-1 flex flex-col lg:ml-0 min-w-0 overflow-hidden">
         {/* 移动端顶部导航栏 */}
         <div className="lg:hidden bg-gray-800 p-4 flex items-center justify-between border-b border-gray-700">
           <button
