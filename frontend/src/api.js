@@ -25,8 +25,10 @@ export const clearAuth = () => {
 export async function apiRequest(endpoint, method, body) {
     // 检测当前是否在移动端网络访问模式下
     const isNetworkAccess = window.location.hostname === '192.168.0.39';
+    const isLocalhost = window.location.hostname === 'localhost';
     const baseUrl = import.meta.env.VITE_API_BASE_URL || 
-        (isNetworkAccess ? 'http://192.168.0.39:3000' : 'http://localhost:3000');
+        (isNetworkAccess ? 'http://192.168.0.39:3000' : 
+         isLocalhost ? 'http://localhost:3000' : 'http://localhost:3000');
     
     // 确保 baseUrl 不以斜杠结尾，避免双斜杠问题
     const cleanBaseUrl = baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl;

@@ -6,7 +6,7 @@ export default defineConfig({
   plugins: [react()],
   server: {
     host: '0.0.0.0', // 允许外部访问
-    port: 5173,
+    port: 3001, // 使用不同端口避免限制
     proxy: {
       '/api': 'http://192.168.0.39:3000' // 使用网络IP地址
     }

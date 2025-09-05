@@ -28,7 +28,9 @@ const corsOptions = {
       ]
     : [
         'http://localhost:5173', // 本地开发
+        'http://localhost:3002', // 本地开发端口 3002
         'http://192.168.0.39:5173', // 网络访问
+        'http://192.168.0.39:3002', // 网络访问端口 3002
         'http://localhost:3000'  // 本地后端
       ],
   credentials: true,

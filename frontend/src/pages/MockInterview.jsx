@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Mic, Database, Sparkles, Play, Loader2, X } from 'lucide-react';
+import { Mic, Database, Sparkles, Play, Loader2, X, ChevronDown, ChevronUp } from 'lucide-react';
 import { Card } from '../components/ui/card';
 import { Button } from '../components/ui/button';
 import { Select } from '../components/ui/select';
@@ -25,6 +25,8 @@ const MockInterview = () => {
     const [error, setError] = useState('');
     const [interviewState, setInterviewState] = useState('setup'); // setup, coding, system-design, behavioral
     const [interviewData, setInterviewData] = useState(null);
+    const [isSettingsCollapsed, setIsSettingsCollapsed] = useState(false);
+    const [isQuestionListCollapsed, setIsQuestionListCollapsed] = useState(false);
 
     // 加载题库题目
     const loadDatabaseQuestions = async () => {
@@ -167,21 +169,21 @@ const MockInterview = () => {
         if (questionSource === 'ai') {
             return (
                 <div className="text-center py-8 space-y-4">
-                    <div className="space-y-3">
+                    <div className="space-y-3 mobile-ai-generate-buttons">
                         <Button 
                             onClick={() => generateAIQuestion(false)} 
                             disabled={isGenerating}
-                            className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
+                            className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 mobile-mock-button"
                         >
                             {isGenerating ? (
                                 <>
                                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                                    {t('generating')}
+                                    <span className="text-sm lg:text-base">{t('generating')}</span>
                                 </>
                             ) : (
                                 <>
                                     <Sparkles className="w-4 h-4 mr-2" />
-                                    {t('generateQuestion')}
+                                    <span className="text-sm lg:text-base">{t('generateQuestion')}</span>
                                 </>
                             )}
                         </Button>
@@ -189,17 +191,17 @@ const MockInterview = () => {
                         <Button 
                             onClick={() => generateAIQuestion(true)} 
                             disabled={isGenerating}
-                            className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700"
+                            className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 mobile-mock-button"
                         >
                             {isGenerating ? (
                                 <>
                                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                                    {t('generating')}
+                                    <span className="text-sm lg:text-base">{t('generating')}</span>
                                 </>
                             ) : (
                                 <>
                                     <Database className="w-4 h-4 mr-2" />
-                                    {t('generateAndSave')}
+                                    <span className="text-sm lg:text-base">{t('generateAndSave')}</span>
                                 </>
                             )}
                         </Button>
@@ -230,24 +232,24 @@ const MockInterview = () => {
         }
 
         return (
-            <div className="space-y-2 max-h-96 overflow-y-auto">
+            <div className="space-y-1 max-h-64 lg:max-h-96 overflow-y-auto mobile-question-list mobile-compact-question-list">
                 {questions.map((question) => (
                     <div
                         key={question.id || question.title}
                         onClick={() => setSelectedQuestion(question)}
-                        className={`p-3 rounded-lg cursor-pointer transition-colors ${
+                        className={`p-2 lg:p-3 rounded-lg cursor-pointer transition-colors mobile-question-item mobile-mock-question-card mobile-compact-question-card ${
                             selectedQuestion?.id === question.id || selectedQuestion?.title === question.title
                                 ? 'bg-indigo-600 text-white'
                                 : 'bg-gray-700 hover:bg-gray-600'
                         }`}
                     >
-                        <div className="flex items-center justify-between">
-                            <span className="font-medium">
+                        <div className="flex items-center justify-between gap-2">
+                            <span className="font-medium text-xs lg:text-sm mobile-mock-question-title mobile-compact-question-title flex-1 truncate">
                                 {language === 'en' && question.englishTitle ? question.englishTitle : 
                                  typeof question.title === 'object' ? question.title[language] : question?.title}
                             </span>
                             {question.difficulty && (
-                                <span className={`px-2 py-1 rounded text-xs font-bold ${
+                                <span className={`px-1.5 py-0.5 rounded text-xs font-bold mobile-difficulty-badge mobile-compact-difficulty-badge flex-shrink-0 ${
                                     question.difficulty.toLowerCase() === 'easy' || question.difficulty === '入门'
                                         ? 'bg-green-600 text-white'
                                         : question.difficulty.toLowerCase() === 'medium' || question.difficulty === '中等'
@@ -257,14 +259,14 @@ const MockInterview = () => {
                                         : 'bg-gray-500 text-white'
                                 }`}>
                                     {language === 'en' ? 
-                                        (question.difficulty === '简单' ? 'Easy' : 
-                                         question.difficulty === '中等' ? 'Medium' : 
-                                         question.difficulty === '困难' ? 'Hard' : question.difficulty) 
-                                        : question.difficulty}
+                                        (question.difficulty === '简单' ? 'E' : 
+                                         question.difficulty === '中等' ? 'M' : 
+                                         question.difficulty === '困难' ? 'H' : question.difficulty.charAt(0).toUpperCase()) 
+                                        : question.difficulty.charAt(0)}
                                 </span>
                             )}
                         </div>
-                        <p className="text-sm mt-1 line-clamp-2">
+                        <p className="text-xs mt-1 line-clamp-1 lg:line-clamp-2 mobile-mock-question-desc mobile-compact-question-desc text-gray-300">
                             {language === 'en' && question.englishDescription ? question.englishDescription :
                              typeof (question.description || question.prompt || question.question) === 'object' 
                                 ? (question.description || question.prompt || question.question)[language]
@@ -293,13 +295,13 @@ const MockInterview = () => {
         if (isAIGeneratedNonCoding) {
             return (
                 <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                        <h3 className="text-xl font-semibold">
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                        <h3 className="text-lg lg:text-xl font-semibold">
                             {language === 'en' && selectedQuestion?.englishTitle ? selectedQuestion.englishTitle :
                              typeof selectedQuestion?.title === 'object' ? selectedQuestion.title[language] : selectedQuestion?.title}
                         </h3>
                         {selectedQuestion.difficulty && (
-                            <span className={`px-3 py-1 rounded text-sm font-bold ${
+                            <span className={`px-3 py-1 rounded text-sm font-bold self-start sm:self-auto ${
                                 selectedQuestion.difficulty.toLowerCase() === 'easy' || selectedQuestion.difficulty === '入门'
                                     ? 'bg-green-600 text-white'
                                     : selectedQuestion.difficulty.toLowerCase() === 'medium' || selectedQuestion.difficulty === '中等'
@@ -356,10 +358,10 @@ const MockInterview = () => {
                             className="w-full bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700"
                         >
                             <Play className="w-4 h-4 mr-2" />
-                            {t('startInterview')}
+                            <span className="text-sm lg:text-base">{t('startInterview')}</span>
                         </Button>
                         
-                        <div className="grid grid-cols-2 gap-3">
+                        <div className="flex flex-col sm:grid sm:grid-cols-2 gap-3">
                             <Button 
                                 onClick={regenerateQuestion}
                                 disabled={isGenerating}
@@ -371,7 +373,7 @@ const MockInterview = () => {
                                 ) : (
                                     <Sparkles className="w-4 h-4 mr-2" />
                                 )}
-                                {t('regenerateQuestion')}
+                                <span className="text-sm lg:text-base">{t('regenerateQuestion')}</span>
                             </Button>
                             
                             <Button 
@@ -380,7 +382,7 @@ const MockInterview = () => {
                                 className="w-full border-red-500 text-red-500 hover:bg-red-500 hover:text-white"
                             >
                                 <X className="w-4 h-4 mr-2" />
-                                {t('abandonQuestion')}
+                                <span className="text-sm lg:text-base">{t('abandonQuestion')}</span>
                             </Button>
                         </div>
                     </div>
@@ -391,13 +393,13 @@ const MockInterview = () => {
         // 其他题目的原有布局
         return (
             <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                    <h3 className="text-xl font-semibold">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                    <h3 className="text-lg lg:text-xl font-semibold">
                         {language === 'en' && selectedQuestion?.englishTitle ? selectedQuestion.englishTitle :
                          typeof selectedQuestion?.title === 'object' ? selectedQuestion.title[language] : selectedQuestion?.title}
                     </h3>
                     {selectedQuestion.difficulty && (
-                        <span className={`px-3 py-1 rounded text-sm font-bold ${
+                        <span className={`px-3 py-1 rounded text-sm font-bold self-start sm:self-auto ${
                             selectedQuestion.difficulty.toLowerCase() === 'easy' || selectedQuestion.difficulty === '入门'
                                 ? 'bg-green-600 text-white'
                                 : selectedQuestion.difficulty.toLowerCase() === 'medium' || selectedQuestion.difficulty === '中等'
@@ -451,7 +453,7 @@ const MockInterview = () => {
                     className="w-full bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700"
                 >
                     <Play className="w-4 h-4 mr-2" />
-                    {t('startInterview')}
+                    <span className="text-sm lg:text-base">{t('startInterview')}</span>
                 </Button>
             </div>
         );
@@ -471,13 +473,23 @@ const MockInterview = () => {
     }
 
     return (
-        <div className="max-w-6xl mx-auto p-6">
-            <h1 className="text-4xl font-bold mb-8">{t('aiMockInterviewTitle')}</h1>
+        <div className="max-w-6xl mx-auto p-4 lg:p-6 mobile-mock-interview">
+            <h1 className="text-2xl lg:text-4xl font-bold mb-6 lg:mb-8">{t('aiMockInterviewTitle')}</h1>
             
             {/* 面试设置 */}
-            <Card className="bg-gray-800 p-6 mb-6">
-                <h2 className="text-xl font-bold mb-4">{t('interviewSettings')}</h2>
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <Card className="bg-gray-800 p-4 lg:p-6 mb-4 lg:mb-6 mobile-mock-settings mobile-compact-settings">
+                <div 
+                    className="flex items-center justify-between cursor-pointer lg:cursor-default"
+                    onClick={() => setIsSettingsCollapsed(!isSettingsCollapsed)}
+                >
+                    <h2 className="text-lg lg:text-xl font-bold">{t('interviewSettings')}</h2>
+                    <button className="lg:hidden p-1 mobile-collapse-button">
+                        {isSettingsCollapsed ? <ChevronDown className="w-5 h-5" /> : <ChevronUp className="w-5 h-5" />}
+                    </button>
+                </div>
+                <div className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-4 transition-all duration-300 ${
+                    isSettingsCollapsed ? 'lg:block hidden' : 'block'
+                }`}>
                     {/* 题目类型 */}
                     <div>
                         <label className="block text-sm font-medium mb-2">{t('questionType')}</label>
@@ -553,18 +565,18 @@ const MockInterview = () => {
             {/* 题目选择和详情 */}
             {questionSource === 'ai' && (questionType === 'system-design' || questionType === 'behavioral') ? (
                 // AI生成的系统设计或行为面试题目特殊布局
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div className="flex flex-col lg:grid lg:grid-cols-2 gap-4 lg:gap-6">
                     {/* 左侧：题目和答案 */}
-                    <Card className="bg-gray-800 p-6">
-                        <h3 className="text-lg font-semibold mb-4">{t('questionDetail')}</h3>
+                    <Card className="bg-gray-800 p-4 lg:p-6 mobile-mock-card">
+                        <h3 className="text-base lg:text-lg font-semibold mb-4">{t('questionDetail')}</h3>
                         {selectedQuestion ? (
                             <div className="space-y-4">
-                                <div className="flex items-center justify-between">
-                                    <h3 className="text-xl font-semibold">
+                                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                                    <h3 className="text-lg lg:text-xl font-semibold">
                                         {typeof selectedQuestion?.title === 'object' ? selectedQuestion.title[language] : selectedQuestion?.title}
                                     </h3>
                                     {selectedQuestion.difficulty && (
-                                        <span className={`px-3 py-1 rounded text-sm font-bold ${
+                                        <span className={`px-3 py-1 rounded text-sm font-bold self-start sm:self-auto ${
                                             selectedQuestion.difficulty.toLowerCase() === 'easy' || selectedQuestion.difficulty === '入门'
                                                 ? 'bg-green-600 text-white'
                                                 : selectedQuestion.difficulty.toLowerCase() === 'medium' || selectedQuestion.difficulty === '中等'
@@ -650,8 +662,8 @@ const MockInterview = () => {
                     </Card>
 
                     {/* 右侧：操作按钮 */}
-                    <Card className="bg-gray-800 p-6">
-                        <h3 className="text-lg font-semibold mb-4">{t('interviewActions')}</h3>
+                    <Card className="bg-gray-800 p-4 lg:p-6 mobile-mock-card">
+                        <h3 className="text-base lg:text-lg font-semibold mb-4">{t('interviewActions')}</h3>
                         {selectedQuestion ? (
                             <div className="space-y-4">
                                 <div className="text-center py-4">
@@ -666,7 +678,7 @@ const MockInterview = () => {
                                     {t('startInterview')}
                                 </Button>
                                 
-                                <div className="grid grid-cols-2 gap-3">
+                                <div className="flex flex-col sm:grid sm:grid-cols-2 gap-3">
                                     <Button 
                                         onClick={regenerateQuestion}
                                         disabled={isGenerating}
@@ -678,7 +690,7 @@ const MockInterview = () => {
                                         ) : (
                                             <Sparkles className="w-4 h-4 mr-2" />
                                         )}
-                                        {t('regenerateQuestion')}
+                                        <span className="text-sm lg:text-base">{t('regenerateQuestion')}</span>
                                     </Button>
                                     
                                     <Button 
@@ -687,7 +699,7 @@ const MockInterview = () => {
                                         className="w-full border-red-500 text-red-500 hover:bg-red-500 hover:text-white"
                                     >
                                         <X className="w-4 h-4 mr-2" />
-                                        {t('abandonQuestion')}
+                                        <span className="text-sm lg:text-base">{t('abandonQuestion')}</span>
                                     </Button>
                                 </div>
                             </div>
@@ -700,18 +712,30 @@ const MockInterview = () => {
                 </div>
             ) : (
                 // 其他题目的原有布局
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div className="flex flex-col lg:grid lg:grid-cols-2 gap-4 lg:gap-6">
                     {/* 左侧：题目列表 */}
-                    <Card className="bg-gray-800 p-6">
-                        <h3 className="text-lg font-semibold mb-4">
-                            {questionSource === 'database' ? t('questionBank') : t('aiGeneration')}
-                        </h3>
-                        {renderQuestionList()}
+                    <Card className="bg-gray-800 p-4 lg:p-6 mobile-mock-card">
+                        <div 
+                            className="flex items-center justify-between cursor-pointer lg:cursor-default mb-4"
+                            onClick={() => setIsQuestionListCollapsed(!isQuestionListCollapsed)}
+                        >
+                            <h3 className="text-base lg:text-lg font-semibold">
+                                {questionSource === 'database' ? t('questionBank') : t('aiGeneration')}
+                            </h3>
+                            <button className="lg:hidden p-1 mobile-collapse-button">
+                                {isQuestionListCollapsed ? <ChevronDown className="w-5 h-5" /> : <ChevronUp className="w-5 h-5" />}
+                            </button>
+                        </div>
+                        <div className={`transition-all duration-300 ${
+                            isQuestionListCollapsed ? 'lg:block hidden' : 'block'
+                        }`}>
+                            {renderQuestionList()}
+                        </div>
                     </Card>
 
                     {/* 右侧：题目详情 */}
-                    <Card className="bg-gray-800 p-6">
-                        <h3 className="text-lg font-semibold mb-4">{t('questionDetail')}</h3>
+                    <Card className="bg-gray-800 p-4 lg:p-6 mobile-mock-card">
+                        <h3 className="text-base lg:text-lg font-semibold mb-4">{t('questionDetail')}</h3>
                         {renderQuestionDetail()}
                     </Card>
                 </div>
