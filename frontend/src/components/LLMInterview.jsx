@@ -257,10 +257,11 @@ const LLMInterview = () => {
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6">
                 {/* 题目列表 */}
                 <div className="lg:col-span-1">
-                    <Card className="p-3 lg:p-4">
+                    <Card className="p-3 lg:p-4 h-fit">
                         <h3 className="text-base lg:text-lg font-semibold mb-3 lg:mb-4 flex items-center">
                             <BookOpen className="w-4 h-4 lg:w-5 lg:h-5 mr-2" />
                             {t('questionList')}
+                            <span className="ml-2 text-xs text-gray-500">({filteredQuestions.length})</span>
                         </h3>
                         {isLoading ? (
                             <div className="text-center py-6 lg:py-8">
@@ -268,7 +269,7 @@ const LLMInterview = () => {
                                 <p className="text-sm">{t('loading')}</p>
                             </div>
                         ) : (
-                            <div className="space-y-2 lg:space-y-3 max-h-[500px] lg:max-h-[600px] overflow-y-auto">
+                            <div className="space-y-1 lg:space-y-2 max-h-[400px] lg:max-h-[500px] overflow-y-auto mobile-question-list">
                                 {filteredQuestions.length === 0 ? (
                                     <div className="text-center py-6 lg:py-8 text-gray-600 dark:text-gray-300">
                                         <BookOpen className="w-6 h-6 lg:w-8 lg:h-8 mx-auto mb-2 text-gray-400" />
@@ -279,25 +280,25 @@ const LLMInterview = () => {
                                         <div
                                             key={question.id}
                                             onClick={() => handleQuestionSelect(question)}
-                                            className={`p-3 lg:p-4 rounded-lg border cursor-pointer transition-all hover:shadow-md ${
+                                            className={`p-2 lg:p-3 rounded-lg border cursor-pointer transition-all hover:shadow-sm mobile-question-item ${
                                                 selectedQuestion?.id === question.id
-                                                    ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20 shadow-md'
-                                                    : 'border-gray-200 hover:border-gray-300'
+                                                    ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20 shadow-sm ring-2 ring-blue-200 dark:ring-blue-800'
+                                                    : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
                                             }`}
                                         >
-                                            <div className="flex items-start justify-between mb-2">
+                                            <div className="flex items-start justify-between mb-1">
                                                 <div className="flex-1 min-w-0">
-                                                    <h4 className="font-medium text-xs lg:text-sm mb-1 lg:mb-2 line-clamp-2 leading-tight">
+                                                    <h4 className="font-medium text-xs lg:text-sm mb-1 line-clamp-1 leading-tight">
                                                         {language === 'en' && question.englishTitle ? question.englishTitle : question.title}
                                                     </h4>
-                                                    <p className="text-xs text-gray-600 dark:text-gray-300 mb-2 lg:mb-3 line-clamp-2">
+                                                    <p className="text-xs text-gray-600 dark:text-gray-300 mb-1 line-clamp-1">
                                                         {language === 'en' && question.englishDescription ? question.englishDescription : question.description}
                                                     </p>
                                                 </div>
                                             </div>
                                             <div className="flex items-center justify-between">
-                                                <div className="flex items-center space-x-1 lg:space-x-2 flex-wrap">
-                                                    <span className={`px-1.5 lg:px-2 py-0.5 lg:py-1 rounded text-xs ${getCategoryColor(question.category)}`}>
+                                                <div className="flex items-center space-x-1 flex-wrap">
+                                                    <span className={`px-1.5 py-0.5 rounded text-xs ${getCategoryColor(question.category)}`}>
                                                         {question.category}
                                                     </span>
                                                     <div className="flex items-center space-x-1">
@@ -307,6 +308,11 @@ const LLMInterview = () => {
                                                         </span>
                                                     </div>
                                                 </div>
+                                                {selectedQuestion?.id === question.id && (
+                                                    <div className="flex items-center text-blue-600 dark:text-blue-400">
+                                                        <CheckCircle className="w-3 h-3" />
+                                                    </div>
+                                                )}
                                             </div>
                                         </div>
                                     ))

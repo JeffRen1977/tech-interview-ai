@@ -178,12 +178,40 @@
   /* 移动端题目列表优化 */
   .mobile-question-list {
     -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+    scrollbar-color: #6b7280 #f3f4f6;
   }
   
+  .mobile-question-list::-webkit-scrollbar {
+    width: 4px;
+  }
+  
+  .mobile-question-list::-webkit-scrollbar-track {
+    background: #f3f4f6;
+    border-radius: 2px;
+  }
+  
+  .mobile-question-list::-webkit-scrollbar-thumb {
+    background: #6b7280;
+    border-radius: 2px;
+  }
+  
+  .mobile-question-list::-webkit-scrollbar-thumb:hover {
+    background: #4b5563;
+  }
+  
+  /* 移动端问题卡片优化 */
   .mobile-question-item {
     min-height: 60px;
-    padding: 12px;
     touch-action: manipulation;
+  }
+  
+  .mobile-question-item:hover {
+    transform: translateY(-1px);
+  }
+  
+  .mobile-question-item:active {
+    transform: translateY(0);
   }
   
   /* 移动端编辑器容器优化 */
