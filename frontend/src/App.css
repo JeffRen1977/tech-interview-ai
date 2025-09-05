@@ -214,6 +214,45 @@
     transform: translateY(0);
   }
   
+  /* LLM Interview 移动端优化 */
+  .mobile-llm-selected {
+    max-width: 100%;
+    overflow-x: hidden;
+  }
+  
+  .mobile-llm-selected .prose pre {
+    font-size: 12px;
+    line-height: 1.4;
+    padding: 12px;
+  }
+  
+  .mobile-llm-selected .grid {
+    gap: 8px;
+  }
+  
+  .mobile-llm-selected .space-y-4 > * + * {
+    margin-top: 12px;
+  }
+  
+  .mobile-llm-selected .space-y-6 > * + * {
+    margin-top: 16px;
+  }
+  
+  @media (max-width: 480px) {
+    .mobile-llm-selected .prose pre {
+      font-size: 11px;
+      padding: 8px;
+    }
+    
+    .mobile-llm-selected .space-y-4 > * + * {
+      margin-top: 8px;
+    }
+    
+    .mobile-llm-selected .space-y-6 > * + * {
+      margin-top: 12px;
+    }
+  }
+  
   /* 移动端编辑器容器优化 */
   .mobile-editor-container {
     display: flex;

@@ -325,47 +325,48 @@ const LLMInterview = () => {
                 {/* 题目详情和解答 */}
                 <div className="lg:col-span-2">
                     {selectedQuestion ? (
-                        <div className="space-y-6">
+                        <div className="space-y-4 lg:space-y-6 mobile-llm-selected">
                             {/* 题目信息 */}
-                            <Card className="p-6">
-                                <div className="flex items-start justify-between mb-4">
+                            <Card className="p-3 lg:p-6">
+                                <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between mb-3 lg:mb-4 space-y-3 lg:space-y-0">
                                     <div className="flex-1">
                                         <div className="flex items-center space-x-2 mb-2">
                                             {getDifficultyIcon(selectedQuestion.difficulty)}
-                                            <h2 className="text-xl font-bold">
+                                            <h2 className="text-lg lg:text-xl font-bold">
                                                 {language === 'en' && selectedQuestion.englishTitle ? selectedQuestion.englishTitle : selectedQuestion.title}
                                             </h2>
                                         </div>
                                         {language === 'zh' && selectedQuestion.englishTitle && (
-                                            <p className="text-gray-600 dark:text-gray-400 mb-3 italic">
+                                            <p className="text-sm lg:text-base text-gray-600 dark:text-gray-400 mb-2 lg:mb-3 italic">
                                                 {selectedQuestion.englishTitle}
                                             </p>
                                         )}
-                                                                <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg mb-4">
-                            <p className="text-gray-900 dark:text-white leading-relaxed font-medium">
-                                {language === 'en' && selectedQuestion.englishDescription ? selectedQuestion.englishDescription : selectedQuestion.description}
-                            </p>
-                        </div>
-                                        <div className="flex items-center space-x-4">
-                                            <span className={`px-3 py-1 rounded-full text-sm ${getCategoryColor(selectedQuestion.category)}`}>
+                                        <div className="bg-gray-50 dark:bg-gray-700 p-3 lg:p-4 rounded-lg mb-3 lg:mb-4">
+                                            <p className="text-sm lg:text-base text-gray-900 dark:text-white leading-relaxed font-medium">
+                                                {language === 'en' && selectedQuestion.englishDescription ? selectedQuestion.englishDescription : selectedQuestion.description}
+                                            </p>
+                                        </div>
+                                        <div className="flex items-center space-x-2 lg:space-x-4 flex-wrap">
+                                            <span className={`px-2 lg:px-3 py-1 rounded-full text-xs lg:text-sm ${getCategoryColor(selectedQuestion.category)}`}>
                                                 {selectedQuestion.category}
                                             </span>
-                                            <span className={`text-sm font-medium ${getDifficultyColor(selectedQuestion.difficulty)}`}>
+                                            <span className={`text-xs lg:text-sm font-medium ${getDifficultyColor(selectedQuestion.difficulty)}`}>
                                                 {getDifficultyDisplay(selectedQuestion.difficulty)}
                                             </span>
                                         </div>
                                     </div>
-                                    <div className="flex space-x-2">
-                                        <Button onClick={handleSaveToHistory} variant="outline" size="sm">
-                                            <Save className="w-4 h-4 mr-2" />
+                                    <div className="flex flex-col sm:flex-row lg:flex-col space-y-2 sm:space-y-0 sm:space-x-2 lg:space-x-0 lg:space-y-2">
+                                        <Button onClick={handleSaveToHistory} variant="outline" size="sm" className="text-xs lg:text-sm">
+                                            <Save className="w-3 h-3 lg:w-4 lg:h-4 mr-1 lg:mr-2" />
                                             {t('saveToHistory')}
                                         </Button>
                                         <Button 
                                             onClick={() => setShowAnswer(!showAnswer)} 
                                             variant="outline" 
                                             size="sm"
+                                            className="text-xs lg:text-sm"
                                         >
-                                            {showAnswer ? <EyeOff className="w-4 h-4 mr-2" /> : <Eye className="w-4 h-4 mr-2" />}
+                                            {showAnswer ? <EyeOff className="w-3 h-3 lg:w-4 lg:h-4 mr-1 lg:mr-2" /> : <Eye className="w-3 h-3 lg:w-4 lg:h-4 mr-1 lg:mr-2" />}
                                             {showAnswer ? t('hideAnswer') : t('showAnswer')}
                                         </Button>
                                     </div>
@@ -373,14 +374,14 @@ const LLMInterview = () => {
 
                                 {/* 设计步骤 */}
                                 {selectedQuestion.designSteps && (
-                                    <div className="mb-6">
-                                        <h3 className="text-lg font-semibold mb-3 flex items-center">
-                                            <Target className="w-5 h-5 mr-2" />
+                                    <div className="mb-4 lg:mb-6">
+                                        <h3 className="text-base lg:text-lg font-semibold mb-2 lg:mb-3 flex items-center">
+                                            <Target className="w-4 h-4 lg:w-5 lg:h-5 mr-2" />
                                             {t('designSteps')}
                                         </h3>
-                                        <ol className="list-decimal list-inside space-y-2 bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
+                                        <ol className="list-decimal list-inside space-y-1 lg:space-y-2 bg-gray-50 dark:bg-gray-700 p-3 lg:p-4 rounded-lg">
                                             {(language === 'en' && selectedQuestion.englishDesignSteps ? selectedQuestion.englishDesignSteps : selectedQuestion.designSteps).map((step, index) => (
-                                                <li key={index} className="text-gray-900 dark:text-white pl-4 font-medium">
+                                                <li key={index} className="text-sm lg:text-base text-gray-900 dark:text-white pl-2 lg:pl-4 font-medium">
                                                     {step}
                                                 </li>
                                             ))}
@@ -390,16 +391,16 @@ const LLMInterview = () => {
 
                                 {/* 关键点 */}
                                 {selectedQuestion.keyPoints && (
-                                    <div className="mb-6">
-                                        <h3 className="text-lg font-semibold mb-3 flex items-center">
-                                            <CheckCircle className="w-5 h-5 mr-2" />
+                                    <div className="mb-4 lg:mb-6">
+                                        <h3 className="text-base lg:text-lg font-semibold mb-2 lg:mb-3 flex items-center">
+                                            <CheckCircle className="w-4 h-4 lg:w-5 lg:h-5 mr-2" />
                                             {t('keyPoints')}
                                         </h3>
-                                        <ul className="space-y-2 bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
+                                        <ul className="space-y-1 lg:space-y-2 bg-gray-50 dark:bg-gray-700 p-3 lg:p-4 rounded-lg">
                                             {(language === 'en' && selectedQuestion.englishKeyPoints ? selectedQuestion.englishKeyPoints : selectedQuestion.keyPoints).map((point, index) => (
                                                 <li key={index} className="flex items-start">
-                                                    <CheckCircle className="w-4 h-4 text-green-500 mr-2 mt-0.5 flex-shrink-0" />
-                                                    <span className="text-gray-900 dark:text-white font-medium">{point}</span>
+                                                    <CheckCircle className="w-3 h-3 lg:w-4 lg:h-4 text-green-500 mr-2 mt-0.5 flex-shrink-0" />
+                                                    <span className="text-sm lg:text-base text-gray-900 dark:text-white font-medium">{point}</span>
                                                 </li>
                                             ))}
                                         </ul>
@@ -408,24 +409,24 @@ const LLMInterview = () => {
                             </Card>
 
                             {/* 计时器和答题区域 */}
-                            <Card className="p-6">
-                                <div className="flex items-center justify-between mb-4">
-                                    <h3 className="text-lg font-semibold">{t('yourAnswer')}</h3>
+                            <Card className="p-3 lg:p-6">
+                                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-3 lg:mb-4 space-y-2 sm:space-y-0">
+                                    <h3 className="text-base lg:text-lg font-semibold">{t('yourAnswer')}</h3>
                                     {showTimer && (
                                         <div className="flex items-center space-x-2">
-                                            <Timer className="w-4 h-4 text-gray-500" />
-                                            <span className="font-mono text-lg">{formatTime(timer)}</span>
+                                            <Timer className="w-3 h-3 lg:w-4 lg:h-4 text-gray-500" />
+                                            <span className="font-mono text-sm lg:text-lg">{formatTime(timer)}</span>
                                             <div className="flex space-x-1">
                                                 {!isTimerRunning ? (
-                                                    <Button onClick={startTimer} size="sm" variant="outline">
+                                                    <Button onClick={startTimer} size="sm" variant="outline" className="p-1 lg:p-2">
                                                         <Play className="w-3 h-3" />
                                                     </Button>
                                                 ) : (
-                                                    <Button onClick={pauseTimer} size="sm" variant="outline">
+                                                    <Button onClick={pauseTimer} size="sm" variant="outline" className="p-1 lg:p-2">
                                                         <Pause className="w-3 h-3" />
                                                     </Button>
                                                 )}
-                                                <Button onClick={resetTimer} size="sm" variant="outline">
+                                                <Button onClick={resetTimer} size="sm" variant="outline" className="p-1 lg:p-2">
                                                     <Square className="w-3 h-3" />
                                                 </Button>
                                             </div>
@@ -437,23 +438,23 @@ const LLMInterview = () => {
                                     value={userAnswer}
                                     onChange={(e) => setUserAnswer(e.target.value)}
                                     placeholder={t('enterYourAnswer')}
-                                    className="min-h-[300px] mb-4 resize-none"
+                                    className="min-h-[200px] lg:min-h-[300px] mb-3 lg:mb-4 resize-none text-sm lg:text-base"
                                 />
                                 
-                                <div className="flex space-x-3">
+                                <div className="flex space-x-2 lg:space-x-3">
                                     <Button 
                                         onClick={handleAnalyze} 
                                         disabled={!userAnswer.trim() || isAnalyzing}
-                                        className="flex-1"
+                                        className="flex-1 text-sm lg:text-base"
                                     >
                                         {isAnalyzing ? (
                                             <>
-                                                <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
+                                                <RefreshCw className="w-3 h-3 lg:w-4 lg:h-4 mr-1 lg:mr-2 animate-spin" />
                                                 {t('analyzing')}
                                             </>
                                         ) : (
                                             <>
-                                                <Lightbulb className="w-4 h-4 mr-2" />
+                                                <Lightbulb className="w-3 h-3 lg:w-4 lg:h-4 mr-1 lg:mr-2" />
                                                 {t('analyzeAnswer')}
                                             </>
                                         )}
@@ -463,48 +464,48 @@ const LLMInterview = () => {
 
                             {/* AI分析结果 */}
                             {analysis && (
-                                <Card className="p-6">
-                                    <h3 className="text-lg font-semibold mb-4 flex items-center">
-                                        <Brain className="w-5 h-5 mr-2" />
+                                <Card className="p-3 lg:p-6">
+                                    <h3 className="text-base lg:text-lg font-semibold mb-3 lg:mb-4 flex items-center">
+                                        <Brain className="w-4 h-4 lg:w-5 lg:h-5 mr-2" />
                                         {t('aiAnalysis')}
                                     </h3>
-                                    <div className="space-y-6">
+                                    <div className="space-y-4 lg:space-y-6">
                                         {/* 评分卡片 */}
-                                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                            <div className="bg-gradient-to-br from-blue-500 to-blue-600 text-white p-4 rounded-lg text-center">
-                                                <div className="text-3xl font-bold">{analysis.overallScore}</div>
-                                                <div className="text-sm opacity-90">{t('overallScore')}</div>
+                                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 lg:gap-4">
+                                            <div className="bg-gradient-to-br from-blue-500 to-blue-600 text-white p-3 lg:p-4 rounded-lg text-center">
+                                                <div className="text-2xl lg:text-3xl font-bold">{analysis.overallScore}</div>
+                                                <div className="text-xs lg:text-sm opacity-90">{t('overallScore')}</div>
                                             </div>
-                                            <div className="bg-gradient-to-br from-green-500 to-green-600 text-white p-4 rounded-lg text-center">
-                                                <div className="text-2xl font-bold">
+                                            <div className="bg-gradient-to-br from-green-500 to-green-600 text-white p-3 lg:p-4 rounded-lg text-center">
+                                                <div className="text-xl lg:text-2xl font-bold">
                                                     {analysis.categoryScores?.technicalAccuracy || 0}
                                                 </div>
-                                                <div className="text-sm opacity-90">技术准确性</div>
+                                                <div className="text-xs lg:text-sm opacity-90">技术准确性</div>
                                             </div>
-                                            <div className="bg-gradient-to-br from-purple-500 to-purple-600 text-white p-4 rounded-lg text-center">
-                                                <div className="text-2xl font-bold">
+                                            <div className="bg-gradient-to-br from-purple-500 to-purple-600 text-white p-3 lg:p-4 rounded-lg text-center">
+                                                <div className="text-xl lg:text-2xl font-bold">
                                                     {analysis.categoryScores?.technicalDepth || 0}
                                                 </div>
-                                                <div className="text-sm opacity-90">技术深度</div>
+                                                <div className="text-xs lg:text-sm opacity-90">技术深度</div>
                                             </div>
                                         </div>
 
                                         {/* 详细评分 */}
                                         {analysis.categoryScores && (
-                                            <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg">
-                                                <h4 className="font-semibold mb-3">详细评分</h4>
-                                                <div className="grid grid-cols-2 gap-4">
+                                            <div className="bg-gray-50 dark:bg-gray-800 p-3 lg:p-4 rounded-lg">
+                                                <h4 className="font-semibold mb-2 lg:mb-3 text-sm lg:text-base">详细评分</h4>
+                                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 lg:gap-4">
                                                     {Object.entries(analysis.categoryScores).map(([key, score]) => (
                                                         <div key={key} className="flex justify-between items-center">
-                                                            <span className="capitalize text-sm">{key}:</span>
+                                                            <span className="capitalize text-xs lg:text-sm">{key}:</span>
                                                             <div className="flex items-center space-x-2">
-                                                                <div className="w-20 bg-gray-200 rounded-full h-2">
+                                                                <div className="w-16 lg:w-20 bg-gray-200 rounded-full h-2">
                                                                     <div 
                                                                         className="bg-blue-500 h-2 rounded-full" 
                                                                         style={{width: `${score}%`}}
                                                                     ></div>
                                                                 </div>
-                                                                <span className="font-medium text-sm">{score}</span>
+                                                                <span className="font-medium text-xs lg:text-sm">{score}</span>
                                                             </div>
                                                         </div>
                                                     ))}
@@ -514,15 +515,15 @@ const LLMInterview = () => {
 
                                         {/* 优点 */}
                                         {analysis.strengths && analysis.strengths.length > 0 && (
-                                            <div className="bg-green-50 dark:bg-green-900/20 p-4 rounded-lg">
-                                                <h4 className="font-semibold mb-3 text-green-700 dark:text-green-300 flex items-center">
-                                                    <CheckCircle className="w-4 h-4 mr-2" />
+                                            <div className="bg-green-50 dark:bg-green-900/20 p-3 lg:p-4 rounded-lg">
+                                                <h4 className="font-semibold mb-2 lg:mb-3 text-green-700 dark:text-green-300 flex items-center text-sm lg:text-base">
+                                                    <CheckCircle className="w-3 h-3 lg:w-4 lg:h-4 mr-2" />
                                                     {t('strengths')}
                                                 </h4>
-                                                <ul className="space-y-2">
+                                                <ul className="space-y-1 lg:space-y-2">
                                                     {analysis.strengths.map((strength, index) => (
-                                                        <li key={index} className="flex items-start text-green-700 dark:text-green-300">
-                                                            <CheckCircle className="w-4 h-4 mr-2 mt-0.5 flex-shrink-0" />
+                                                        <li key={index} className="flex items-start text-green-700 dark:text-green-300 text-sm lg:text-base">
+                                                            <CheckCircle className="w-3 h-3 lg:w-4 lg:h-4 mr-2 mt-0.5 flex-shrink-0" />
                                                             <span>{strength}</span>
                                                         </li>
                                                     ))}
@@ -532,15 +533,15 @@ const LLMInterview = () => {
 
                                         {/* 需要改进的地方 */}
                                         {analysis.areasForImprovement && analysis.areasForImprovement.length > 0 && (
-                                            <div className="bg-orange-50 dark:bg-orange-900/20 p-4 rounded-lg">
-                                                <h4 className="font-semibold mb-3 text-orange-700 dark:text-orange-300 flex items-center">
-                                                    <AlertCircle className="w-4 h-4 mr-2" />
+                                            <div className="bg-orange-50 dark:bg-orange-900/20 p-3 lg:p-4 rounded-lg">
+                                                <h4 className="font-semibold mb-2 lg:mb-3 text-orange-700 dark:text-orange-300 flex items-center text-sm lg:text-base">
+                                                    <AlertCircle className="w-3 h-3 lg:w-4 lg:h-4 mr-2" />
                                                     {t('areasForImprovement')}
                                                 </h4>
-                                                <ul className="space-y-2">
+                                                <ul className="space-y-1 lg:space-y-2">
                                                     {analysis.areasForImprovement.map((area, index) => (
-                                                        <li key={index} className="flex items-start text-orange-700 dark:text-orange-300">
-                                                            <AlertCircle className="w-4 h-4 mr-2 mt-0.5 flex-shrink-0" />
+                                                        <li key={index} className="flex items-start text-orange-700 dark:text-orange-300 text-sm lg:text-base">
+                                                            <AlertCircle className="w-3 h-3 lg:w-4 lg:h-4 mr-2 mt-0.5 flex-shrink-0" />
                                                             <span>{area}</span>
                                                         </li>
                                                     ))}
@@ -550,15 +551,15 @@ const LLMInterview = () => {
 
                                         {/* 建议 */}
                                         {analysis.recommendations && analysis.recommendations.length > 0 && (
-                                            <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg">
-                                                <h4 className="font-semibold mb-3 text-blue-700 dark:text-blue-300 flex items-center">
-                                                    <Target className="w-4 h-4 mr-2" />
+                                            <div className="bg-blue-50 dark:bg-blue-900/20 p-3 lg:p-4 rounded-lg">
+                                                <h4 className="font-semibold mb-2 lg:mb-3 text-blue-700 dark:text-blue-300 flex items-center text-sm lg:text-base">
+                                                    <Target className="w-3 h-3 lg:w-4 lg:h-4 mr-2" />
                                                     {t('recommendations')}
                                                 </h4>
-                                                <ul className="space-y-2">
+                                                <ul className="space-y-1 lg:space-y-2">
                                                     {analysis.recommendations.map((rec, index) => (
-                                                        <li key={index} className="flex items-start text-blue-700 dark:text-blue-300">
-                                                            <Target className="w-4 h-4 mr-2 mt-0.5 flex-shrink-0" />
+                                                        <li key={index} className="flex items-start text-blue-700 dark:text-blue-300 text-sm lg:text-base">
+                                                            <Target className="w-3 h-3 lg:w-4 lg:h-4 mr-2 mt-0.5 flex-shrink-0" />
                                                             <span>{rec}</span>
                                                         </li>
                                                     ))}
@@ -566,11 +567,11 @@ const LLMInterview = () => {
                                             </div>
                                         )}
 
-                                                                                {/* 技术反馈 */}
+                                        {/* 技术反馈 */}
                                         {analysis.technicalFeedback && (
-                                            <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
-                                                <h4 className="font-semibold mb-3">{t('technicalFeedback')}</h4>
-                                                <p className="text-gray-900 dark:text-white leading-relaxed font-medium">
+                                            <div className="bg-gray-50 dark:bg-gray-700 p-3 lg:p-4 rounded-lg">
+                                                <h4 className="font-semibold mb-2 lg:mb-3 text-sm lg:text-base">{t('technicalFeedback')}</h4>
+                                                <p className="text-gray-900 dark:text-white leading-relaxed font-medium text-sm lg:text-base">
                                                     {analysis.technicalFeedback}
                                                 </p>
                                             </div>
@@ -578,12 +579,12 @@ const LLMInterview = () => {
 
                                         {/* 下一步 */}
                                         {analysis.nextSteps && (
-                                            <div className="bg-indigo-50 dark:bg-indigo-900/20 p-4 rounded-lg">
-                                                <h4 className="font-semibold mb-3 text-indigo-700 dark:text-indigo-300 flex items-center">
-                                                    <TrendingUp className="w-4 h-4 mr-2" />
+                                            <div className="bg-indigo-50 dark:bg-indigo-900/20 p-3 lg:p-4 rounded-lg">
+                                                <h4 className="font-semibold mb-2 lg:mb-3 text-indigo-700 dark:text-indigo-300 flex items-center text-sm lg:text-base">
+                                                    <TrendingUp className="w-3 h-3 lg:w-4 lg:h-4 mr-2" />
                                                     {t('nextSteps')}
                                                 </h4>
-                                                <p className="text-indigo-700 dark:text-indigo-300 leading-relaxed">
+                                                <p className="text-indigo-700 dark:text-indigo-300 leading-relaxed text-sm lg:text-base">
                                                     {analysis.nextSteps}
                                                 </p>
                                             </div>
@@ -594,13 +595,13 @@ const LLMInterview = () => {
 
                             {/* 标准答案 */}
                             {showAnswer && (
-                                <Card className="p-6">
-                                    <h3 className="text-lg font-semibold mb-4 flex items-center">
-                                        <BookOpen className="w-5 h-5 mr-2" />
+                                <Card className="p-3 lg:p-6">
+                                    <h3 className="text-base lg:text-lg font-semibold mb-3 lg:mb-4 flex items-center">
+                                        <BookOpen className="w-4 h-4 lg:w-5 lg:h-5 mr-2" />
                                         {t('standardAnswer')}
                                     </h3>
                                     <div className="prose max-w-none">
-                                        <pre className="whitespace-pre-wrap text-sm text-gray-900 dark:text-white leading-relaxed bg-gray-50 dark:bg-gray-700 p-4 rounded-lg overflow-x-auto font-medium">
+                                        <pre className="whitespace-pre-wrap text-xs lg:text-sm text-gray-900 dark:text-white leading-relaxed bg-gray-50 dark:bg-gray-700 p-3 lg:p-4 rounded-lg overflow-x-auto font-medium">
                                             {selectedQuestion.detailedAnswer}
                                         </pre>
                                     </div>
@@ -608,10 +609,10 @@ const LLMInterview = () => {
                             )}
                         </div>
                     ) : (
-                        <Card className="p-8 text-center">
-                            <BookOpen className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                            <h3 className="text-lg font-semibold mb-2">{t('selectQuestion')}</h3>
-                            <p className="text-gray-600 dark:text-gray-300">{t('selectQuestionDescription')}</p>
+                        <Card className="p-6 lg:p-8 text-center">
+                            <BookOpen className="w-10 h-10 lg:w-12 lg:h-12 text-gray-400 mx-auto mb-3 lg:mb-4" />
+                            <h3 className="text-base lg:text-lg font-semibold mb-2">{t('selectQuestion')}</h3>
+                            <p className="text-sm lg:text-base text-gray-600 dark:text-gray-300">{t('selectQuestionDescription')}</p>
                         </Card>
                     )}
                 </div>
