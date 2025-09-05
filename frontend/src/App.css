@@ -253,6 +253,63 @@
     }
   }
   
+  /* Wrong Questions 移动端优化 */
+  .mobile-wrong-questions {
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+    scrollbar-color: #6b7280 #374151;
+  }
+  
+  .mobile-wrong-questions::-webkit-scrollbar {
+    width: 4px;
+  }
+  
+  .mobile-wrong-questions::-webkit-scrollbar-track {
+    background: #374151;
+    border-radius: 2px;
+  }
+  
+  .mobile-wrong-questions::-webkit-scrollbar-thumb {
+    background: #6b7280;
+    border-radius: 2px;
+  }
+  
+  .mobile-wrong-questions::-webkit-scrollbar-thumb:hover {
+    background: #4b5563;
+  }
+  
+  .mobile-wrong-question-item {
+    min-height: 50px;
+    touch-action: manipulation;
+  }
+  
+  .mobile-wrong-question-item:hover {
+    transform: translateY(-1px);
+  }
+  
+  .mobile-wrong-question-item:active {
+    transform: translateY(0);
+  }
+  
+  .mobile-wrong-question-detail {
+    max-width: 100%;
+    overflow-x: hidden;
+  }
+  
+  .mobile-wrong-question-detail pre {
+    font-size: 11px;
+    line-height: 1.4;
+    padding: 8px;
+  }
+  
+  .mobile-wrong-question-detail .space-y-3 > * + * {
+    margin-top: 8px;
+  }
+  
+  .mobile-wrong-question-detail .space-y-4 > * + * {
+    margin-top: 12px;
+  }
+  
   /* 移动端编辑器容器优化 */
   .mobile-editor-container {
     display: flex;

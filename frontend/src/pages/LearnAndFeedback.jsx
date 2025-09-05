@@ -222,11 +222,11 @@ const LearnAndFeedback = () => {
     <div className="min-h-screen bg-gray-900 text-white p-6">
       <div className="max-w-6xl mx-auto">
         <h1 className="text-4xl font-bold mb-8 text-center">{t('learnAndFeedback')}</h1>
-        <div className="flex space-x-4 mb-8 justify-center">
+        <div className="flex flex-wrap gap-2 lg:gap-4 mb-6 lg:mb-8 justify-center">
           {TABS.map(ti => (
             <button
               key={ti.key}
-              className={`px-4 py-2 rounded-t font-semibold focus:outline-none transition-colors duration-150 ${tab === ti.key ? 'bg-gray-800 text-blue-400 border-b-2 border-blue-400' : 'bg-gray-700 text-gray-300'}`}
+              className={`px-3 lg:px-4 py-2 rounded-t font-semibold focus:outline-none transition-colors duration-150 text-sm lg:text-base ${tab === ti.key ? 'bg-gray-800 text-blue-400 border-b-2 border-blue-400' : 'bg-gray-700 text-gray-300'}`}
               onClick={() => setTab(ti.key)}
             >
               {t(ti.label)}
@@ -241,9 +241,77 @@ const LearnAndFeedback = () => {
             ) : error ? (
               <div className="text-red-400 text-center p-4">{error}</div>
             ) : (
-              <ResizablePanelGroup direction="horizontal" className="h-full rounded-lg border border-gray-700">
-                {/* 左侧题目列表 */}
-                <ResizablePanel defaultSize={40} minSize={30}>
+              <div className="space-y-4 lg:space-y-6">
+                {/* 移动端：问题列表 */}
+                <div className="lg:hidden">
+                  <div className="bg-gray-800 p-3 lg:p-4 rounded-lg">
+                    <div className="flex items-center justify-between mb-3">
+                      <h3 className="text-lg font-semibold">{t('wrongQuestions')}</h3>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={loadWrongQuestions}
+                        className="text-gray-400 hover:text-white"
+                      >
+                        <BookOpen size={16} />
+                      </Button>
+                    </div>
+
+                    {/* 筛选器 */}
+                    <div className="mb-3">
+                      <Select
+                        value={filterType}
+                        onValueChange={setFilterType}
+                        className="w-full"
+                      >
+                        <option value="all">{t('allTypes')}</option>
+                        <option value="coding">{t('coding')}</option>
+                        <option value="system-design">{t('systemDesign')}</option>
+                        <option value="behavioral">{t('behavioral')}</option>
+                        <option value="mock">{t('mockInterview')}</option>
+                      </Select>
+                    </div>
+
+                    {filteredQuestions.length === 0 ? (
+                      <div className="text-gray-400 text-center p-4">{t('noWrongQuestions')}</div>
+                    ) : (
+                      <div className="space-y-2 max-h-80 overflow-y-auto mobile-wrong-questions">
+                        {filteredQuestions.map((question) => (
+                          <div
+                            key={question.id}
+                            onClick={() => handleSelectQuestion(question)}
+                            className={`p-2 lg:p-3 rounded-lg cursor-pointer transition-colors mobile-wrong-question-item ${
+                              selectedQuestion?.id === question.id
+                                ? 'bg-indigo-600 text-white'
+                                : 'bg-gray-700 hover:bg-gray-600'
+                            }`}
+                          >
+                            <div className="flex items-center justify-between mb-1">
+                              <span className="font-medium text-xs lg:text-sm line-clamp-1">
+                                {typeof question.questionData?.title === 'object'
+                                  ? question.questionData.title[language]
+                                  : question.questionData?.title || t('unknownQuestion')}
+                              </span>
+                              <span className="text-xs px-1.5 py-0.5 rounded bg-gray-600 flex-shrink-0 ml-2">
+                                {getInterviewTypeLabel(question.interviewType)}
+                              </span>
+                            </div>
+                            <div className="flex items-center justify-between text-xs text-gray-300">
+                              <span className="truncate">{getSourceLabel(question.type)}</span>
+                              <span className="text-xs flex-shrink-0 ml-2">{formatDate(question.completedAt)}</span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* 桌面端：左右分栏布局 */}
+                <div className="hidden lg:block">
+                  <ResizablePanelGroup direction="horizontal" className="h-full rounded-lg border border-gray-700">
+                    {/* 左侧题目列表 */}
+                    <ResizablePanel defaultSize={40} minSize={30}>
                   <div className="h-full bg-gray-800 p-4">
                     <div className="flex items-center justify-between mb-4">
                       <h3 className="text-xl font-semibold">{t('wrongQuestions')}</h3>
@@ -402,8 +470,99 @@ const LearnAndFeedback = () => {
                       </div>
                     )}
                   </div>
-                </ResizablePanel>
-              </ResizablePanelGroup>
+                    </ResizablePanel>
+                  </ResizablePanelGroup>
+                </div>
+
+                {/* 移动端：选中问题详情 */}
+                {selectedQuestion && (
+                  <div className="lg:hidden">
+                    <div className="bg-gray-800 p-3 lg:p-4 rounded-lg mobile-wrong-question-detail">
+                      <div className="mb-4">
+                        <Button
+                          onClick={() => setSelectedQuestion(null)}
+                          variant="ghost"
+                          size="sm"
+                          className="text-gray-400 hover:text-white mb-3"
+                        >
+                          <X size={16} className="mr-2" />
+                          {t('backToList')}
+                        </Button>
+                        
+                        <h3 className="text-lg font-semibold mb-2 line-clamp-2">
+                          {typeof selectedQuestion.questionData?.title === 'object'
+                            ? selectedQuestion.questionData.title[language]
+                            : selectedQuestion.questionData?.title || t('unknownQuestion')}
+                        </h3>
+                        
+                        <div className="flex flex-wrap gap-2 text-xs text-gray-400 mb-3">
+                          <span className="px-2 py-1 bg-gray-700 rounded">{getInterviewTypeLabel(selectedQuestion.interviewType)}</span>
+                          <span className="px-2 py-1 bg-gray-700 rounded">{getSourceLabel(selectedQuestion.type)}</span>
+                          <span className="px-2 py-1 bg-gray-700 rounded">{formatDate(selectedQuestion.completedAt)}</span>
+                        </div>
+
+                        {selectedQuestion.questionData?.description && (
+                          <div className="mb-3">
+                            <h4 className="text-sm font-medium mb-2">{t('question')}</h4>
+                            <div className="bg-gray-900 p-3 rounded-lg">
+                              <p className="text-gray-300 text-sm">
+                                {typeof selectedQuestion.questionData?.description === 'object'
+                                  ? selectedQuestion.questionData.description[language]
+                                  : selectedQuestion.questionData?.description}
+                              </p>
+                            </div>
+                          </div>
+                        )}
+
+                        {selectedQuestion.questionData?.prompt && (
+                          <div className="mb-3">
+                            <h4 className="text-sm font-medium mb-2">{t('question')}</h4>
+                            <div className="bg-gray-900 p-3 rounded-lg">
+                              <p className="text-gray-300 text-sm">
+                                {typeof selectedQuestion.questionData?.prompt === 'object'
+                                  ? selectedQuestion.questionData.prompt[language]
+                                  : selectedQuestion.questionData?.prompt}
+                              </p>
+                            </div>
+                          </div>
+                        )}
+
+                        <div className="mb-3">
+                          <h4 className="text-sm font-medium mb-2">{t('yourAnswer')}</h4>
+                          <div className="bg-gray-900 p-3 rounded-lg">
+                            {selectedQuestion.interviewType === 'coding' ? (
+                              <pre className="text-gray-300 text-xs overflow-x-auto">
+                                <code>{selectedQuestion.userAnswer}</code>
+                              </pre>
+                            ) : (
+                              <p className="text-gray-300 whitespace-pre-wrap text-sm">{selectedQuestion.userAnswer}</p>
+                            )}
+                          </div>
+                        </div>
+
+                        {selectedQuestion.feedback && (
+                          <div className="mb-3">
+                            <h4 className="text-sm font-medium mb-2">{t('aiFeedback')}</h4>
+                            <div className="bg-gray-900 p-3 rounded-lg">
+                              {selectedQuestion.feedback.aiAnalysis ? (
+                                <div className="text-gray-300 whitespace-pre-wrap text-sm">
+                                  {selectedQuestion.feedback.aiAnalysis}
+                                </div>
+                              ) : selectedQuestion.feedback.message ? (
+                                <div className="text-gray-300 whitespace-pre-wrap text-sm">
+                                  {selectedQuestion.feedback.message}
+                                </div>
+                              ) : (
+                                <div className="text-gray-500 text-sm">{t('noFeedbackAvailable')}</div>
+                              )}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
             )}
           </>
         )}
