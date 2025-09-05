@@ -34,21 +34,21 @@ const InterviewLearning = () => {
             </div>
 
             {/* 标签页导航 - 移动端优化 */}
-            <div className="flex space-x-1 mb-4 lg:mb-6 bg-gray-800 p-1 rounded-lg overflow-x-auto mobile-tab-container">
+            <div className="flex space-x-1 mb-4 lg:mb-6 bg-gray-800 p-1 rounded-lg mobile-tab-container">
                 {tabs.map((tab) => {
                     const Icon = tab.icon;
                     return (
                         <button
                             key={tab.id}
                             onClick={() => setActiveTab(tab.id)}
-                            className={`flex items-center space-x-1 lg:space-x-2 px-3 lg:px-4 py-2 rounded-md transition-colors whitespace-nowrap ${
+                            className={`flex items-center justify-center space-x-1 lg:space-x-2 px-2 lg:px-4 py-2 rounded-md transition-colors flex-1 min-w-0 ${
                                 activeTab === tab.id
                                     ? 'bg-indigo-600 text-white'
                                     : 'text-gray-400 hover:text-white hover:bg-gray-700'
                             }`}
                         >
-                            <Icon size={16} className="lg:w-5 lg:h-5" />
-                            <span className="text-sm lg:text-base">{tab.label}</span>
+                            <Icon size={14} className="lg:w-5 lg:h-5 flex-shrink-0" />
+                            <span className="text-xs lg:text-base truncate">{tab.label}</span>
                         </button>
                     );
                 })}
