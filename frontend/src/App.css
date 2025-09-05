@@ -310,6 +310,27 @@
     margin-top: 12px;
   }
   
+  /* 首页登录卡片移动端优化 */
+  .mobile-login-card {
+    max-width: 100%;
+    margin: 0 16px;
+  }
+  
+  @media (max-width: 480px) {
+    .mobile-login-card {
+      margin: 0 8px;
+      padding: 16px;
+    }
+    
+    .mobile-login-card h2 {
+      font-size: 18px;
+    }
+    
+    .mobile-login-card p {
+      font-size: 12px;
+    }
+  }
+  
   /* 移动端编辑器容器优化 */
   .mobile-editor-container {
     display: flex;

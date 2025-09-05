@@ -45,19 +45,41 @@ const HomePage = ({ onLogin }) => {
             {isChinese ? 'EN' : '中文'}
           </Button>
         </nav>
-        <Button onClick={handleLoginClick} className="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2">
-          {t('loginRegister')}
-        </Button>
       </header>
 
       <main className="flex-grow flex flex-col items-center justify-center text-center px-4">
         <section className="w-full max-w-4xl py-20">
           <h1 className="text-5xl md:text-7xl font-extrabold mb-4 leading-tight">{t('heroTitle')}</h1>
-          <p className="text-lg md:text-xl text-gray-400 mb-8">{t('heroSubtitle')}</p>
-          <div className="flex justify-center space-x-4">
-            <Button onClick={handleLoginClick} className="bg-indigo-600 hover:bg-indigo-500 text-white px-8 py-3 text-lg">
-              {t('startPreparing')}
-            </Button>
+          <p className="text-lg md:text-xl text-gray-400 mb-12">{t('heroSubtitle')}</p>
+          
+          {/* 登录注册卡片 */}
+          <div className="max-w-md mx-auto bg-gray-800 rounded-lg border border-gray-700 p-6 lg:p-8 shadow-2xl mobile-login-card">
+            <div className="text-center mb-6">
+              <h2 className="text-xl lg:text-2xl font-bold text-white mb-2">
+                {t('welcomeBack')}
+              </h2>
+              <p className="text-sm lg:text-base text-gray-400">
+                {t('loginToContinue')}
+              </p>
+            </div>
+            
+            <div className="space-y-4">
+              <Button 
+                onClick={handleLoginClick} 
+                className="w-full bg-indigo-600 hover:bg-indigo-500 text-white px-6 py-3 text-base lg:text-lg font-medium"
+              >
+                {t('loginRegister')}
+              </Button>
+              
+              <div className="text-center">
+                <p className="text-xs lg:text-sm text-gray-400">
+                  {t('newUser')} 
+                  <span className="text-indigo-400 ml-1">
+                    {t('clickToRegister')}
+                  </span>
+                </p>
+              </div>
+            </div>
           </div>
         </section>
         
