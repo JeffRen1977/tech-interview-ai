@@ -331,6 +331,23 @@
     }
   }
   
+  /* 语言切换按钮优化 */
+  .language-switcher {
+    transition: all 0.3s ease;
+  }
+  
+  .language-switcher:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  }
+  
+  @media (max-width: 480px) {
+    .language-switcher {
+      font-size: 12px;
+      padding: 8px 12px;
+    }
+  }
+  
   /* Core Features 移动端优化 */
   .mobile-feature-card {
     min-height: 180px;

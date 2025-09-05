@@ -35,11 +35,11 @@ const HomePage = ({ onLogin }) => {
           <BrainCircuit className="w-8 h-8 mr-2 text-indigo-400" /> 
           {t('appTitle')}
         </div>
-        <nav className="hidden md:flex items-center space-x-6 text-gray-300">
-          <a href="#features" className="hover:text-indigo-400">{t('features')}</a>
+        <nav className="flex items-center space-x-4 text-gray-300">
+          <a href="#features" className="hidden md:block hover:text-indigo-400">{t('features')}</a>
           <Button 
             onClick={toggleLanguage} 
-            className="flex items-center gap-2 bg-gray-700 hover:bg-gray-600 px-3 py-1"
+            className="flex items-center gap-2 bg-gray-700 hover:bg-gray-600 px-3 py-2 text-sm language-switcher"
           >
             <Globe size={16} />
             {isChinese ? 'EN' : '中文'}
@@ -70,6 +70,17 @@ const HomePage = ({ onLogin }) => {
               >
                 {t('loginRegister')}
               </Button>
+              
+              {/* 语言选择 */}
+              <div className="flex justify-center">
+                <Button 
+                  onClick={toggleLanguage} 
+                  className="flex items-center gap-2 bg-gray-700 hover:bg-gray-600 px-4 py-2 text-sm language-switcher"
+                >
+                  <Globe size={14} />
+                  {isChinese ? 'Switch to English' : '切换到中文'}
+                </Button>
+              </div>
               
               <div className="text-center">
                 <p className="text-xs lg:text-sm text-gray-400">
